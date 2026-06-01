@@ -40,6 +40,7 @@ const HomePage = ({
   const entryActions = topCards.filter((item) => item.path !== "/");
   const primaryAction = entryActions[0] ?? null;
   const secondaryActions = entryActions.slice(1);
+  const recommendedActionLabel = primaryAction?.label ?? "운영 메뉴";
   const homeTasks = [
     {
       title: "돌봄 기록 남기기",
@@ -60,21 +61,28 @@ const HomePage = ({
 
   return (
     <section className="view-stack">
-      <section className="panel panel-overview">
+      <section className="panel panel-overview home-start-panel">
         <div className="panel-head">
-          <div>
+          <div className="home-hero-copy">
             <p className="kicker">빠른 시작</p>
-            <h2>무엇을 먼저 할까요?</h2>
+            <h2>가장 먼저 할 일을 바로 확인하세요</h2>
             <p className="subtle">
-              자주 쓰는 돌봄 기록, 돌봄비 정산, 보험청구 확인을 바로 시작할 수
-              있습니다.
+              돌봄 기록 → 돌봄비 정산 → 보험청구를 순서대로 진행하면 오늘 업무를
+              빠르게 마무리할 수 있습니다.
             </p>
           </div>
           {hasReadOnlyError ? (
-            <p className="feedback feedback-error" role="note">
+            <p className="feedback feedback-warning" role="note">
               읽기 전용 모드에서는 등록/수정이 제한될 수 있습니다.
             </p>
           ) : null}
+        </div>
+
+        <div className="home-start-strip" aria-label="권장 순서">
+          <p>추천 시작 순서</p>
+          <p className="home-start-current" role="status" aria-live="polite">
+            지금은 <strong>{recommendedActionLabel}</strong>로 시작하세요.
+          </p>
         </div>
 
         <div className="home-hero-actions" role="group" aria-label="빠른 시작">
@@ -85,6 +93,7 @@ const HomePage = ({
                 className="home-task-row"
                 key={task.path}
                 onClick={() => onNavigate(task.path)}
+                aria-label={`${task.title} 화면으로 이동`}
               >
                 <span className="home-task-index" aria-hidden="true">
                   {index + 1}
