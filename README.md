@@ -30,6 +30,7 @@ pnpm run dev
 - `pnpm run test`: 테스트 (`api-server`/`web-app` 유닛 테스트)
 - `pnpm run verify`: lint → typecheck → test → build
 - `pnpm run ci`: CI 게이트
+- `pnpm run smoke:web`: 샘플 시나리오 기반 브라우저/API 스모크 실행
 
 개별 앱 실행 예시:
 
@@ -40,6 +41,17 @@ pnpm --dir apps/api-server dev
 pnpm --dir apps/web-app install
 pnpm --dir apps/web-app dev
 ```
+
+## 브라우저 스모크 테스트
+
+- 웹앱/API 실행 후 아래로 샘플 시나리오를 검증합니다.
+
+```bash
+pnpm run dev
+pnpm run smoke:web
+```
+
+- 스크립트는 웹앱 URL 후보(`http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:5178`, `http://127.0.0.1:5178`)를 탐색해 실제 기동 포트로 연결합니다.
 
 ## API 엔드포인트
 

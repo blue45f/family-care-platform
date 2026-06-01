@@ -10,12 +10,14 @@
 - `pnpm run build`           # 각 워크스페이스 빌드
 - `pnpm run verify`          # lint -> typecheck -> test -> build 순차 실행
 - `pnpm run ci`              # verify와 동일한 CI 게이트
+- `pnpm run smoke:web`       # 샘플 시나리오 기반 브라우저/API 스모크 실행
 
 ## 개발 플로우
 
 1. 운영 탭에서 `care-logs`, `settlements`, `claims` API 흐름을 먼저 사용해 실데이터 등록 동선을 확인
 2. 어드민 탭에서 수익 지표와 요금제 파라미터를 조정해 운영 목표를 점검
 3. `pnpm run verify`로 타입체크/빌드/검증 플로우 점검
+4. `pnpm run smoke:web`로 샘플 시나리오 등록/조회/상태 변경까지 브라우저 연동 검증
 
 ## 운영 가이드
 
@@ -27,6 +29,10 @@
 - 프론트: `http://localhost:5173`
 - API: `http://localhost:3001/api`
 - 어드민 기능: 상단 탭의 `어드민 페이지`에서 확인
+
+스모크 실행 전제:
+
+- 웹앱/API가 각각 실행 중이어야 하며, 브라우저 포트 충돌 시 스크립트가 후보 포트를 탐색합니다.
 
 ## API 엔드포인트(백엔드)
 
