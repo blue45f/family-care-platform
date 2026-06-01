@@ -4,7 +4,14 @@ import { readFile } from 'node:fs/promises';
 const API_URL = process.env.FAMILY_CARE_API_URL ?? 'http://127.0.0.1:3001/api';
 const APP_URL = process.env.FAMILY_CARE_APP_URL;
 const SCENARIO_PATH = new URL('./sample-scenario.json', import.meta.url);
-const APP_DEFAULT_CANDIDATES = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5178', 'http://127.0.0.1:5178'];
+const APP_DEFAULT_CANDIDATES = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:5178',
+  'http://127.0.0.1:5178',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173',
+];
 
 async function requestText(url, init = {}) {
   const response = await fetch(url, {

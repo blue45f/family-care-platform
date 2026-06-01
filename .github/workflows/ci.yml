@@ -33,3 +33,43 @@ jobs:
 
       - name: Run verify
         run: pnpm run verify
+
+      - name: Start services for smoke test
+        run: |
+          pnpm --dir apps/api-server run start:prod > /tmp/family-care-api.log 2>&1 &
+          echo $! > /tmp/family-care-api.pid
+
+          pnpm --dir apps/web-app run start > /tmp/family-care-web.log 2>&1 &
+          echo $! > /tmp/family-care-web.pid
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:3001/api/admin/overview" >/dev/null 2>&1 && \
+               curl -fsS "http://localhost:4173" >/dev/null 2>&1; then
+              break
+            fi
+            if [ "$attempt" = "30" ]; then
+              echo "Services failed to become ready."
+              echo '--- API log ---'
+              cat /tmp/family-care-api.log
+              echo '--- Web log ---'
+              cat /tmp/family-care-web.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Run browser smoke scenario
+        run: |
+          FAMILY_CARE_API_URL=http://127.0.0.1:3001/api \
+          FAMILY_CARE_APP_URL=http://localhost:4173 \
+          pnpm run smoke:web
+
+      - name: Stop services
+        if: always()
+        run: |
+          if [ -f /tmp/family-care-api.pid ]; then
+            kill "$(cat /tmp/family-care-api.pid)" || true
+          fi
+          if [ -f /tmp/family-care-web.pid ]; then
+            kill "$(cat /tmp/family-care-web.pid)" || true
+          fi
