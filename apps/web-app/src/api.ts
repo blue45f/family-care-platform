@@ -11,7 +11,8 @@ import type {
   SettlementDraft,
 } from './types';
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
+const DEFAULT_API_URL = import.meta.env.DEV ? 'http://127.0.0.1:3001/api' : '/api';
+const BASE_URL = import.meta.env.VITE_API_URL ?? DEFAULT_API_URL;
 
 async function request<T>(input: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE_URL}${input}`, {

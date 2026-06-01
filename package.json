@@ -20,6 +20,7 @@
     "start:api": "pnpm --dir apps/api-server run start",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test": "pnpm -r --if-present run test",
+    "smoke:web": "node scripts/browser-sample-smoke.mjs",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "ci": "pnpm run verify",
     "clean": "rm -rf node_modules apps/web-app/node_modules apps/api-server/node_modules"

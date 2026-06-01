@@ -1,0 +1,47 @@
+{
+  "careLogs": [
+    {
+      "recipient": "이은정",
+      "caregiver": "김돌봄",
+      "type": "방문",
+      "date": "2026-06-01",
+      "note": "일일 체온·복약 확인"
+    },
+    {
+      "recipient": "최성수",
+      "caregiver": "이지원",
+      "type": "원격상담",
+      "date": "2026-06-02",
+      "note": "복약 알림 스케줄 확인"
+    }
+  ],
+  "settlements": [
+    {
+      "recipient": "이은정",
+      "date": "2026-06-01",
+      "careHours": 2,
+      "baseRate": 42000,
+      "note": "오전 방문 2시간"
+    },
+    {
+      "recipient": "최성수",
+      "date": "2026-06-03",
+      "careHours": 1,
+      "baseRate": 48000,
+      "note": "야간 원격 체크 1시간"
+    }
+  ],
+  "claims": [
+    {
+      "recipient": "이은정",
+      "claimType": "장기요양보험",
+      "expectedAmount": 150000,
+      "hospitalName": "한빛요양병원",
+      "issueDate": "2026-06-01",
+      "status": "요청",
+      "note": "당월 투약·활동 내역 기반 청구"
+    }
+  ],
+  "claimStatusTransition": "승인",
+  "claimTargetRecipient": "이은정"
+}
