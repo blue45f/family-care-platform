@@ -51,26 +51,26 @@ const renderKpiTable = ({
 
       <div className="kpi-table-wrap">
         <table className="kpi-table">
-          <caption className="sr-only">어드민 핵심 KPI</caption>
+          <caption className="sr-only">서비스 전체 현황</caption>
           <thead>
             <tr>
               <th scope="col">항목</th>
               <th scope="col">현재 값</th>
-              <th scope="col">해석</th>
+              <th scope="col">의미</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th scope="row">활성 가구</th>
+              <th scope="row">돌봄 가구</th>
               <td>
                 <strong>
                   {adminOverview.activeHouseholds || data.activeHouseholds}개
                 </strong>
               </td>
-              <td>현재 집계 기준의 운영 가구 수</td>
+              <td>현재 관리 중인 가구 수</td>
             </tr>
             <tr>
-              <th scope="row">월 정산 규모</th>
+              <th scope="row">이번 달 정산액</th>
               <td>
                 <strong>
                   {formatWon(
@@ -78,10 +78,10 @@ const renderKpiTable = ({
                   )}
                 </strong>
               </td>
-              <td>이번 달 누적 정산 금액</td>
+              <td>이번 달에 기록된 정산 합계</td>
             </tr>
             <tr>
-              <th scope="row">청구 승인률</th>
+              <th scope="row">보험청구 승인률</th>
               <td>
                 <strong>
                   {formatRate(
@@ -98,7 +98,7 @@ const renderKpiTable = ({
               </td>
             </tr>
             <tr>
-              <th scope="row">평균 정산액</th>
+              <th scope="row">가구당 평균 정산액</th>
               <td>
                 <strong>
                   {formatWon(
@@ -111,10 +111,10 @@ const renderKpiTable = ({
                   )}
                 </strong>
               </td>
-              <td>가구당 평균 정산액</td>
+              <td>가구별 평균 돌봄비</td>
             </tr>
             <tr>
-              <th scope="row">월 반복매출(MRR)</th>
+              <th scope="row">월 관리 금액</th>
               <td>
                 <strong>
                   {formatWon(
@@ -123,10 +123,10 @@ const renderKpiTable = ({
                   )}
                 </strong>
               </td>
-              <td>요금제 기반 월 반복 매출</td>
+              <td>요금제 기준 예상 월 금액</td>
             </tr>
             <tr>
-              <th scope="row">요금제 전환률</th>
+              <th scope="row">요금제 이용률</th>
               <td>
                 <strong>
                   {formatRate(
@@ -135,14 +135,14 @@ const renderKpiTable = ({
                   )}
                 </strong>
               </td>
-              <td>요금제 전환 상태의 전환 신호</td>
+              <td>요금제를 이용 중인 비율</td>
             </tr>
             <tr>
-              <th scope="row">연환산 추정치</th>
+              <th scope="row">예상 연 금액</th>
               <td>
                 <strong>{formatWon(data.kpiAnnualRevenue)}</strong>
               </td>
-              <td>보수적 가정 기준</td>
+              <td>현재 월 금액을 1년으로 계산한 값</td>
             </tr>
           </tbody>
         </table>
@@ -178,8 +178,7 @@ const renderTrends = ({
 
     {!isUsingServerTrend ? (
       <p className="trend-fallback-banner" role="note" aria-live="polite">
-        클라이언트 폴백 계산은 브라우저 데이터 기준입니다. 백엔드 집계 응답이
-        있을 경우 수치는 보정됩니다.
+        서버 월별 집계를 불러오지 못해 현재 브라우저 데이터로 계산했습니다.
       </p>
     ) : null}
 
@@ -216,7 +215,7 @@ const renderTrends = ({
                   : "전월 비교 데이터 없음"
               }`}
             >
-              청구건수{" "}
+              청구 건수{" "}
               {entry.hasPreviousMonth
                 ? `${entry.claimCountDelta} (${formatSignedRate(entry.claimCountDeltaRate)})`
                 : "비교 데이터 없음"}
@@ -241,7 +240,7 @@ const renderTrends = ({
           </article>
         ))
       ) : (
-        <p className="empty">표시할 월별 추세 데이터가 없습니다.</p>
+        <p className="empty">아직 표시할 월별 변화 데이터가 없습니다.</p>
       )}
     </div>
   </section>
@@ -292,11 +291,11 @@ const renderPlans = ({
                 className="plan-title"
                 aria-label={`${plan.id} 요금제명 입력`}
               />
-              <span className="tag">활성 고객 {draft.activeClients}명</span>
+              <span className="tag">이용 가구 {draft.activeClients}개</span>
             </div>
 
             <label>
-              월 구독료
+              월 요금
               <input
                 type="number"
                 min={0}
@@ -324,7 +323,7 @@ const renderPlans = ({
               />
             </label>
             <label>
-              보유 고객 수
+              이용 가구 수
               <input
                 type="number"
                 min={0}
@@ -350,7 +349,7 @@ const renderPlans = ({
             <div className="plan-footer">
               <p>
                 <span
-                  aria-label={`요금제 월 매출 ${formatWon(planContribution)}, 연 매출 ${formatWon(Math.round(annualContribution))}`}
+                  aria-label={`월 예상 금액 ${formatWon(planContribution)}, 연 예상 금액 ${formatWon(Math.round(annualContribution))}`}
                 >
                   월 {formatWon(planContribution)} · 연{" "}
                   {formatWon(Math.round(annualContribution))}
@@ -362,7 +361,7 @@ const renderPlans = ({
                 onClick={() => void submitPlan(plan.id)}
                 disabled={savingPlanId === plan.id}
               >
-                {savingPlanId === plan.id ? "저장 중..." : "요금제 저장"}
+                {savingPlanId === plan.id ? "저장 중..." : "요금 저장"}
               </button>
             </div>
           </article>
@@ -396,7 +395,7 @@ const renderSimulator = ({
 
     <div className="sim-grid">
       <label className="control-card">
-        가격 인상율
+        요금 변화
         <input
           type="range"
           min={0}
@@ -408,7 +407,7 @@ const renderSimulator = ({
         <strong>{priceLiftPercent}%</strong>
       </label>
       <label className="control-card">
-        업셀링 유도율
+        상위 요금제로 변경
         <input
           type="range"
           min={0}
@@ -423,48 +422,48 @@ const renderSimulator = ({
 
     <div className="outcome-grid">
       <article>
-        <p>시나리오 기준 MRR</p>
+        <p>예상 월 금액</p>
         <strong
-          aria-label={`시나리오 MRR ${formatWon(scenarioRevenue.scenarioMRR)}`}
+          aria-label={`예상 월 금액 ${formatWon(scenarioRevenue.scenarioMRR)}`}
         >
           {formatWon(scenarioRevenue.scenarioMRR)}
         </strong>
         <span className="small-note">
-          현재 MRR 대비 {scenarioRevenue.upliftFromCurrent >= 0 ? "+" : ""}
+          현재 월 금액 대비 {scenarioRevenue.upliftFromCurrent >= 0 ? "+" : ""}
           {formatWon(scenarioRevenue.upliftFromCurrent)}
         </span>
       </article>
       <article>
-        <p>목표 달성률</p>
+        <p>목표 진행률</p>
         <div className="goal-bar" aria-hidden="true">
           <div
             className="goal-fill"
             style={{ width: `${scenarioRevenue.goalRate}%` }}
           />
         </div>
-        <strong aria-label={`목표 달성률 ${scenarioRevenue.goalRate}%`}>
+        <strong aria-label={`목표 진행률 ${scenarioRevenue.goalRate}%`}>
           {scenarioRevenue.goalRate}%
         </strong>
       </article>
       <article>
-        <p>목표 차이</p>
+        <p>목표까지 남은 금액</p>
         <strong aria-label={`목표 차이 ${formatWon(scenarioRevenue.goalGap)}`}>
           {formatWon(scenarioRevenue.goalGap)}
         </strong>
         <span className="small-note">목표값: 5,000,000원</span>
       </article>
       <article>
-        <p>연 매출 환산</p>
+        <p>예상 연 금액</p>
         <strong
-          aria-label={`연 매출 환산 ${formatWon(scenarioRevenue.scenarioAnnualMRR)}`}
+          aria-label={`예상 연 금액 ${formatWon(scenarioRevenue.scenarioAnnualMRR)}`}
         >
           {formatWon(scenarioRevenue.scenarioAnnualMRR)}
         </strong>
       </article>
       <article>
-        <p>청구 기반 월 기여</p>
+        <p>청구 반영 후 월 금액</p>
         <strong
-          aria-label={`청구 기반 월 기여 ${formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}`}
+          aria-label={`청구 반영 후 월 금액 ${formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}`}
         >
           {formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}
         </strong>
@@ -475,7 +474,7 @@ const renderSimulator = ({
     </div>
 
     <div className="recommend-box">
-      <h3>실행 가이드</h3>
+      <h3>확인 가이드</h3>
       <ul>
         {growthRecommendations.map((item) => (
           <li key={item}>{item}</li>
@@ -500,14 +499,14 @@ const renderSummary = ({
     </div>
     <div className="growth-summary">
       <p>
-        <strong>현재 기준 월 매출:</strong> {formatWon(kpiMonthlyRevenue)}
+        <strong>현재 월 관리 금액:</strong> {formatWon(kpiMonthlyRevenue)}
       </p>
       <p>
-        <strong>연 환산 목표(보수):</strong> {formatWon(planPotentialAnnual)}
+        <strong>예상 연 금액:</strong> {formatWon(planPotentialAnnual)}
       </p>
       <p className="small-note">
-        수익 레버리지는 요금제 업셀링, 단가 관리, 승인율 개선 세 가닥이 동시에
-        맞아야 지속됩니다.
+        요금, 이용 가구 수, 보험청구 승인률을 함께 보면 다음 관리 방향을 정하기
+        쉽습니다.
       </p>
     </div>
   </section>
@@ -620,8 +619,8 @@ const AdminPage = ({
         <h2 className="sr-only">요약 액션</h2>
         <div className="recommend-box">
           <p className="small-note">
-            추천 순서: KPI 검토 → 추세 확인 → 요금제 조정 → 시뮬레이션 적용으로
-            우선순위를 고정하세요.
+            추천 순서: 전체 현황 확인 → 월별 변화 보기 → 요금 조정 → 예상 계산
+            순서로 확인하세요.
           </p>
         </div>
       </section>

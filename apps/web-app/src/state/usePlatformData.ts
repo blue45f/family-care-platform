@@ -501,22 +501,22 @@ export const usePlatformData = (): UsePlatformDataResult => {
 
     if (priceLiftPercent < 10) {
       recommendations.push(
-        "요금 인상 여지는 +4~8%부터 1분기 단위로 적용해 이탈을 줄이세요.",
+        "요금 변경은 +4~8%처럼 작은 폭부터 적용해 반응을 확인하세요.",
       );
     }
     if (upgradePushPercent < 12) {
       recommendations.push(
-        "Starter→Pro 업셀링 가이드를 등록하고 운영 기준을 고정하세요.",
+        "Starter 이용 가구에 Pro 안내를 추가해 상위 요금제 변경 기회를 만드세요.",
       );
     }
     if (scenarioRevenue.conversionRate < 70) {
       recommendations.push(
-        "청구 상태 전환 SLA를 48시간으로 단축해 승인률 개선 여지를 만드세요.",
+        "요청 또는 검토 중인 청구는 48시간 안에 상태를 확인하세요.",
       );
     }
     if (scenarioRevenue.goalRate < 80) {
       recommendations.push(
-        "현재 MRR 목표에 미달합니다. 고가치 가구 영업 라운드를 1~2개 확대하세요.",
+        "월 목표보다 낮습니다. 이용 가구를 늘리거나 상위 요금제 안내를 강화하세요.",
       );
     }
     if (recommendations.length === 0) {
@@ -712,7 +712,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
         return;
       }
       if (draft.monthlyPrice <= 0) {
-        setErrorMessage("월 구독 요금은 0보다 커야 저장할 수 있습니다.");
+        setErrorMessage("월 요금은 0보다 커야 저장할 수 있습니다.");
         return;
       }
       if (draft.annualDiscountRate < 0 || draft.annualDiscountRate >= 1) {

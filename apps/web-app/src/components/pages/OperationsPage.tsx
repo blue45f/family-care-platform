@@ -63,63 +63,63 @@ const renderOverview = ({
       <div className="panel-head">
         <div className="panel-title-wrap">
           <span className="panel-chip">운영 개요</span>
-          <h2>오늘 바로 처리해야 할 운영 상황</h2>
+          <h2>오늘 확인할 돌봄 현황</h2>
         </div>
         <p className="subtle">
-          보호자 운영의 핵심 수치와 다음 액션 우선순위를 한 화면에서 점검합니다.
+          돌봄 기록, 정산, 보험청구 중 먼저 확인할 일을 보여줍니다.
         </p>
       </div>
 
       <div className="kpi-ribbons">
         <article className="kpi-ribbon">
-          <p>활성 가구</p>
+          <p>돌봄 가구</p>
           <strong>{activeHouseholds}개</strong>
         </article>
         <article className="kpi-ribbon">
-          <p>미승인 청구</p>
+          <p>확인할 청구</p>
           <strong>{pendingClaims}건</strong>
         </article>
         <article className="kpi-ribbon">
-          <p>월간 정산</p>
+          <p>이번 달 정산</p>
           <strong>{formatWon(totalSettlement)}</strong>
         </article>
         <article className="kpi-ribbon">
-          <p>실시간 승인률</p>
+          <p>청구 승인률</p>
           <strong>{formatRate(approvalRate)}</strong>
         </article>
       </div>
 
       <div className="kpi-table-wrap">
         <table className="kpi-table">
-          <caption className="sr-only">운영 핵심 상태</caption>
+          <caption className="sr-only">돌봄 관리 현황</caption>
           <thead>
             <tr>
               <th scope="col">항목</th>
               <th scope="col">현재 수치</th>
-              <th scope="col">바로 조치</th>
+              <th scope="col">다음 할 일</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <th scope="row">총 케어 기록 건수</th>
+              <th scope="row">돌봄 기록</th>
               <td>
                 <strong>{claims.length}건</strong>
               </td>
-              <td>돌봄 등록 또는 청구 등록</td>
+              <td>새 돌봄 기록 남기기</td>
             </tr>
             <tr>
-              <th scope="row">청구 미처리 건수</th>
+              <th scope="row">확인할 청구</th>
               <td>
                 <strong>{pendingClaims}건</strong>
               </td>
-              <td>청구 상태 변경</td>
+              <td>청구 상태 확인하기</td>
             </tr>
             <tr>
-              <th scope="row">청구 합계액</th>
+              <th scope="row">청구 예상 금액</th>
               <td>
                 <strong>{formatWon(totalClaimExpected)}</strong>
               </td>
-              <td>정산/승인 상태 검토</td>
+              <td>정산 내용과 함께 확인하기</td>
             </tr>
           </tbody>
         </table>
@@ -148,7 +148,7 @@ const renderCareForm = (
       </div>
 
       <form className="row" onSubmit={onSubmitStatus}>
-        <RouteField id={`care-recipient-${module}`} label="보호자명">
+        <RouteField id={`care-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`care-recipient-${module}`}
             type="text"
@@ -156,12 +156,12 @@ const renderCareForm = (
             onChange={(event) =>
               data.updateCareLogField("recipient", event.target.value)
             }
-            placeholder="예: 김보호자"
+            placeholder="예: 김영희"
             required
           />
         </RouteField>
 
-        <RouteField id={`caregiver-${module}`} label="돌봄인력">
+        <RouteField id={`caregiver-${module}`} label="돌봄 담당자">
           <input
             id={`caregiver-${module}`}
             type="text"
@@ -169,12 +169,12 @@ const renderCareForm = (
             onChange={(event) =>
               data.updateCareLogField("caregiver", event.target.value)
             }
-            placeholder="예: 박간병인"
+            placeholder="예: 박돌봄"
             required
           />
         </RouteField>
 
-        <RouteField id={`care-type-${module}`} label="유형">
+        <RouteField id={`care-type-${module}`} label="돌봄 종류">
           <select
             id={`care-type-${module}`}
             value={careLogDraft.type}
@@ -193,7 +193,7 @@ const renderCareForm = (
           </select>
         </RouteField>
 
-        <RouteField id={`care-date-${module}`} label="기록일">
+        <RouteField id={`care-date-${module}`} label="돌봄 날짜">
           <input
             id={`care-date-${module}`}
             type="date"
@@ -204,21 +204,21 @@ const renderCareForm = (
           />
         </RouteField>
 
-        <RouteField id={`care-note-${module}`} label="메모">
+        <RouteField id={`care-note-${module}`} label="돌봄 내용">
           <textarea
             id={`care-note-${module}`}
             value={careLogDraft.note}
             onChange={(event) =>
               data.updateCareLogField("note", event.target.value)
             }
-            placeholder="돌봄 중 핵심 내용"
+            placeholder="예: 점심 식사 도움, 약 복용 확인"
             required
             rows={3}
           />
         </RouteField>
 
         <button type="submit" className="btn btn-primary">
-          돌봄 기록 등록
+          기록 저장
         </button>
       </form>
 
@@ -238,7 +238,9 @@ const renderCareForm = (
           ))}
         </ul>
       ) : (
-        <p className="empty">등록된 돌봄 기록이 없습니다.</p>
+        <p className="empty">
+          아직 돌봄 기록이 없습니다. 오늘 있었던 일을 먼저 남겨보세요.
+        </p>
       )}
     </section>
   );
@@ -264,7 +266,7 @@ const renderSettlementForm = (
       </div>
 
       <form className="row" onSubmit={onSubmitStatus}>
-        <RouteField id={`settlement-recipient-${module}`} label="보호자명">
+        <RouteField id={`settlement-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`settlement-recipient-${module}`}
             type="text"
@@ -272,12 +274,12 @@ const renderSettlementForm = (
             onChange={(event) =>
               data.updateSettlementField("recipient", event.target.value)
             }
-            placeholder="예: 김보호자"
+            placeholder="예: 김영희"
             required
           />
         </RouteField>
 
-        <RouteField id={`settlement-date-${module}`} label="정산일">
+        <RouteField id={`settlement-date-${module}`} label="정산 날짜">
           <input
             id={`settlement-date-${module}`}
             type="date"
@@ -303,7 +305,7 @@ const renderSettlementForm = (
           />
         </RouteField>
 
-        <RouteField id={`settlement-rate-${module}`} label="시간당 요금">
+        <RouteField id={`settlement-rate-${module}`} label="시간당 금액">
           <input
             id={`settlement-rate-${module}`}
             type="number"
@@ -325,12 +327,12 @@ const renderSettlementForm = (
             onChange={(event) =>
               data.updateSettlementField("note", event.target.value)
             }
-            placeholder="추가 메모"
+            placeholder="예: 야간 돌봄 포함"
           />
         </RouteField>
 
         <button type="submit" className="btn btn-primary">
-          정산 항목 생성
+          정산 저장
         </button>
       </form>
 
@@ -357,7 +359,9 @@ const renderSettlementForm = (
           ))}
         </ul>
       ) : (
-        <p className="empty">정산 데이터가 없습니다.</p>
+        <p className="empty">
+          아직 정산 내역이 없습니다. 돌봄 시간과 금액을 입력해 보세요.
+        </p>
       )}
     </section>
   );
@@ -383,7 +387,7 @@ const renderClaims = (
       </div>
 
       <form className="row" onSubmit={onSubmitStatus}>
-        <RouteField id={`claim-recipient-${module}`} label="보호자명">
+        <RouteField id={`claim-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`claim-recipient-${module}`}
             type="text"
@@ -391,7 +395,7 @@ const renderClaims = (
             onChange={(event) =>
               data.updateClaimField("recipient", event.target.value)
             }
-            placeholder="예: 김보호자"
+            placeholder="예: 김영희"
             required
           />
         </RouteField>
@@ -409,7 +413,7 @@ const renderClaims = (
           />
         </RouteField>
 
-        <RouteField id={`claim-amount-${module}`} label="예상 청구액">
+        <RouteField id={`claim-amount-${module}`} label="청구 예상 금액">
           <input
             id={`claim-amount-${module}`}
             type="number"
@@ -425,7 +429,7 @@ const renderClaims = (
           />
         </RouteField>
 
-        <RouteField id={`claim-date-${module}`} label="접수일">
+        <RouteField id={`claim-date-${module}`} label="접수 날짜">
           <input
             id={`claim-date-${module}`}
             type="date"
@@ -436,7 +440,7 @@ const renderClaims = (
           />
         </RouteField>
 
-        <RouteField id={`claim-status-${module}`} label="초기 상태">
+        <RouteField id={`claim-status-${module}`} label="현재 상태">
           <select
             id={`claim-status-${module}`}
             value={claimDraft.status}
@@ -455,7 +459,7 @@ const renderClaims = (
           </select>
         </RouteField>
 
-        <RouteField id={`claim-note-${module}`} label="특이사항">
+        <RouteField id={`claim-note-${module}`} label="메모">
           <input
             id={`claim-note-${module}`}
             type="text"
@@ -463,12 +467,12 @@ const renderClaims = (
             onChange={(event) =>
               data.updateClaimField("note", event.target.value)
             }
-            placeholder="특이 상황 메모"
+            placeholder="예: 영수증 확인 필요"
           />
         </RouteField>
 
         <button type="submit" className="btn btn-primary">
-          보험청구 등록
+          청구 저장
         </button>
       </form>
 
@@ -494,7 +498,7 @@ const renderClaims = (
               </p>
 
               <label className="inline-label">
-                상태 변경
+                진행 상태
                 <select
                   value={claim.status}
                   className={`status-select ${claimStatusClass(claim.status)}`}
@@ -518,7 +522,9 @@ const renderClaims = (
           ))}
         </ul>
       ) : (
-        <p className="empty">보험청구 항목이 없습니다.</p>
+        <p className="empty">
+          아직 보험청구 내역이 없습니다. 병원/기관과 예상 금액을 입력해 보세요.
+        </p>
       )}
     </section>
   );
@@ -533,20 +539,21 @@ const renderSectionGuide = ({
 }): ReactNode => (
   <section className="panel panel-summary">
     <div className="panel-head">
-      <h2>운영 전환 가이드</h2>
+      <h2>다음에 확인할 일</h2>
       <p className="subtle">
-        청구 승인률을 높이려면 신규 청구 처리 후 정산 연결 시간을 줄이세요.
+        기록을 남긴 뒤 정산과 보험청구 상태까지 이어서 확인하면 누락을 줄일 수
+        있습니다.
       </p>
     </div>
     <div className="kpi-ribbons">
       <article className="kpi-ribbon">
-        <p>권장</p>
-        <strong>정기 상태 동기화</strong>
-        <span className="small-note">분기별로 미승인 목록을 점검</span>
+        <p>추천</p>
+        <strong>보험청구 상태 확인</strong>
+        <span className="small-note">요청 또는 검토중인 건을 먼저 확인</span>
       </article>
       <article className="kpi-ribbon">
-        <p>상태</p>
-        <strong>현재 목표 승인률 {formatRate(approvalRate)}</strong>
+        <p>현재</p>
+        <strong>청구 승인률 {formatRate(approvalRate)}</strong>
         <span className="small-note">현재 목표: {nextAction}</span>
       </article>
     </div>
@@ -630,7 +637,7 @@ const OperationsPage = ({
 
       {renderSectionGuide({
         approvalRate: data.approvalRate,
-        nextAction: "미승인 청구 조치 우선 처리",
+        nextAction: "확인할 청구 먼저 보기",
       })}
     </section>
   );

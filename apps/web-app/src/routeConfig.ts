@@ -47,18 +47,18 @@ export type OperationsFocus = "all" | "care" | "settlement" | "claims";
 export type AdminFocus = "all" | "overview" | "trends" | "plans" | "simulator";
 
 export const operationsFocusLabel: Record<OperationsFocus, string> = {
-  all: "운영 전체",
-  care: "돌봄 우선",
+  all: "돌봄 전체",
+  care: "기록 우선",
   settlement: "정산 우선",
   claims: "보험청구 우선",
 };
 
 export const adminFocusLabel: Record<AdminFocus, string> = {
-  all: "경영 전체",
-  overview: "KPI 우선",
-  trends: "추세 우선",
-  plans: "요금제 우선",
-  simulator: "시뮬레이션 우선",
+  all: "관리 전체",
+  overview: "현황 우선",
+  trends: "월별 변화 우선",
+  plans: "요금 관리 우선",
+  simulator: "예상 계산 우선",
 };
 
 export type RouteModuleMeta = {
@@ -78,104 +78,100 @@ export const operationsModuleMeta: Record<
   RouteModuleMeta
 > = {
   overview: {
-    title: "운영 개요",
-    chip: "개요",
-    note: "가구·정산·승인 수치 상태를 한 번에 점검합니다.",
+    title: "전체 현황",
+    chip: "현황",
+    note: "돌봄·정산·보험청구 상태를 한눈에 확인합니다.",
     emoji: "📈",
-    panelChip: "운영 대시보드",
-    panelTitle: "실행 우선 순위형 운영 스위트",
-    panelDescription:
-      "보호자와 돌봄 현장을 기준으로 기록·정산·보험청구를 즉시 처리합니다.",
+    panelChip: "오늘의 할 일",
+    panelTitle: "오늘 확인할 돌봄 업무",
+    panelDescription: "기록, 정산, 보험청구 중 먼저 볼 일을 쉽게 확인합니다.",
     panelClass: "panel-overview",
-    panelKicker: "운영 대시보드",
+    panelKicker: "오늘의 할 일",
   },
   care: {
     title: "돌봄 기록",
     chip: "돌봄",
-    note: "보호자 일정/응답/비고를 빠르게 관리합니다.",
+    note: "누가, 언제, 어떤 돌봄을 받았는지 기록합니다.",
     emoji: "🩺",
-    panelChip: "A",
+    panelChip: "기록",
     panelTitle: "돌봄 기록",
-    panelDescription: "매일 접수되는 상태를 타임라인처럼 등록합니다.",
+    panelDescription: "방문, 상담, 투약, 식사 같은 돌봄 내용을 남깁니다.",
     panelClass: "panel-workflow",
   },
   settlement: {
-    title: "가족 정산",
+    title: "돌봄비 정산",
     chip: "정산",
-    note: "시간·단가·합산을 즉시 반영해 운영 속도를 높입니다.",
+    note: "시간과 금액을 입력해 가족별 정산액을 확인합니다.",
     emoji: "🧮",
-    panelChip: "B",
-    panelTitle: "가족 운영 정산",
+    panelChip: "정산",
+    panelTitle: "돌봄비 정산",
     panelDescription:
-      "정산 단가/시간 기록을 누적하고 합산 수익을 즉시 확인합니다.",
+      "돌봄 시간과 기준 금액을 입력하면 합계가 바로 계산됩니다.",
     panelClass: "panel-workflow panel-alt",
   },
   claims: {
     title: "보험청구",
     chip: "청구",
-    note: "요청·검토·승인 상태로 SLA를 줄입니다.",
+    note: "청구 요청, 검토, 승인 상태를 놓치지 않게 관리합니다.",
     emoji: "📄",
-    panelChip: "C",
+    panelChip: "청구",
     panelTitle: "보험청구",
-    panelDescription:
-      "청구 상태를 운영자가 즉시 바꿔 승인 프로세스를 단축합니다.",
+    panelDescription: "병원/기관과 청구 금액을 기록하고 진행 상태를 바꿉니다.",
     panelClass: "panel-workflow",
   },
 };
 
 export const adminModuleMeta: Record<AdminRouteModule, RouteModuleMeta> = {
   kpi: {
-    title: "KPI 센터",
-    chip: "KPI",
-    note: "핵심 운영 성과를 한 번에 확인합니다.",
+    title: "한눈에 보기",
+    chip: "현황",
+    note: "가구 수, 정산액, 승인률을 쉽게 확인합니다.",
     emoji: "📊",
-    panelChip: "1",
-    panelTitle: "수익성 센터",
-    panelDescription:
-      "어드민에서 요금/전환/승인율을 함께 관리해 매출 엔진을 정교화합니다.",
+    panelChip: "현황",
+    panelTitle: "서비스 현황",
+    panelDescription: "서비스가 잘 운영되는지 필요한 숫자만 모아 보여줍니다.",
     panelClass: "panel-overview",
   },
   trends: {
-    title: "월별 추세",
-    chip: "추세",
-    note: "정산/건수/승인률 변화를 함께 추적합니다.",
+    title: "월별 변화",
+    chip: "변화",
+    note: "이번 달과 지난달 흐름을 비교합니다.",
     emoji: "📈",
-    panelChip: "2",
-    panelTitle: "월별 운영 추세 (최근 3개월)",
+    panelChip: "월별",
+    panelTitle: "월별 변화 (최근 3개월)",
     panelDescription:
-      "정산 합계/청구 건수/승인률을 월 단위로 확인해 수익 변동 포인트를 식별합니다.",
+      "정산 합계, 청구 건수, 승인률이 어떻게 달라졌는지 확인합니다.",
     panelClass: "panel-trend",
   },
   plans: {
-    title: "요금제 전략",
-    chip: "요금제",
-    note: "가격·할인율·고객 수를 전환 관점으로 운영합니다.",
+    title: "요금 관리",
+    chip: "요금",
+    note: "요금, 할인율, 이용 가구 수를 수정합니다.",
     emoji: "💡",
-    panelChip: "3",
-    panelTitle: "요금제 운영",
-    panelDescription:
-      "월 요금, 연 할인율, 활성 고객 수를 조정해서 MRR을 직접 실험합니다.",
+    panelChip: "요금",
+    panelTitle: "요금 관리",
+    panelDescription: "월 요금, 연 할인율, 이용 가구 수를 조정합니다.",
     panelClass: "panel-plans",
   },
   simulator: {
-    title: "시뮬레이터",
-    chip: "시뮬",
-    note: "가격 인상과 업셀링 변화가 MRR에 미치는 영향을 계산합니다.",
+    title: "예상 계산",
+    chip: "예상",
+    note: "요금 변화가 월 관리 금액에 미치는 영향을 계산합니다.",
     emoji: "🧪",
-    panelChip: "4",
-    panelTitle: "수익 시뮬레이터",
+    panelChip: "예상",
+    panelTitle: "월 금액 예상 계산",
     panelDescription:
-      "가격/업셀링 가정을 넣으면 1개월 매출이 즉시 재계산됩니다.",
+      "요금과 상위 요금제 변경 폭을 조정해 예상 월 금액을 확인합니다.",
     panelClass: "panel-simulator",
   },
   summary: {
-    title: "포트폴리오 요약",
+    title: "관리 요약",
     chip: "요약",
-    note: "수익 레버리지 시나리오를 한 장에서 정리합니다.",
+    note: "현재 관리 기준을 한 장으로 정리합니다.",
     emoji: "🧩",
-    panelChip: "5",
-    panelTitle: "매출 포트폴리오",
-    panelDescription: "목표 달성 경로를 재정렬하고 운영 우선순위를 확정합니다.",
+    panelChip: "요약",
+    panelTitle: "관리 요약",
+    panelDescription: "이번 달 관리 기준과 다음 확인 지점을 정리합니다.",
     panelClass: "panel-summary",
   },
 };
@@ -192,17 +188,16 @@ export const routeModeCompositionMeta: Record<
   RouteCompositionMeta
 > = {
   operations: {
-    compositionChip: "운영 구성도",
-    compositionTitle: "이 페이지에서 운영 중점은 다음 모듈입니다",
-    compositionDescription:
-      "현재 경로 기준 모듈 배치를 우선순위 순서대로 노출합니다.",
+    compositionChip: "돌봄 업무",
+    compositionTitle: "이 화면에서 할 수 있는 일",
+    compositionDescription: "필요한 업무를 눌러 바로 이동하세요.",
     compositionPanelClass: "panel-ops-composition",
   },
   admin: {
-    compositionChip: "어드민 구성도",
-    compositionTitle: "이 페이지에서 경영 실행은 다음 축으로 이어집니다",
+    compositionChip: "관리 메뉴",
+    compositionTitle: "관리자가 확인할 수 있는 일",
     compositionDescription:
-      "모듈 우선순위를 페이지 기준으로 정렬해 의사결정 흐름을 확인하세요.",
+      "현황, 월별 변화, 요금, 예상 계산을 쉽게 확인하세요.",
     compositionPanelClass: "panel-admin panel-ops-composition",
   },
 };
@@ -393,9 +388,9 @@ export const routeHeroMetricLabels: Record<
   RouteHeroMetricProfile,
   readonly string[]
 > = {
-  home: ["총 매출 가정치", "가상 업셀링 적용", "현재 승인 전환"],
-  operations: ["활성 가구", "월 정산", "미승인 청구"],
-  admin: ["현재 MRR", "월별 추세 포인트", "목표 달성률"],
+  home: ["돌봄 가구", "이번 달 정산", "청구 승인률"],
+  operations: ["돌봄 가구", "이번 달 정산", "확인할 청구"],
+  admin: ["월 관리 금액", "청구 승인률", "목표 진행률"],
 };
 
 export type HomeRoutePageBlueprint = RouteCompositionBlueprint & {
@@ -470,7 +465,7 @@ export type AdminRoute = {
     | "/operations/settlement"
     | "/operations/claims"
   >;
-  section: "어드민";
+  section: "관리";
   mode: "admin";
   stackMode: "admin";
   focus: AdminFocus;
@@ -484,7 +479,7 @@ export type AdminRoute = {
 export type SectionNavRoute = OperationsRoute | AdminRoute;
 export type RouteNavItem = HomeRoute | SectionNavRoute;
 
-export type RouteSection = "홈" | "운영" | "어드민";
+export type RouteSection = "홈" | "운영" | "관리";
 
 export type RouteNavGroup = {
   section: RouteSection;
@@ -561,21 +556,21 @@ type HeroTextByMode = Record<RouteMode, RouteHeroText>;
 export const heroTextByMode: HeroTextByMode = {
   home: {
     kicker: "가족 돌봄 운영 플랫폼",
-    title: "운영과 수익화가 한곳에서 이어지는 홈 허브",
+    title: "가족 돌봄을 한곳에서 쉽게 관리하세요",
     description:
-      "보호자 가정관리, 돌봄 기록, 정산, 보험청구, 요금제 운영을 상황별로 분기해 빠르게 이동하세요.",
+      "돌봄 기록, 돌봄비 정산, 보험청구 상태를 가족이 함께 확인할 수 있게 정리했습니다.",
   },
   operations: {
-    kicker: "운영 모듈",
-    title: "가족 가정 케어를 실행 중심으로 운영",
+    kicker: "돌봄 관리",
+    title: "오늘의 돌봄 기록과 정산을 차근차근 처리하세요",
     description:
-      "돌봄 기록과 정산, 보험청구를 통합해 운영자의 판단 속도를 높이는 화면입니다.",
+      "돌봄 기록을 남기고, 돌봄비를 계산하고, 보험청구 상태를 이어서 확인합니다.",
   },
   admin: {
-    kicker: "어드민 모듈",
-    title: "수익 전략을 한 화면에서 수립하고 시뮬레이션",
+    kicker: "서비스 관리",
+    title: "서비스 현황과 요금을 쉽게 확인하세요",
     description:
-      "KPI, 월별 추세, 요금제, 업셀링 가이드를 한 번에 점검해 의사결정을 단축합니다.",
+      "전체 현황, 월별 변화, 요금 설정, 예상 금액을 한 화면 흐름으로 살펴봅니다.",
   },
 };
 
@@ -583,32 +578,32 @@ export const routeNavGroups: RouteNavGroup[] = [
   {
     id: "operations",
     section: "운영",
-    title: "운영",
+    title: "돌봄 관리",
     icon: "🗂️",
     basePath: "/operations",
     routes: [
       {
         path: "/operations",
-        title: "운영 전체",
+        title: "돌봄 전체",
         section: "운영",
         modules: [...operationsModuleSequence],
         quickActions: [
           {
             path: "/operations/care",
-            label: "돌봄 기록 바로가기",
+            label: "돌봄 기록하기",
             emoji: "🩺",
           },
-          { path: "/operations/settlement", label: "정산 처리", emoji: "🧮" },
-          { path: "/operations/claims", label: "보험청구 검토", emoji: "📄" },
+          { path: "/operations/settlement", label: "돌봄비 계산", emoji: "🧮" },
+          { path: "/operations/claims", label: "보험청구 확인", emoji: "📄" },
         ],
         hero: {
-          kicker: "운영 허브",
-          title: "운영 전체를 한 번에 조정하고 승인 흐름까지 한꺼번에",
+          kicker: "돌봄 관리",
+          title: "기록, 정산, 보험청구를 한 번에 확인하세요",
           description:
-            "케어·정산·보험청구를 한 화면에서 묶어 운영 속도와 일관성을 함께 끌어올립니다.",
+            "오늘 남길 기록과 확인할 청구를 순서대로 처리할 수 있습니다.",
         },
         emoji: "🗂️",
-        summary: "가구/정산/청구를 한 번에 조회하고 조치",
+        summary: "기록, 정산, 청구를 한 화면에서 확인",
         mode: "operations",
         stackMode: "operations",
         focus: "all",
@@ -619,15 +614,15 @@ export const routeNavGroups: RouteNavGroup[] = [
         section: "운영",
         modules: ["overview", "care"],
         quickActions: [
-          { path: "/operations", label: "운영 전체 뷰", emoji: "🗂️" },
-          { path: "/operations/settlement", label: "정산 기록", emoji: "🧮" },
-          { path: "/operations/claims", label: "보험청구 처리", emoji: "📄" },
+          { path: "/operations", label: "돌봄 전체 보기", emoji: "🗂️" },
+          { path: "/operations/settlement", label: "돌봄비 계산", emoji: "🧮" },
+          { path: "/operations/claims", label: "보험청구 확인", emoji: "📄" },
         ],
         hero: {
-          kicker: "돌봄 실행",
-          title: "돌봄 기록을 기준으로 운영 판단을 가속화",
+          kicker: "돌봄 기록",
+          title: "오늘 있었던 돌봄 내용을 남겨두세요",
           description:
-            "기록 입력에서 승인/정산으로 이어지는 실무 흐름을 단일 화면에서 처리하세요.",
+            "방문, 상담, 투약, 식사 같은 내용을 짧게 기록하면 나중에 가족이 함께 확인하기 쉽습니다.",
         },
         emoji: "🩺",
         summary: "보호자별 돌봄 내용과 일정 상태 등록",
@@ -637,22 +632,22 @@ export const routeNavGroups: RouteNavGroup[] = [
       },
       {
         path: "/operations/settlement",
-        title: "가족 정산",
+        title: "돌봄비 정산",
         section: "운영",
         modules: ["overview", "settlement"],
         quickActions: [
-          { path: "/operations", label: "운영 전체 뷰", emoji: "🗂️" },
+          { path: "/operations", label: "돌봄 전체 보기", emoji: "🗂️" },
           { path: "/operations/care", label: "돌봄 기록", emoji: "🩺" },
-          { path: "/operations/claims", label: "보험청구 처리", emoji: "📄" },
+          { path: "/operations/claims", label: "보험청구 확인", emoji: "📄" },
         ],
         hero: {
-          kicker: "수익 운영",
-          title: "정산 단가와 합산 구조를 실무형으로 정비",
+          kicker: "돌봄비 정산",
+          title: "돌봄 시간과 금액을 입력해 정산액을 확인하세요",
           description:
-            "가족별 정산이 체계화되면 회수 속도와 관리 가시성이 동시에 올라갑니다.",
+            "날짜, 시간, 기준 금액만 입력하면 가족별 정산 내용을 쉽게 남길 수 있습니다.",
         },
         emoji: "🧮",
-        summary: "정산 입력과 건별 합계 계산을 빠르게 처리",
+        summary: "시간과 금액으로 돌봄비 합계 계산",
         mode: "operations",
         stackMode: "operations",
         focus: "settlement",
@@ -663,18 +658,18 @@ export const routeNavGroups: RouteNavGroup[] = [
         section: "운영",
         modules: ["overview", "claims"],
         quickActions: [
-          { path: "/operations", label: "운영 전체 뷰", emoji: "🗂️" },
+          { path: "/operations", label: "돌봄 전체 보기", emoji: "🗂️" },
           { path: "/operations/care", label: "돌봄 기록", emoji: "🩺" },
-          { path: "/operations/settlement", label: "정산 처리", emoji: "🧮" },
+          { path: "/operations/settlement", label: "돌봄비 계산", emoji: "🧮" },
         ],
         hero: {
-          kicker: "클레임 운영",
-          title: "요청→검토→승인 흐름을 표준 운영으로 통합",
+          kicker: "보험청구",
+          title: "보험청구 진행 상태를 쉽게 확인하세요",
           description:
-            "상태 변경을 단일 패턴으로 관리하면 승인 지연과 미처리 누락을 줄일 수 있습니다.",
+            "요청, 검토, 승인, 거절 상태를 기록해 놓치지 않게 관리합니다.",
         },
         emoji: "📄",
-        summary: "요청/검토/승인 상태를 운영 표준으로 처리",
+        summary: "요청, 검토, 승인 상태를 확인",
         mode: "operations",
         stackMode: "operations",
         focus: "claims",
@@ -683,119 +678,119 @@ export const routeNavGroups: RouteNavGroup[] = [
   },
   {
     id: "admin",
-    section: "어드민",
-    title: "어드민",
+    section: "관리",
+    title: "서비스 관리",
     icon: "⚙️",
     basePath: "/admin",
     routes: [
       {
         path: "/admin",
-        title: "어드민 전체",
-        section: "어드민",
+        title: "관리 홈",
+        section: "관리",
         modules: [...adminModuleSequence],
         quickActions: [
-          { path: "/admin/overview", label: "KPI 핵심", emoji: "📊" },
-          { path: "/admin/trends", label: "월별 추세", emoji: "📈" },
-          { path: "/admin/plans", label: "요금제 관리", emoji: "💡" },
-          { path: "/admin/simulator", label: "시뮬레이터", emoji: "🧪" },
+          { path: "/admin/overview", label: "전체 현황", emoji: "📊" },
+          { path: "/admin/trends", label: "월별 변화", emoji: "📈" },
+          { path: "/admin/plans", label: "요금 관리", emoji: "💡" },
+          { path: "/admin/simulator", label: "예상 계산", emoji: "🧪" },
         ],
         hero: {
-          kicker: "경영 의사결정",
-          title: "운영 데이터로 수익 전략의 다음 액션을 정렬",
+          kicker: "서비스 관리",
+          title: "서비스 현황과 요금 정보를 쉽게 관리하세요",
           description:
-            "KPI 진단 → 트렌드 진화 → 요금제 실험 → 포트폴리오 합산의 흐름으로 계획하세요.",
+            "어려운 지표보다 지금 확인할 현황, 월별 변화, 요금, 예상 금액을 먼저 보여줍니다.",
         },
         emoji: "⚙️",
-        summary: "KPI부터 수익 시뮬레이션까지 전략 지표 통합",
+        summary: "현황, 요금, 예상 금액을 한곳에서 확인",
         mode: "admin",
         stackMode: "admin",
         focus: "all",
       },
       {
         path: "/admin/overview",
-        title: "어드민 KPI",
-        section: "어드민",
+        title: "전체 현황",
+        section: "관리",
         modules: ["kpi"],
         quickActions: [
-          { path: "/admin", label: "어드민 전체 뷰", emoji: "⚙️" },
-          { path: "/admin/trends", label: "월별 추세", emoji: "📈" },
-          { path: "/admin/plans", label: "요금제 관리", emoji: "💡" },
+          { path: "/admin", label: "관리 홈", emoji: "⚙️" },
+          { path: "/admin/trends", label: "월별 변화", emoji: "📈" },
+          { path: "/admin/plans", label: "요금 관리", emoji: "💡" },
         ],
         hero: {
-          kicker: "핵심 수치",
-          title: "운영성과를 한 번에 진단해 실행 우선순위를 재설정",
+          kicker: "전체 현황",
+          title: "서비스 상태를 필요한 숫자만 모아 확인하세요",
           description:
-            "활성 가구, 정산, 승인률 상태를 먼저 보고 리스크를 선제적으로 탐지하세요.",
+            "이용 가구, 정산액, 보험청구 승인률처럼 꼭 봐야 할 항목만 정리했습니다.",
         },
         emoji: "📊",
-        summary: "핵심 지표/승인률/정산 성과를 즉시 점검",
+        summary: "이용 가구, 정산액, 승인률을 확인",
         mode: "admin",
         stackMode: "admin",
         focus: "overview",
       },
       {
         path: "/admin/trends",
-        title: "월별 추세",
-        section: "어드민",
+        title: "월별 변화",
+        section: "관리",
         modules: ["trends"],
         quickActions: [
-          { path: "/admin", label: "어드민 전체 뷰", emoji: "⚙️" },
-          { path: "/admin/overview", label: "KPI 핵심", emoji: "📊" },
-          { path: "/admin/plans", label: "요금제 관리", emoji: "💡" },
+          { path: "/admin", label: "관리 홈", emoji: "⚙️" },
+          { path: "/admin/overview", label: "전체 현황", emoji: "📊" },
+          { path: "/admin/plans", label: "요금 관리", emoji: "💡" },
         ],
         hero: {
-          kicker: "월간 추세",
-          title: "트렌드 변화로 다음 달 운영 포인트를 확정",
+          kicker: "월별 변화",
+          title: "지난달과 이번 달 흐름을 비교하세요",
           description:
-            "정산·건수·승인률 추이를 병렬로 비교해 기회를 선별합니다.",
+            "정산액, 청구 건수, 승인률이 좋아졌는지 한눈에 확인합니다.",
         },
         emoji: "📈",
-        summary: "정산/건수/승인률 트렌드로 의사결정 근거 확보",
+        summary: "정산액, 청구 건수, 승인률 변화 확인",
         mode: "admin",
         stackMode: "admin",
         focus: "trends",
       },
       {
         path: "/admin/plans",
-        title: "요금제",
-        section: "어드민",
+        title: "요금 관리",
+        section: "관리",
         modules: ["plans"],
         quickActions: [
-          { path: "/admin", label: "어드민 전체 뷰", emoji: "⚙️" },
-          { path: "/admin/trends", label: "월별 추세", emoji: "📈" },
-          { path: "/admin/simulator", label: "시뮬레이터", emoji: "🧪" },
+          { path: "/admin", label: "관리 홈", emoji: "⚙️" },
+          { path: "/admin/trends", label: "월별 변화", emoji: "📈" },
+          { path: "/admin/simulator", label: "예상 계산", emoji: "🧪" },
         ],
         hero: {
-          kicker: "요금 설계",
-          title: "요금 정책을 실험해 MRR을 직접 운영",
+          kicker: "요금 관리",
+          title: "요금과 할인율을 쉽게 수정하세요",
           description:
-            "단가·할인율·고객 수를 조정해 월 단위 수익 구조를 재구성하세요.",
+            "요금제 이름, 월 요금, 연 할인율, 이용 가구 수를 한 화면에서 바꿉니다.",
         },
         emoji: "💡",
-        summary: "요금 정책을 바탕으로 MRR 및 유입 기회를 설계",
+        summary: "월 요금, 할인율, 이용 가구 수 관리",
         mode: "admin",
         stackMode: "admin",
         focus: "plans",
       },
       {
         path: "/admin/simulator",
-        title: "수익 시뮬레이터",
-        section: "어드민",
+        title: "예상 계산",
+        section: "관리",
         modules: ["simulator", "summary"],
         quickActions: [
-          { path: "/admin", label: "어드민 전체 뷰", emoji: "⚙️" },
-          { path: "/admin/overview", label: "KPI 핵심", emoji: "📊" },
-          { path: "/admin/trends", label: "월별 추세", emoji: "📈" },
-          { path: "/admin/plans", label: "요금제 관리", emoji: "💡" },
+          { path: "/admin", label: "관리 홈", emoji: "⚙️" },
+          { path: "/admin/overview", label: "전체 현황", emoji: "📊" },
+          { path: "/admin/trends", label: "월별 변화", emoji: "📈" },
+          { path: "/admin/plans", label: "요금 관리", emoji: "💡" },
         ],
         hero: {
-          kicker: "시뮬레이션",
-          title: "시나리오를 조정해 목표 달성 지점을 실험",
+          kicker: "예상 계산",
+          title: "요금이 바뀌면 월 금액이 어떻게 달라질지 확인하세요",
           description:
-            "업셀링 비중과 가격 인상율을 조정해 월 매출 민감도를 즉시 확인하세요.",
+            "가격 변화와 상위 요금제 변경 가능성을 조정해 예상 결과를 바로 봅니다.",
         },
         emoji: "🧪",
-        summary: "단가/업셀링 가정으로 1개월 수익 변화를 재계산",
+        summary: "요금 변화에 따른 예상 월 금액 계산",
         mode: "admin",
         stackMode: "admin",
         focus: "simulator",
@@ -817,7 +812,7 @@ export const homeRoute: RouteNavItem = {
   title: "홈",
   section: "홈",
   emoji: "🏠",
-  summary: "운영과 수익 현황을 한 화면에서 확인",
+  summary: "돌봄 기록, 정산, 보험청구를 쉽게 시작",
   mode: "home",
   focus: "all",
 };
@@ -1078,18 +1073,18 @@ export const getHomeLandingPageBlueprint = (): HomeRoutePageBlueprint => ({
     heroCardChip: "🧭",
     heroCardTitle: "플랫폼 한눈에 보기",
     heroCardDescription:
-      "운영·정산·보험청구·수익화를 한 화면에서 빠르게 이동해 실행할 수 있는 구조입니다.",
-    sectionLabelSuffix: "모듈",
-    actionSectionTitle: "홈 액션",
+      "돌봄 기록, 정산, 보험청구, 서비스 관리를 필요한 순서대로 시작할 수 있습니다.",
+    sectionLabelSuffix: "메뉴",
+    actionSectionTitle: "빠른 시작",
     summaryPanelChip: "📈",
     summaryPanelTitle: "현재 기준 하이라이트",
     summaryPanelDescription:
-      "운영과 수익 지표를 병렬로 확인해 다음 액션을 선택합니다.",
+      "가족 돌봄 관리에 필요한 현재 상태를 쉽게 확인합니다.",
     summaryRows: [
       { label: "현재 가구 수" },
       { label: "월 정산 가용성" },
       { label: "청구건수" },
-      { label: "예상 승인 전환" },
+      { label: "청구 승인률" },
     ],
   },
 });

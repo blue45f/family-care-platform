@@ -28,11 +28,11 @@ const HomePage = ({
   hasReadOnlyError = false,
 }: HomePageProps) => {
   const metrics = [
-    { label: "현재 가구 수", value: `${scenario.activeHouseholds}개` },
-    { label: "월 정산 가용성", value: formatWon(scenario.totalSettlement) },
-    { label: "청구건수", value: `${scenario.claimsLength}건` },
+    { label: "돌봄 가구", value: `${scenario.activeHouseholds}개` },
+    { label: "이번 달 정산", value: formatWon(scenario.totalSettlement) },
+    { label: "보험청구", value: `${scenario.claimsLength}건` },
     {
-      label: "예상 승인 전환",
+      label: "청구 승인률",
       value: `${scenario.conversionRate.toFixed(1)}%`,
     },
   ];
@@ -40,17 +40,34 @@ const HomePage = ({
   const entryActions = topCards.filter((item) => item.path !== "/");
   const primaryAction = entryActions[0] ?? null;
   const secondaryActions = entryActions.slice(1);
+  const homeTasks = [
+    {
+      title: "돌봄 기록 남기기",
+      summary: "방문, 상담, 투약 같은 오늘의 돌봄 내용을 적습니다.",
+      path: "/operations/care" as const,
+    },
+    {
+      title: "돌봄비 계산하기",
+      summary: "돌봄 시간과 금액을 입력해 정산액을 확인합니다.",
+      path: "/operations/settlement" as const,
+    },
+    {
+      title: "보험청구 확인하기",
+      summary: "요청, 검토, 승인 상태를 가족이 함께 확인합니다.",
+      path: "/operations/claims" as const,
+    },
+  ];
 
   return (
     <section className="view-stack">
       <section className="panel panel-overview">
         <div className="panel-head">
           <div>
-            <p className="kicker">운영 허브 시작점</p>
-            <h2>가족 돌봄 운영을 바로 실행할 수 있는 첫 화면</h2>
+            <p className="kicker">빠른 시작</p>
+            <h2>무엇을 먼저 할까요?</h2>
             <p className="subtle">
-              보호자 가정 운영, 정산 처리, 보험청구 대응, 수익 운영의 첫 동작을
-              즉시 시작하세요.
+              자주 쓰는 돌봄 기록, 돌봄비 정산, 보험청구 확인을 바로 시작할 수
+              있습니다.
             </p>
           </div>
           {hasReadOnlyError ? (
@@ -61,6 +78,25 @@ const HomePage = ({
         </div>
 
         <div className="home-hero-actions" role="group" aria-label="빠른 시작">
+          <div className="home-task-list" role="list" aria-label="추천 시작">
+            {homeTasks.map((task, index) => (
+              <button
+                type="button"
+                className="home-task-row"
+                key={task.path}
+                onClick={() => onNavigate(task.path)}
+              >
+                <span className="home-task-index" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <span>
+                  <strong>{task.title}</strong>
+                  <small>{task.summary}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+
           {primaryAction ? (
             <button
               type="button"
@@ -72,7 +108,7 @@ const HomePage = ({
                 primaryAction.path !== "/admin"
               }
             >
-              {primaryAction.label}로 시작
+              {primaryAction.label} 시작
             </button>
           ) : null}
 
@@ -110,7 +146,7 @@ const HomePage = ({
         </div>
         {entryActions.length === 0 ? (
           <p className="route-command-empty">
-            현재 표시할 빠른 진입점이 없습니다.
+            지금 표시할 빠른 시작 메뉴가 없습니다.
           </p>
         ) : null}
       </section>
@@ -118,16 +154,16 @@ const HomePage = ({
       <section className="panel panel-overview">
         <div className="panel-head">
           <div>
-            <h2>운영 지도</h2>
+            <h2>전체 메뉴</h2>
             <p className="subtle">
-              섹션별로 필요한 화면을 선택해 작업을 이어 보세요.
+              필요한 일을 고르면 해당 화면으로 바로 이동합니다.
             </p>
           </div>
         </div>
 
         {sections.length === 0 ? (
           <p className="feedback feedback-error" role="note">
-            현재 구성 데이터가 없습니다. 홈 섹션 구성이 비어 있습니다.
+            현재 표시할 메뉴가 없습니다. 잠시 후 다시 시도해 주세요.
           </p>
         ) : null}
 
@@ -139,9 +175,7 @@ const HomePage = ({
                   <span aria-hidden="true">{group.icon}</span>
                   {group.section}
                 </h3>
-                <p className="subtle">
-                  하위 화면으로 이동해 작업을 바로 처리합니다.
-                </p>
+                <p className="subtle">필요한 일을 골라 바로 시작하세요.</p>
               </div>
               <div className="home-grid">
                 {group.routes.map((route) => (
@@ -168,8 +202,8 @@ const HomePage = ({
       <section className="panel panel-summary">
         <div className="panel-head">
           <div>
-            <h2>현재 기준 하이라이트</h2>
-            <p className="subtle">운영 판단에 바로 쓸 수 있는 수치입니다.</p>
+            <h2>현재 상태</h2>
+            <p className="subtle">오늘 확인할 돌봄 현황입니다.</p>
           </div>
         </div>
         <div className="kpi-ribbons">

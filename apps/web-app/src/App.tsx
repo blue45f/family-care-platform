@@ -64,20 +64,20 @@ const RouteShell = ({
           </p>
         </div>
 
-        <div className="route-progress" aria-label="현재 경로 진행률">
+        <div className="route-progress" aria-label="현재 위치">
           <span className="meta-chip">
             {route.path === "/"
               ? "홈"
-              : `STEP ${routeContext.globalFlow.index}`}
+              : `${routeContext.globalFlow.index}번째 화면`}
           </span>
-          <span className="meta-chip">현재 섹션: {route.section}</span>
+          <span className="meta-chip">현재 위치: {route.section}</span>
           <span className="meta-chip">
-            전체 {composition.globalRouteProgress}%
+            진행 {composition.globalRouteProgress}%
           </span>
         </div>
       </div>
 
-      <div className="hero-metrics" role="list" aria-label="핵심 KPI">
+      <div className="hero-metrics" role="list" aria-label="주요 현황">
         {heroMetrics.map((metric) => (
           <article className="kpi-ribbon" role="listitem" key={metric.label}>
             <p>{metric.label}</p>
@@ -86,7 +86,7 @@ const RouteShell = ({
         ))}
       </div>
 
-      <nav className="top-nav" role="tablist" aria-label="영역 전환">
+      <nav className="top-nav" role="tablist" aria-label="주요 메뉴">
         {topTabs.map((item) => {
           const isActive = routeContext.activeTopRoutePath === item.path;
           return (
@@ -160,8 +160,8 @@ const RouteShell = ({
 
           {sectionQuickActions.length === 0 ? (
             <p className="route-command-empty" role="note">
-              현재 화면은 하위 바로가기 액션이 없어 상단 탭 또는 섹션 탭으로
-              이동하세요.
+              지금 화면에서 바로 할 일이 없으면 위 메뉴에서 원하는 업무를
+              선택하세요.
             </p>
           ) : null}
         </div>
@@ -201,18 +201,18 @@ const RouteShell = ({
               globalFlow.previous && onNavigate(globalFlow.previous)
             }
             disabled={!globalFlow.previous}
-            aria-label="이전 전체 화면으로 이동"
+            aria-label="이전 화면으로 이동"
           >
-            이전 전체
+            이전 화면
           </button>
           <button
             type="button"
             className="route-tab route-tab-subtle"
             onClick={() => globalFlow.next && onNavigate(globalFlow.next)}
             disabled={!globalFlow.next}
-            aria-label="다음 전체 화면으로 이동"
+            aria-label="다음 화면으로 이동"
           >
-            다음 전체
+            다음 화면
           </button>
           <button
             type="button"
@@ -220,7 +220,7 @@ const RouteShell = ({
             onClick={onRefresh}
             disabled={isLoading}
           >
-            {isLoading ? "동기화 중" : "데이터 동기화"}
+            {isLoading ? "새로고침 중" : "새로고침"}
           </button>
         </div>
 
@@ -230,7 +230,7 @@ const RouteShell = ({
             className="btn btn-primary route-accelerator"
             onClick={() => sectionFlow.next && onNavigate(sectionFlow.next)}
           >
-            다음 단계로 바로가기
+            다음 할 일로 이동
           </button>
         ) : null}
 
@@ -250,7 +250,7 @@ const RouteShell = ({
             ))
           ) : (
             <p className="route-command-empty" role="note">
-              {"현재 경로는 하위 섹션이 없는 단일 화면입니다."}
+              {"이 화면은 단독 화면입니다."}
             </p>
           )}
         </div>
@@ -259,9 +259,9 @@ const RouteShell = ({
       {route.mode !== "home" ? (
         <section className="route-composition" aria-label="페이지 구성도">
           <header className="route-composition-head">
-            <p className="route-composition-title">섹션 구성</p>
+            <p className="route-composition-title">화면 구성</p>
             <p className="route-composition-meta">
-              현재 섹션 진행 {composition.globalRouteProgress}%
+              현재 진행 {composition.globalRouteProgress}%
             </p>
           </header>
 
@@ -318,19 +318,19 @@ const getHeroMetrics = (
   if (route.mode === "operations") {
     return [
       {
-        label: "활성 가구",
+        label: "돌봄 가구",
         value: `${data.activeHouseholds}개`,
-        aria: `활성 가구 ${data.activeHouseholds}개`,
+        aria: `돌봄 가구 ${data.activeHouseholds}개`,
       },
       {
-        label: "월 정산 합계",
+        label: "이번 달 정산",
         value: formatWon(data.totalSettlement),
-        aria: `월 정산 합계 ${formatWon(data.totalSettlement)}`,
+        aria: `이번 달 정산 ${formatWon(data.totalSettlement)}`,
       },
       {
-        label: "미승인 청구",
+        label: "확인할 청구",
         value: `${data.pendingClaims}건`,
-        aria: `미승인 청구 ${data.pendingClaims}건`,
+        aria: `확인할 청구 ${data.pendingClaims}건`,
       },
     ];
   }
@@ -338,38 +338,38 @@ const getHeroMetrics = (
   if (route.mode === "admin") {
     return [
       {
-        label: "현재 MRR",
+        label: "월 관리 금액",
         value: formatWon(data.kpiMonthlyRevenue),
-        aria: `현재 MRR ${formatWon(data.kpiMonthlyRevenue)}`,
+        aria: `월 관리 금액 ${formatWon(data.kpiMonthlyRevenue)}`,
       },
       {
-        label: "요금제 전환율",
+        label: "청구 승인률",
         value: formatRate(data.scenarioRevenue.conversionRate),
-        aria: `요금제 전환율 ${formatRate(data.scenarioRevenue.conversionRate)}`,
+        aria: `청구 승인률 ${formatRate(data.scenarioRevenue.conversionRate)}`,
       },
       {
-        label: "목표 달성률",
+        label: "목표 진행률",
         value: `${data.scenarioRevenue.goalRate}%`,
-        aria: `목표 달성률 ${data.scenarioRevenue.goalRate}%`,
+        aria: `목표 진행률 ${data.scenarioRevenue.goalRate}%`,
       },
     ];
   }
 
   return [
     {
-      label: "총 가구 수",
+      label: "돌봄 가구",
       value: `${data.activeHouseholds}개`,
-      aria: `총 가구 수 ${data.activeHouseholds}개`,
+      aria: `돌봄 가구 ${data.activeHouseholds}개`,
     },
     {
-      label: "월 정산 가용성",
+      label: "이번 달 정산",
       value: formatWon(data.totalSettlement),
-      aria: `월 정산 가용성 ${formatWon(data.totalSettlement)}`,
+      aria: `이번 달 정산 ${formatWon(data.totalSettlement)}`,
     },
     {
-      label: "청구 승인 전환",
+      label: "청구 승인률",
       value: `${data.approvalRate.toFixed(1)}%`,
-      aria: `청구 승인 전환 ${data.approvalRate.toFixed(1)}퍼센트`,
+      aria: `청구 승인률 ${data.approvalRate.toFixed(1)}퍼센트`,
     },
   ];
 };
