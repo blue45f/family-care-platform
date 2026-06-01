@@ -11,10 +11,10 @@
   "scripts": {
     "dev": "vite --port 5173",
     "build": "tsc -b && vite build",
-    "lint": "echo \"web-app lint is not configured for this MVP; static checks are covered by typecheck\"",
+    "lint": "tsc -b --pretty false --noEmit",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "test": "echo \"web-app test is not configured for this MVP\"",
+    "test": "echo \"web-app test is not configured yet; this project validates via typecheck/build only\"",
     "start": "vite preview --port 4173"
   },
   "dependencies": {

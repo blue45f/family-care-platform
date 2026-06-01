@@ -10,11 +10,11 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
-    "lint": "echo \"api-server lint is not configured for this MVP; static checks are covered by typecheck\"",
+    "lint": "tsc -p tsconfig.json --pretty false --noEmit",
     "start": "nest start",
     "start:prod": "node dist/main",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"api-server test is not configured for this MVP\""
+    "test": "echo \"api-server test is not configured yet; add e2e/unit suites as needed\""
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",

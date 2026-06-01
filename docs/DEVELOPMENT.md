@@ -4,9 +4,9 @@
 
 - `pnpm install`
 - `pnpm run dev`            # 웹/API 동시 개발 실행
-- `pnpm run lint`            # 각 워크스페이스의 lint(현재 MVP는 미설정, 안내 메시지 출력)
+- `pnpm run lint`            # 각 워크스페이스 정적 타입 검사를 수행
 - `pnpm run typecheck`       # 각 워크스페이스 타입 체커
-- `pnpm run test`            # 각 워크스페이스 테스트(현재 MVP는 미구현 상태 메시지 출력)
+- `pnpm run test`            # 각 워크스페이스 테스트(현재는 미구현; 테스트 추가 필요)
 - `pnpm run build`           # 각 워크스페이스 빌드
 - `pnpm run verify`          # lint -> typecheck -> test -> build 순차 실행
 - `pnpm run ci`              # verify와 동일한 CI 게이트

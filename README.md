@@ -25,7 +25,7 @@ pnpm run dev
 
 - `pnpm run dev`: 웹/API 동시 실행
 - `pnpm run build`: 워크스페이스 빌드
-- `pnpm run lint`: 워크스페이스 lint(현재 미구현 항목은 안내 메시지)
+- `pnpm run lint`: 워크스페이스 정적 타입 검사
 - `pnpm run typecheck`: 타입 검사
 - `pnpm run test`: 테스트(현재 미구현)
 - `pnpm run verify`: lint → typecheck → test → build
