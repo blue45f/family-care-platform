@@ -27,7 +27,7 @@ pnpm run dev
 - `pnpm run build`: 워크스페이스 빌드
 - `pnpm run lint`: 워크스페이스 정적 타입 검사
 - `pnpm run typecheck`: 타입 검사
-- `pnpm run test`: 테스트(현재 미구현)
+- `pnpm run test`: 테스트(`api-server`: 유닛 테스트, `web-app`: 미구현)
 - `pnpm run verify`: lint → typecheck → test → build
 - `pnpm run ci`: CI 게이트
 

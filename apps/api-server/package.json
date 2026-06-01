@@ -14,7 +14,7 @@
     "start": "nest start",
     "start:prod": "node dist/main",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo \"api-server test is not configured yet; add e2e/unit suites as needed\""
+    "test": "vitest run"
   },
   "dependencies": {
     "@nestjs/common": "^10.4.15",
@@ -27,6 +27,7 @@
     "@nestjs/cli": "^10.4.9",
     "@types/express": "^5.0.0",
     "@types/node": "^22.14.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.0.5"
   }
 }
