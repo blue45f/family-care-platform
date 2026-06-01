@@ -474,13 +474,33 @@ function App() {
 
   const operationsTab = () => (
     <div className="view-stack">
-      <section className="panel glass">
+      <section className="panel glass panel-ops panel-overview">
         <div className="panel-head">
-          <div>
+          <div className="panel-title-wrap">
+            <span className="panel-chip">운영 대시보드</span>
             <p className="kicker">운영 대시보드</p>
-            <h2>운영 중심 운영형 UI</h2>
+            <h2>실행 우선 순위형 운영 스위트</h2>
           </div>
           <p className="subtle">보호자와 돌봄 현장을 기준으로 기록·정산·보험청구를 즉시 처리합니다.</p>
+        </div>
+
+        <div className="kpi-ribbons">
+          <article className="kpi-ribbon">
+            <p>활성 가구</p>
+            <strong>{activeHouseholds}개</strong>
+          </article>
+          <article className="kpi-ribbon">
+            <p>미승인 청구</p>
+            <strong>{pendingClaims}건</strong>
+          </article>
+          <article className="kpi-ribbon">
+            <p>월간 정산</p>
+            <strong>{formatWon(totalSettlement)}</strong>
+          </article>
+          <article className="kpi-ribbon">
+            <p>실시간 승인률</p>
+            <strong>{formatRate(approvalRate)}</strong>
+          </article>
         </div>
 
         <div className="kpi-table-wrap">
@@ -527,8 +547,9 @@ function App() {
         </div>
       </section>
 
-      <section className="panel glass">
+      <section className="panel glass panel-ops panel-workflow">
         <div className="panel-head">
+          <span className="panel-chip">A</span>
           <h2>돌봄 기록</h2>
           <p className="subtle">매일 접수되는 상태를 타임라인처럼 등록합니다.</p>
         </div>
@@ -584,8 +605,9 @@ function App() {
         </ul>
       </section>
 
-      <section className="panel glass">
+      <section className="panel glass panel-ops panel-workflow panel-alt">
         <div className="panel-head">
+          <span className="panel-chip">B</span>
           <h2>가족 운영 정산</h2>
           <p className="subtle">정산 단가/시간 기록을 누적하고 합산 수익을 즉시 확인합니다.</p>
         </div>
@@ -644,8 +666,9 @@ function App() {
         </ul>
       </section>
 
-      <section className="panel glass">
+      <section className="panel glass panel-ops panel-workflow">
         <div className="panel-head">
+          <span className="panel-chip">C</span>
           <h2>보험청구</h2>
           <p className="subtle">청구 상태를 운영자가 즉시 바꿔 승인 프로세스를 단축합니다.</p>
         </div>
@@ -730,9 +753,10 @@ function App() {
 
   const adminTab = () => (
     <div className="view-stack">
-      <section className="panel glass">
+      <section className="panel glass panel-admin panel-overview">
         <div className="panel-head">
           <div>
+            <span className="panel-chip">1</span>
             <h2>수익성 센터</h2>
             <p className="subtle">어드민에서 요금/전환/승인율을 함께 관리해 매출 엔진을 정교화합니다.</p>
           </div>
@@ -832,9 +856,10 @@ function App() {
         </div>
       </section>
 
-      <section className="panel glass">
+      <section className="panel glass panel-admin panel-trend">
         <div className="panel-head">
           <div>
+            <span className="panel-chip">2</span>
             <h2>월별 운영 추세 (최근 3개월)</h2>
             <p className="subtle">정산 합계/청구 건수/승인률을 월 단위로 확인해 수익 변동 포인트를 식별합니다.</p>
           </div>
@@ -891,8 +916,9 @@ function App() {
         </div>
       </section>
 
-      <section className="panel glass">
+      <section className="panel glass panel-admin panel-plans">
         <div className="panel-head">
+          <span className="panel-chip">3</span>
           <h2>요금제 운영</h2>
           <p className="subtle">월 요금, 연 할인율, 활성 고객 수를 조정해서 MRR을 직접 실험합니다.</p>
         </div>
@@ -973,8 +999,9 @@ function App() {
         </div>
       </section>
 
-      <section className="panel glass">
+      <section className="panel glass panel-admin panel-simulator">
         <div className="panel-head">
+          <span className="panel-chip">4</span>
           <h2>수익 시뮬레이터</h2>
           <p className="subtle">가격/업셀링 가정을 넣으면 1개월 매출이 즉시 재계산됩니다.</p>
         </div>
@@ -1055,8 +1082,11 @@ function App() {
         </div>
       </section>
 
-        <section className="panel glass">
-        <h2>매출 포트폴리오</h2>
+      <section className="panel glass panel-admin panel-summary">
+        <div className="panel-head">
+          <span className="panel-chip">5</span>
+          <h2>매출 포트폴리오</h2>
+        </div>
         <div className="growth-summary">
           <p>
             <span aria-label={`현재 기준 월 매출 ${formatWon(kpiMonthlyRevenue)}, 연 매출 환산 ${formatWon(planPotentialAnnual)}`}>
