@@ -25,15 +25,28 @@ import type {
   Settlement,
   SettlementDraft,
 } from './types';
+import {
+  TREND_SOURCE_FALLBACK,
+  TREND_SOURCE_SERVER,
+  calculateTrendDelta,
+  claimStatusClass,
+  formatInputNumber,
+  formatMonthLabel,
+  formatRate,
+  formatSignedCount,
+  formatSignedRate,
+  formatSignedRatePoint,
+  formatSignedWon,
+  formatWon,
+  roundMoney,
+  trendDirectionClass,
+  trendDirectionLabel,
+  TrendDeltaDirection,
+  TrendMetricDeltaValue,
+} from './utils';
 
 type ViewMode = 'operations' | 'admin';
 type DraftPlanMap = Record<string, RevenuePlan>;
-type TrendDeltaDirection = 'up' | 'down' | 'flat';
-type TrendMetricDeltaValue = {
-  delta: number;
-  deltaRate: number;
-  direction: TrendDeltaDirection;
-};
 
 type AdminMonthlyTrendWithDelta = AdminMonthlyTrend & {
   settlementDelta: number;
@@ -58,91 +71,7 @@ type CareLogDraftState = {
 };
 const claimStatuses = ['요청', '검토중', '승인', '거절'] as const;
 
-const roundMoney = (value: number) => (Number.isFinite(value) ? Math.round(value) : 0);
-const formatWon = (value: number) => `${roundMoney(value).toLocaleString()}원`;
-const formatRate = (value: number) => `${Number.isFinite(value) ? value.toFixed(1) : '0.0'}%`;
-const formatSignedRate = (value: number) => {
-  if (!Number.isFinite(value)) {
-    return '0.0%';
-  }
-  return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`;
-};
-const formatSignedRatePoint = (value: number) => {
-  if (!Number.isFinite(value)) {
-    return '0.0pt';
-  }
-  return `${value > 0 ? '+' : ''}${value.toFixed(1)}pt`;
-};
-const formatSignedCount = (value: number) => {
-  if (!Number.isFinite(value)) {
-    return '0';
-  }
-  return `${value > 0 ? '+' : ''}${value}`;
-};
-const formatSignedWon = (value: number) => {
-  const rounded = roundMoney(value);
-  return `${rounded > 0 ? '+' : ''}${rounded.toLocaleString()}원`;
-};
-const formatInputNumber = (value: number) => (Number.isFinite(value) ? value : 0);
-const formatMonthLabel = (month: string) => {
-  const [, monthNumber] = month.split('-');
-  return `${monthNumber}월`;
-};
-
 const PLAN_TARGET_MONTHLY = 5_000_000;
-const TREND_SOURCE_SERVER: AdminMonthlyTrendDataSource = 'server';
-const TREND_SOURCE_FALLBACK: AdminMonthlyTrendDataSource = 'client-fallback';
-
-const claimStatusClass = (status: ClaimStatus) => {
-  switch (status) {
-    case '요청':
-      return 'status-request';
-    case '검토중':
-      return 'status-review';
-    case '승인':
-      return 'status-approved';
-    case '거절':
-      return 'status-rejected';
-    default:
-      return 'status-request';
-  }
-};
-
-const trendDirectionClass = (value: number): TrendDeltaDirection => {
-  if (value > 0) {
-    return 'up';
-  }
-  if (value < 0) {
-    return 'down';
-  }
-  return 'flat';
-};
-
-const trendDirectionLabel = (direction: TrendDeltaDirection) => {
-  if (direction === 'up') {
-    return '상승';
-  }
-  if (direction === 'down') {
-    return '하락';
-  }
-  return '동일';
-};
-
-const calculateTrendDelta = (current: number, previous: number): TrendMetricDeltaValue => {
-  const delta = current - previous;
-  const deltaRate =
-    previous === 0
-      ? delta > 0
-        ? 100
-        : 0
-      : Number(((delta / previous) * 100).toFixed(1));
-
-  return {
-    delta,
-    deltaRate,
-    direction: trendDirectionClass(delta),
-  };
-};
 
 const initialAdminOverview: AdminOverview = {
   activeHouseholds: 0,
