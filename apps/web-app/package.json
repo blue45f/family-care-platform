@@ -1,0 +1,33 @@
+{
+  "name": "family-care-operations-web",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.4.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "dev": "vite --port 5173",
+    "build": "tsc -b && vite build",
+    "lint": "echo \"web-app lint is not configured for this MVP; static checks are covered by typecheck\"",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "echo \"web-app test is not configured for this MVP\"",
+    "start": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@rolldown/plugin-babel": "^0.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "family-care-operations-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "가족 돌봄 운영 플랫폼 (Vite + NestJS + pnpm monorepo)",
+  "packageManager": "pnpm@11.4.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "dev": "pnpm -r --parallel run dev",
+    "lint": "pnpm -r --if-present run lint",
+    "build": "pnpm -r --if-present run build",
+    "build:web": "pnpm --dir apps/web-app run build",
+    "build:api": "pnpm --dir apps/api-server run build",
+    "dev:web": "pnpm --dir apps/web-app run dev",
+    "dev:api": "pnpm --dir apps/api-server run dev",
+    "start:web": "pnpm --dir apps/web-app run start",
+    "start:api": "pnpm --dir apps/api-server run start",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "pnpm -r --if-present run test",
+    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "ci": "pnpm run verify",
+    "clean": "rm -rf node_modules apps/web-app/node_modules apps/api-server/node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3"
+  }
+}
