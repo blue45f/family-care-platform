@@ -12,7 +12,7 @@
     "build": "nest build",
     "lint": "tsc -p tsconfig.json --pretty false --noEmit",
     "start": "nest start",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/src/main",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
