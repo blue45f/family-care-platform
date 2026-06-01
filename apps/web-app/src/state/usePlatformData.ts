@@ -99,6 +99,9 @@ type UsePlatformDataResult = {
   planDrafts: DraftPlanMap;
   savingPlanId: string | null;
   updatingClaimId: number | null;
+  isSubmittingCareLog: boolean;
+  isSubmittingSettlement: boolean;
+  isSubmittingClaim: boolean;
 
   careLogDraft: CareLogDraftState;
   settlementDraft: SettlementDraft;
@@ -262,6 +265,9 @@ export const usePlatformData = (): UsePlatformDataResult => {
   const [planDrafts, setPlanDrafts] = useState<DraftPlanMap>({});
   const [savingPlanId, setSavingPlanId] = useState<string | null>(null);
   const [updatingClaimId, setUpdatingClaimId] = useState<number | null>(null);
+  const [isSubmittingCareLog, setIsSubmittingCareLog] = useState(false);
+  const [isSubmittingSettlement, setIsSubmittingSettlement] = useState(false);
+  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
 
   const [priceLiftPercent, setPriceLiftPercent] = useState(4);
   const [upgradePushPercent, setUpgradePushPercent] = useState(8);
@@ -616,6 +622,10 @@ export const usePlatformData = (): UsePlatformDataResult => {
   const submitCareLog = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (isSubmittingCareLog) {
+        return;
+      }
+
       if (
         !careLogDraft.recipient ||
         !careLogDraft.caregiver ||
@@ -628,6 +638,8 @@ export const usePlatformData = (): UsePlatformDataResult => {
       }
 
       try {
+        setIsSubmittingCareLog(true);
+        setErrorMessage("");
         const next = await postCareLog(careLogDraft);
         setCareLogs((prev) => [next, ...prev]);
         setCareLogDraft(createInitialCareLogDraft());
@@ -639,14 +651,20 @@ export const usePlatformData = (): UsePlatformDataResult => {
             "돌봄 기록 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.",
           ),
         );
+      } finally {
+        setIsSubmittingCareLog(false);
       }
     },
-    [careLogDraft, load],
+    [careLogDraft, load, isSubmittingCareLog],
   );
 
   const submitSettlement = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (isSubmittingSettlement) {
+        return;
+      }
+
       if (!settlementDraft.recipient) {
         setErrorMessage("정산 등록을 위해 보호자명을 입력해 주세요.");
         return;
@@ -659,6 +677,8 @@ export const usePlatformData = (): UsePlatformDataResult => {
       }
 
       try {
+        setIsSubmittingSettlement(true);
+        setErrorMessage("");
         const next = await postSettlement(settlementDraft);
         setSettlements((prev) => [next, ...prev]);
         await load();
@@ -669,14 +689,20 @@ export const usePlatformData = (): UsePlatformDataResult => {
             "정산 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.",
           ),
         );
+      } finally {
+        setIsSubmittingSettlement(false);
       }
     },
-    [settlementDraft, load],
+    [settlementDraft, load, isSubmittingSettlement],
   );
 
   const submitClaim = useCallback(
     async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (isSubmittingClaim) {
+        return;
+      }
+
       if (
         !claimDraft.recipient ||
         !claimDraft.hospitalName ||
@@ -689,6 +715,8 @@ export const usePlatformData = (): UsePlatformDataResult => {
       }
 
       try {
+        setIsSubmittingClaim(true);
+        setErrorMessage("");
         const next = await postClaim(claimDraft);
         setClaims((prev) => [next, ...prev]);
         setClaimDraft({ ...createInitialClaimDraft(), expectedAmount: 0 });
@@ -700,9 +728,11 @@ export const usePlatformData = (): UsePlatformDataResult => {
             "보험청구 등록 실패. 잠시 후 다시 시도해 주세요.",
           ),
         );
+      } finally {
+        setIsSubmittingClaim(false);
       }
     },
-    [claimDraft, load],
+    [claimDraft, load, isSubmittingClaim],
   );
 
   const submitPlan = useCallback(
@@ -866,6 +896,9 @@ export const usePlatformData = (): UsePlatformDataResult => {
     planDrafts,
     savingPlanId,
     updatingClaimId,
+    isSubmittingCareLog,
+    isSubmittingSettlement,
+    isSubmittingClaim,
 
     careLogDraft,
     settlementDraft,
@@ -880,7 +913,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
 
     kpiMonthlyRevenue,
     kpiAnnualRevenue,
-    planPotentialAnnual,
+  planPotentialAnnual,
     monthlyTrendWithDelta,
     trendSourceMeta,
     isUsingServerTrend,

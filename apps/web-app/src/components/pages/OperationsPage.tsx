@@ -9,6 +9,7 @@ import {
 } from "../../state/usePlatformData";
 import {
   operationsModuleMeta,
+  operationsModuleSequence,
   operationsModuleRoute,
   type RouteCompositionMeta,
 } from "../../routeConfig";
@@ -132,6 +133,7 @@ const renderCareForm = (
   module: "care",
   data: PlatformData,
   onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
+  isSubmitting: boolean,
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { careLogDraft } = data;
@@ -217,8 +219,8 @@ const renderCareForm = (
           />
         </RouteField>
 
-        <button type="submit" className="btn btn-primary">
-          기록 저장
+        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          {isSubmitting ? "저장 중..." : "기록 저장"}
         </button>
       </form>
 
@@ -250,6 +252,7 @@ const renderSettlementForm = (
   module: "settlement",
   data: PlatformData,
   onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
+  isSubmitting: boolean,
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { settlementDraft } = data;
@@ -331,8 +334,8 @@ const renderSettlementForm = (
           />
         </RouteField>
 
-        <button type="submit" className="btn btn-primary">
-          정산 저장
+        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          {isSubmitting ? "저장 중..." : "정산 저장"}
         </button>
       </form>
 
@@ -371,6 +374,7 @@ const renderClaims = (
   module: "claims",
   data: PlatformData,
   onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
+  isSubmitting: boolean,
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { claimDraft } = data;
@@ -471,8 +475,8 @@ const renderClaims = (
           />
         </RouteField>
 
-        <button type="submit" className="btn btn-primary">
-          청구 저장
+        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+          {isSubmitting ? "저장 중..." : "청구 저장"}
         </button>
       </form>
 
@@ -541,24 +545,80 @@ const renderSectionGuide = ({
     <div className="panel-head">
       <h2>다음에 확인할 일</h2>
       <p className="subtle">
-        기록을 남긴 뒤 정산과 보험청구 상태까지 이어서 확인하면 누락을 줄일 수
-        있습니다.
+        지금 기준으로 바로 이어서 해야 할 작업이 명확해집니다.
       </p>
     </div>
     <div className="kpi-ribbons">
       <article className="kpi-ribbon">
         <p>추천</p>
-        <strong>보험청구 상태 확인</strong>
-        <span className="small-note">요청 또는 검토중인 건을 먼저 확인</span>
+        <strong>{nextAction}</strong>
+        <span className="small-note">아래 순서로 진행하면 누락이 줄어듭니다.</span>
       </article>
       <article className="kpi-ribbon">
         <p>현재</p>
         <strong>청구 승인률 {formatRate(approvalRate)}</strong>
-        <span className="small-note">현재 목표: {nextAction}</span>
+        <span className="small-note">목표: 청구 상태 정합성 유지</span>
       </article>
     </div>
   </section>
 );
+
+const getOperationsActiveModule = (
+  modules: readonly OperationsRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): OperationsRouteModule => {
+  if (activeRoutePath === "/operations") {
+    return "overview";
+  }
+
+  return (
+    modules.find((moduleName) => operationsModuleRoute[moduleName] === activeRoutePath) ??
+    "overview"
+  );
+};
+
+const getOperationsFocusModules = (
+  modules: readonly OperationsRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): OperationsRouteModule[] => {
+  const ordered = modules.length > 0 ? modules : operationsModuleSequence;
+
+  if (activeRoutePath === "/operations") {
+    return ordered.includes("care") ? ["overview", "care"] : ["overview"];
+  }
+
+  const activeModule = getOperationsActiveModule(ordered, activeRoutePath);
+  const activeIndex = ordered.indexOf(activeModule);
+
+  if (activeIndex < 0) {
+    return ["overview", "care", "settlement"];
+  }
+
+  const previous = ordered[activeIndex - 1];
+  const next = ordered[activeIndex + 1];
+
+  return Array.from(new Set([previous, activeModule, next].filter(Boolean) as OperationsRouteModule[]));
+};
+
+const getOperationsNextAction = (
+  modules: readonly OperationsRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): string => {
+  if (activeRoutePath === "/operations") {
+    return "돌봄 기록 입력";
+  }
+
+  const ordered = modules.length > 0 ? modules : operationsModuleSequence;
+  const activeModule = getOperationsActiveModule(ordered, activeRoutePath);
+  const activeIndex = ordered.indexOf(activeModule);
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+
+  if (!next) {
+    return "목록에서 미처리 항목을 점검";
+  }
+
+  return `${operationsModuleMeta[next].title}로 이동`;
+};
 
 const OperationsPage = ({
   modules,
@@ -577,11 +637,20 @@ const OperationsPage = ({
         claims: data.claims,
         totalClaimExpected: data.totalClaimExpected,
       }),
-    care: () => renderCareForm("care", data, data.submitCareLog),
+    care: () =>
+      renderCareForm("care", data, data.submitCareLog, data.isSubmittingCareLog),
     settlement: () =>
-      renderSettlementForm("settlement", data, data.submitSettlement),
-    claims: () => renderClaims("claims", data, data.submitClaim),
+      renderSettlementForm(
+        "settlement",
+        data,
+        data.submitSettlement,
+        data.isSubmittingSettlement,
+      ),
+    claims: () => renderClaims("claims", data, data.submitClaim, data.isSubmittingClaim),
   };
+
+  const visibleModules = getOperationsFocusModules(modules, activeRoutePath);
+  const nextAction = getOperationsNextAction(modules, activeRoutePath);
 
   return (
     <section className="view-stack">
@@ -629,15 +698,21 @@ const OperationsPage = ({
         </div>
       </section>
 
-      {modules.map((moduleName) => (
-        <div className="panel-stack-item" key={moduleName}>
-          {moduleRenderers[moduleName]()}
-        </div>
-      ))}
+      {modules.map((moduleName) => {
+        if (!visibleModules.includes(moduleName)) {
+          return null;
+        }
+
+        return (
+          <div className="panel-stack-item" key={moduleName}>
+            {moduleRenderers[moduleName]()}
+          </div>
+        );
+      })}
 
       {renderSectionGuide({
         approvalRate: data.approvalRate,
-        nextAction: "확인할 청구 먼저 보기",
+        nextAction,
       })}
     </section>
   );

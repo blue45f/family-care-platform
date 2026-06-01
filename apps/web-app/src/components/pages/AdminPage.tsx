@@ -3,6 +3,7 @@ import { type ReactNode } from "react";
 import {
   adminModuleMeta,
   adminModuleRoute,
+  adminModuleSequence,
   type AdminRouteModule,
   type NonHomeRoutePath,
   type RouteCompositionMeta,
@@ -563,6 +564,9 @@ const AdminPage = ({
     return adminModuleRoute[moduleName] === activeRoutePath;
   };
 
+  const visibleModules = getAdminFocusModules(modules, activeRoutePath);
+  const nextAction = getAdminNextAction(modules, activeRoutePath);
+
   return (
     <section className="view-stack">
       <section
@@ -609,7 +613,7 @@ const AdminPage = ({
         </div>
       </section>
 
-      {modules.map((moduleName) => (
+      {visibleModules.map((moduleName) => (
         <div className="panel-stack-item" key={moduleName}>
           {moduleRenderers[moduleName]()}
         </div>
@@ -619,13 +623,74 @@ const AdminPage = ({
         <h2 className="sr-only">요약 액션</h2>
         <div className="recommend-box">
           <p className="small-note">
-            추천 순서: 전체 현황 확인 → 월별 변화 보기 → 요금 조정 → 예상 계산
-            순서로 확인하세요.
+            추천 순서: {nextAction}
           </p>
         </div>
       </section>
     </section>
   );
+};
+
+const getAdminActiveModule = (
+  modules: readonly AdminRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): AdminRouteModule => {
+  if (activeRoutePath === "/admin") {
+    return "kpi";
+  }
+
+  return (
+    modules.find((moduleName) => adminModuleRoute[moduleName] === activeRoutePath) ??
+    "kpi"
+  );
+};
+
+const getAdminFocusModules = (
+  modules: readonly AdminRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): AdminRouteModule[] => {
+  const ordered = modules.length > 0 ? modules : adminModuleSequence;
+  const activeModule = getAdminActiveModule(ordered, activeRoutePath);
+  const activeIndex = ordered.indexOf(activeModule);
+
+  if (activeIndex < 0) {
+    return ["kpi", "trends", "plans"];
+  }
+
+  if (activeRoutePath === "/admin") {
+    return ["kpi", "trends", "plans"];
+  }
+
+  const previous = ordered[activeIndex - 1];
+  const next = ordered[activeIndex + 1];
+
+  return Array.from(
+    new Set(
+      [previous, activeModule, next].filter(
+        (item): item is AdminRouteModule => Boolean(item),
+      ),
+    ),
+  );
+};
+
+const getAdminNextAction = (
+  modules: readonly AdminRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): string => {
+  if (activeRoutePath === "/admin") {
+    return "전체 현황 → 월별 변화 → 요금 구성";
+  }
+
+  const ordered = modules.length > 0 ? modules : adminModuleSequence;
+  const activeModule = getAdminActiveModule(ordered, activeRoutePath);
+  const activeIndex = ordered.indexOf(activeModule);
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+
+  if (!next) {
+    return "요약 화면에서 위험 신호를 점검하고 저장";
+  }
+
+  return `${adminModuleMeta[next].title}로 이동`;
 };
 
 export { AdminPage };
