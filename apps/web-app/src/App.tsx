@@ -19,7 +19,6 @@ import type {
   ClaimDraft,
   ClaimStatus,
   AdminMonthlyTrend,
-  AdminMonthlyTrendDataSource,
   RevenuePlan,
   RevenuePlanDraft,
   Settlement,
@@ -38,11 +37,8 @@ import {
   formatSignedRatePoint,
   formatSignedWon,
   formatWon,
-  roundMoney,
-  trendDirectionClass,
   trendDirectionLabel,
   TrendDeltaDirection,
-  TrendMetricDeltaValue,
 } from './utils';
 
 type ViewMode = 'operations' | 'admin';

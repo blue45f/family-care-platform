@@ -117,7 +117,7 @@ export class AdminService {
   }
 
   getPlans(): RevenuePlan[] {
-    return this.plans.toSorted((a, b) => b.monthlyPrice - a.monthlyPrice);
+    return [...this.plans].sort((a, b) => b.monthlyPrice - a.monthlyPrice);
   }
 
   upsertPlan(input: RevenuePlanDraft): RevenuePlan {

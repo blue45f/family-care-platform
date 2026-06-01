@@ -7,8 +7,8 @@ export class SettlementService {
   private seq = 1;
   private readonly settlements: Settlement[] = [];
 
-  findAll() {
-    return this.settlements.toSorted((a, b) => b.id - a.id);
+  findAll(): Settlement[] {
+    return [...this.settlements].sort((a, b) => b.id - a.id);
   }
 
   create(input: SettlementInput) {

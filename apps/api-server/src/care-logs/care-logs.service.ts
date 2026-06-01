@@ -9,8 +9,8 @@ export class CareLogService {
   private seq = 1;
   private readonly careLogs: CareLog[] = [];
 
-  findAll() {
-    return this.careLogs.toSorted((a, b) => b.id - a.id);
+  findAll(): CareLog[] {
+    return [...this.careLogs].sort((a, b) => b.id - a.id);
   }
 
   create(input: CareLogInput) {

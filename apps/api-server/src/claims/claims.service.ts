@@ -9,8 +9,8 @@ export class ClaimsService {
   private seq = 1;
   private readonly claims: Claim[] = [];
 
-  findAll() {
-    return this.claims.toSorted((a, b) => b.id - a.id);
+  findAll(): Claim[] {
+    return [...this.claims].sort((a, b) => b.id - a.id);
   }
 
   create(input: ClaimInput) {

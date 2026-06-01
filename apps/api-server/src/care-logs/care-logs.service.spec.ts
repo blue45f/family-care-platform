@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { CareLogService } from './care-logs.service';
+import type { CareLogType } from './care-log.model';
 
 describe('CareLogService', () => {
   it('입력 값을 정제해서 돌봄 기록을 생성한다', () => {
@@ -37,10 +38,9 @@ describe('CareLogService', () => {
 
     expect(() =>
       service.create({
-        // @ts-expect-error 테스트를 위한 의도적 타입 위반 케이스
         recipient: '김보호자',
         caregiver: '박돌봄',
-        type: '식단',
+        type: '식단' as unknown as CareLogType,
         date: '2025-01-01',
         note: '메모',
       }),
