@@ -1,9 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { localYmd } from '../common/date.util';
-import type { CareLog, CareLogInput, CareLogType } from './care-log.model';
-
-const careLogTypes: CareLogType[] = ['방문', '원격상담', '투약', '식사관리', '기타'];
+import { parseWithSchema } from '../common/zod-validation.pipe';
+import type { CareLog, CareLogInput } from './care-log.model';
+import { careLogInputSchema } from './care-log.schema';
 
 @Injectable()
 export class CareLogService {
@@ -15,20 +15,13 @@ export class CareLogService {
   }
 
   create(input: CareLogInput) {
-    if (!input.recipient.trim() || !input.caregiver.trim() || !input.note.trim()) {
-      throw new BadRequestException('recipient/caregiver/note는 필수입니다.');
-    }
-    if (!careLogTypes.includes(input.type)) {
-      throw new BadRequestException('유효하지 않은 돌봄 활동 유형입니다.');
-    }
+    // zod 스키마가 필수 필드 검증 + trim 정제를 함께 처리한다(기존 if-throw 동작과 동일).
+    const parsed = parseWithSchema(careLogInputSchema, input);
 
     const next: CareLog = {
       id: this.seq++,
-      ...input,
-      recipient: input.recipient.trim(),
-      caregiver: input.caregiver.trim(),
-      note: input.note.trim(),
-      date: input.date ?? localYmd(),
+      ...parsed,
+      date: parsed.date || localYmd(),
     };
 
     this.careLogs.push(next);

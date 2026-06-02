@@ -1,7 +1,9 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 
 import { localYmd } from '../common/date.util';
+import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import type { Claim, ClaimInput, ClaimStatusUpdate } from './claim.model';
+import { claimIdParamSchema, claimStatusUpdateSchema } from './claim.schema';
 import { ClaimsService } from './claims.service';
 
 @Controller('claims')
@@ -24,11 +26,10 @@ export class ClaimsController {
   }
 
   @Patch(':id/status')
-  updateStatus(@Param('id') id: string, @Body() input: ClaimStatusUpdate): Claim {
-    const claimId = Number(id);
-    if (!Number.isInteger(claimId) || claimId < 1) {
-      throw new BadRequestException('유효하지 않은 청구 ID입니다.');
-    }
+  updateStatus(
+    @Param('id', new ZodValidationPipe(claimIdParamSchema)) claimId: number,
+    @Body(new ZodValidationPipe(claimStatusUpdateSchema)) input: ClaimStatusUpdate,
+  ): Claim {
     return this.claimsService.updateStatus(claimId, input.status);
   }
 }

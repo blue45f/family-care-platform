@@ -1,6 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
+import { localYmd } from '../common/date.util';
+import { parseWithSchema } from '../common/zod-validation.pipe';
 import type { Settlement, SettlementInput } from './settlement.model';
+import { settlementInputSchema } from './settlement.schema';
 
 @Injectable()
 export class SettlementService {
@@ -12,21 +15,17 @@ export class SettlementService {
   }
 
   create(input: SettlementInput) {
-    if (!input.recipient.trim()) {
-      throw new BadRequestException('recipient는 필수입니다.');
-    }
-    if (input.careHours <= 0 || input.baseRate <= 0) {
-      throw new BadRequestException('careHours와 baseRate는 0보다 커야 합니다.');
-    }
+    // zod 스키마가 recipient 필수/trim + careHours·baseRate 양수 검증을 처리한다.
+    const parsed = parseWithSchema(settlementInputSchema, input);
 
     const next: Settlement = {
       id: this.seq++,
-      recipient: input.recipient.trim(),
-      date: input.date,
-      careHours: input.careHours,
-      baseRate: input.baseRate,
-      totalAmount: input.careHours * input.baseRate,
-      note: input.note.trim(),
+      recipient: parsed.recipient,
+      date: parsed.date || localYmd(),
+      careHours: parsed.careHours,
+      baseRate: parsed.baseRate,
+      totalAmount: parsed.careHours * parsed.baseRate,
+      note: parsed.note,
     };
     this.settlements.push(next);
     return next;

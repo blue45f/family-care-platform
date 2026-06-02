@@ -1,9 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CareLogService } from '../care-logs/care-logs.service';
 import { ClaimsService } from '../claims/claims.service';
 import { localMonthKey } from '../common/date.util';
+import { parseWithSchema } from '../common/zod-validation.pipe';
 import { SettlementService } from '../settlements/settlement.service';
 
+import { revenuePlanDraftSchema } from './admin.schema';
 import type {
   AdminMonthlyTrend,
   AdminOverview,
@@ -122,30 +124,21 @@ export class AdminService {
   }
 
   upsertPlan(input: RevenuePlanDraft): RevenuePlan {
+    // 요금제 존재 여부는 기존과 동일하게 필드 검증보다 먼저 확인한다.
     const target: RevenuePlan | undefined = this.plans.find((plan) => plan.id === input.id);
     if (!target) {
       throw new NotFoundException('요금제를 찾을 수 없습니다.');
     }
 
-    if (!input.name.trim()) {
-      throw new BadRequestException('요금제 이름은 필수입니다.');
-    }
-    if (!Number.isFinite(input.monthlyPrice) || input.monthlyPrice <= 0) {
-      throw new BadRequestException('월 요금은 0보다 커야 합니다.');
-    }
-    if (!Number.isFinite(input.annualDiscountRate) || input.annualDiscountRate < 0 || input.annualDiscountRate > 0.95) {
-      throw new BadRequestException('연 할인율은 0~0.95 범위여야 합니다.');
-    }
-    if (!Number.isInteger(input.activeClients) || input.activeClients < 0) {
-      throw new BadRequestException('활성 고객 수는 0 이상의 정수여야 합니다.');
-    }
+    // zod 스키마가 name 필수 / monthlyPrice·annualDiscountRate·activeClients 범위 검증을 처리한다.
+    const parsed = parseWithSchema(revenuePlanDraftSchema, input);
 
-    target.monthlyPrice = input.monthlyPrice;
-    target.annualDiscountRate = input.annualDiscountRate;
-    target.activeClients = input.activeClients;
-    target.name = input.name.trim();
-    target.description = input.description;
-    target.featureFlags = [...input.featureFlags];
+    target.monthlyPrice = parsed.monthlyPrice;
+    target.annualDiscountRate = parsed.annualDiscountRate;
+    target.activeClients = parsed.activeClients;
+    target.name = parsed.name.trim();
+    target.description = parsed.description;
+    target.featureFlags = [...parsed.featureFlags];
 
     return { ...target };
   }
