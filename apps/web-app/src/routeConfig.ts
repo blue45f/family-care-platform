@@ -556,21 +556,21 @@ type HeroTextByMode = Record<RouteMode, RouteHeroText>;
 export const heroTextByMode: HeroTextByMode = {
   home: {
     kicker: "가족 돌봄 운영 플랫폼",
-    title: "가족 돌봄을 한곳에서 쉽게 관리하세요",
+    title: "돌봄 기록·정산·청구를 한 번에 시작하세요",
     description:
-      "돌봄 기록, 돌봄비 정산, 보험청구 상태를 가족이 함께 확인할 수 있게 정리했습니다.",
+      "가장 먼저 할 일만 보여주고, 바로 다음 동작으로 이어드릴게요.",
   },
   operations: {
     kicker: "돌봄 관리",
-    title: "오늘의 돌봄 기록과 정산을 차근차근 처리하세요",
+    title: "오늘의 돌봄 업무를 빠르게 처리하세요",
     description:
-      "돌봄 기록을 남기고, 돌봄비를 계산하고, 보험청구 상태를 이어서 확인합니다.",
+      "기록-정산-청구 흐름으로 놓치는 단계 없이 진행하세요.",
   },
   admin: {
     kicker: "서비스 관리",
-    title: "서비스 현황과 요금을 쉽게 확인하세요",
+    title: "서비스 운영 상태를 빠르게 확인하고 조치하세요",
     description:
-      "전체 현황, 월별 변화, 요금 설정, 예상 금액을 한 화면 흐름으로 살펴봅니다.",
+      "현황·변화·요금을 핵심만 모아 보고 오늘 필요한 조치로 연결하세요.",
   },
 };
 
@@ -590,20 +590,20 @@ export const routeNavGroups: RouteNavGroup[] = [
         quickActions: [
           {
             path: "/operations/care",
-            label: "돌봄 기록하기",
+            label: "기록 시작",
             emoji: "🩺",
           },
-          { path: "/operations/settlement", label: "돌봄비 계산", emoji: "🧮" },
-          { path: "/operations/claims", label: "보험청구 확인", emoji: "📄" },
+          { path: "/operations/settlement", label: "정산 계산", emoji: "🧮" },
+          { path: "/operations/claims", label: "청구 점검", emoji: "📄" },
         ],
         hero: {
           kicker: "돌봄 관리",
-          title: "기록, 정산, 보험청구를 한 번에 확인하세요",
+          title: "기록·정산·청구를 한 번에 이어서 처리하세요",
           description:
-            "오늘 남길 기록과 확인할 청구를 순서대로 처리할 수 있습니다.",
+            "오늘 할 일만 보여주고, 놓치기 쉬운 단계를 줄였습니다.",
         },
         emoji: "🗂️",
-        summary: "기록, 정산, 청구를 한 화면에서 확인",
+        summary: "기록·정산·청구 전체 흐름 한눈에",
         mode: "operations",
         stackMode: "operations",
         focus: "all",
@@ -614,18 +614,18 @@ export const routeNavGroups: RouteNavGroup[] = [
         section: "운영",
         modules: ["overview", "care"],
         quickActions: [
-          { path: "/operations", label: "돌봄 전체 보기", emoji: "🗂️" },
-          { path: "/operations/settlement", label: "돌봄비 계산", emoji: "🧮" },
-          { path: "/operations/claims", label: "보험청구 확인", emoji: "📄" },
+          { path: "/operations", label: "전체 보기", emoji: "🗂️" },
+          { path: "/operations/settlement", label: "정산으로 이동", emoji: "🧮" },
+          { path: "/operations/claims", label: "청구 점검", emoji: "📄" },
         ],
         hero: {
           kicker: "돌봄 기록",
-          title: "오늘 있었던 돌봄 내용을 남겨두세요",
+          title: "돌봄 기록을 먼저 남기면 다음 단계가 정확해집니다",
           description:
             "방문, 상담, 투약, 식사 같은 내용을 짧게 기록하면 나중에 가족이 함께 확인하기 쉽습니다.",
         },
         emoji: "🩺",
-        summary: "보호자별 돌봄 내용과 일정 상태 등록",
+          summary: "돌봄 내용과 담당자 정보를 등록",
         mode: "operations",
         stackMode: "operations",
         focus: "care",
@@ -636,18 +636,18 @@ export const routeNavGroups: RouteNavGroup[] = [
         section: "운영",
         modules: ["overview", "settlement"],
         quickActions: [
-          { path: "/operations", label: "돌봄 전체 보기", emoji: "🗂️" },
-          { path: "/operations/care", label: "돌봄 기록", emoji: "🩺" },
-          { path: "/operations/claims", label: "보험청구 확인", emoji: "📄" },
+          { path: "/operations", label: "전체 보기", emoji: "🗂️" },
+          { path: "/operations/care", label: "기록 보기", emoji: "🩺" },
+          { path: "/operations/claims", label: "청구 점검", emoji: "📄" },
         ],
         hero: {
           kicker: "돌봄비 정산",
-          title: "돌봄 시간과 금액을 입력해 정산액을 확인하세요",
+          title: "시간과 금액으로 오늘 정산액을 바로 계산",
           description:
             "날짜, 시간, 기준 금액만 입력하면 가족별 정산 내용을 쉽게 남길 수 있습니다.",
         },
         emoji: "🧮",
-        summary: "시간과 금액으로 돌봄비 합계 계산",
+        summary: "시간·금액으로 정산 합계 계산",
         mode: "operations",
         stackMode: "operations",
         focus: "settlement",
@@ -658,18 +658,18 @@ export const routeNavGroups: RouteNavGroup[] = [
         section: "운영",
         modules: ["overview", "claims"],
         quickActions: [
-          { path: "/operations", label: "돌봄 전체 보기", emoji: "🗂️" },
-          { path: "/operations/care", label: "돌봄 기록", emoji: "🩺" },
-          { path: "/operations/settlement", label: "돌봄비 계산", emoji: "🧮" },
+          { path: "/operations", label: "전체 보기", emoji: "🗂️" },
+          { path: "/operations/care", label: "기록 보기", emoji: "🩺" },
+          { path: "/operations/settlement", label: "정산 이동", emoji: "🧮" },
         ],
         hero: {
           kicker: "보험청구",
-          title: "보험청구 진행 상태를 쉽게 확인하세요",
+          title: "보험청구 상태를 한 화면에서 점검하세요",
           description:
             "요청, 검토, 승인, 거절 상태를 기록해 놓치지 않게 관리합니다.",
         },
         emoji: "📄",
-        summary: "요청, 검토, 승인 상태를 확인",
+        summary: "요청·검토·승인 상태를 바로 점검",
         mode: "operations",
         stackMode: "operations",
         focus: "claims",
@@ -690,18 +690,17 @@ export const routeNavGroups: RouteNavGroup[] = [
         modules: [...adminModuleSequence],
         quickActions: [
           { path: "/admin/overview", label: "전체 현황", emoji: "📊" },
-          { path: "/admin/trends", label: "월별 변화", emoji: "📈" },
-          { path: "/admin/plans", label: "요금 관리", emoji: "💡" },
-          { path: "/admin/simulator", label: "예상 계산", emoji: "🧪" },
+          { path: "/admin/trends", label: "월별 추이", emoji: "📈" },
+          { path: "/admin/plans", label: "요금 설정", emoji: "💡" },
         ],
         hero: {
           kicker: "서비스 관리",
-          title: "서비스 현황과 요금 정보를 쉽게 관리하세요",
+          title: "서비스 운영 상태를 빠르게 점검하고 다음 조치로 연결",
           description:
-            "어려운 지표보다 지금 확인할 현황, 월별 변화, 요금, 예상 금액을 먼저 보여줍니다.",
+            "이번 달 꼭 봐야 할 지표를 핵심만 보여주고, 바로바로 확인할 수 있게 정리했습니다.",
         },
         emoji: "⚙️",
-        summary: "현황, 요금, 예상 금액을 한곳에서 확인",
+        summary: "현황·추이·요금 조정을 한 곳에서 확인",
         mode: "admin",
         stackMode: "admin",
         focus: "all",
@@ -718,12 +717,12 @@ export const routeNavGroups: RouteNavGroup[] = [
         ],
         hero: {
           kicker: "전체 현황",
-          title: "서비스 상태를 필요한 숫자만 모아 확인하세요",
+          title: "서비스 상태를 오늘 바로 점검하세요",
           description:
-            "이용 가구, 정산액, 보험청구 승인률처럼 꼭 봐야 할 항목만 정리했습니다.",
+            "가족 수, 정산액, 승인률처럼 바로 판단 가능한 항목만 보여줍니다.",
         },
         emoji: "📊",
-        summary: "이용 가구, 정산액, 승인률을 확인",
+        summary: "활성 가구·정산·승인 지표를 확인",
         mode: "admin",
         stackMode: "admin",
         focus: "overview",
@@ -740,12 +739,12 @@ export const routeNavGroups: RouteNavGroup[] = [
         ],
         hero: {
           kicker: "월별 변화",
-          title: "지난달과 이번 달 흐름을 비교하세요",
+          title: "지난달 대비 월별 흐름을 바로 비교하세요",
           description:
-            "정산액, 청구 건수, 승인률이 좋아졌는지 한눈에 확인합니다.",
+            "정산액, 청구 건수, 승인률의 증감 방향을 즉시 파악할 수 있습니다.",
         },
         emoji: "📈",
-        summary: "정산액, 청구 건수, 승인률 변화 확인",
+        summary: "정산액·건수·승인률 변동 점검",
         mode: "admin",
         stackMode: "admin",
         focus: "trends",
@@ -762,12 +761,12 @@ export const routeNavGroups: RouteNavGroup[] = [
         ],
         hero: {
           kicker: "요금 관리",
-          title: "요금과 할인율을 쉽게 수정하세요",
+          title: "요금제 운영값을 빠르게 조정하세요",
           description:
-            "요금제 이름, 월 요금, 연 할인율, 이용 가구 수를 한 화면에서 바꿉니다.",
+            "월 요금, 할인율, 가구 수를 바꾸면 예상 결과가 바로 반영됩니다.",
         },
         emoji: "💡",
-        summary: "월 요금, 할인율, 이용 가구 수 관리",
+        summary: "요금·할인율·이용 가구 수 조정",
         mode: "admin",
         stackMode: "admin",
         focus: "plans",
@@ -781,16 +780,15 @@ export const routeNavGroups: RouteNavGroup[] = [
           { path: "/admin", label: "관리 홈", emoji: "⚙️" },
           { path: "/admin/overview", label: "전체 현황", emoji: "📊" },
           { path: "/admin/trends", label: "월별 변화", emoji: "📈" },
-          { path: "/admin/plans", label: "요금 관리", emoji: "💡" },
         ],
         hero: {
           kicker: "예상 계산",
-          title: "요금이 바뀌면 월 금액이 어떻게 달라질지 확인하세요",
+          title: "요금 변동 시 월 매출 변화를 즉시 확인하세요",
           description:
             "가격 변화와 상위 요금제 변경 가능성을 조정해 예상 결과를 바로 봅니다.",
         },
         emoji: "🧪",
-        summary: "요금 변화에 따른 예상 월 금액 계산",
+        summary: "요금 변화별 월 매출 시나리오 계산",
         mode: "admin",
         stackMode: "admin",
         focus: "simulator",

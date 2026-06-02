@@ -46,37 +46,100 @@ const RouteShell = ({
   const topTabs = pageBlueprint.topTabs;
   const sectionTabs = pageBlueprint.sectionTabs;
   const sectionQuickActions = pageBlueprint.sectionQuickActions;
-  const primaryAction = sectionQuickActions[0] ?? null;
-  const secondaryActions = sectionQuickActions.slice(1);
-  const composition = getRouteCompositionState(route.path);
+  const routeQuickActions = sectionQuickActions.slice(0, 3);
+  const primaryAction = routeQuickActions[0] ?? null;
+  const secondaryActions = routeQuickActions.slice(1);
   const hasSectionTabs = sectionTabs.length > 0;
+  const composition = getRouteCompositionState(route.path);
   const currentActionHint =
     route.summary ?? "현재 화면의 다음 액션을 바로 진행하세요.";
   const isHome = route.path === "/";
+  const routeModeLabel = isHome
+    ? "홈"
+    : routeContext.route.mode === "operations"
+      ? "돌봄 운영"
+      : "서비스 관리";
+  const progressLabel = `${globalFlow.index + 1}/${globalFlow.total}`;
+  const commandHints = isHome
+    ? [
+        "첫 번째: 돌봄 기록",
+        "두 번째: 정산 계산",
+        "세 번째: 청구 상태 점검",
+      ]
+    : [currentActionHint];
+  const assistantPhrase = isHome
+    ? "처음이어도 3단계만 따라가면 시작됩니다."
+    : `${route.title}에서 바로 할 일을 안내합니다.`;
+  const quickActionRows = secondaryActions.slice(0, 2);
+  const quickActionsOverflow = Math.max(
+    0,
+    secondaryActions.length - quickActionRows.length,
+  );
+  const commandHint = isHome
+    ? "지금은 기록 → 정산 → 보험청구 순으로 진행하세요."
+    : currentActionHint;
+  const commandAssist = isHome
+    ? "복잡한 메뉴 탐색은 생략하고 필요한 동작만 순서대로 보여줍니다."
+    : `${route.title}의 핵심 동작만 보여줍니다.`;
+  const heroNextAction = isHome
+    ? "기록 → 정산 → 보험청구"
+    : commandHints[0] ?? currentActionHint;
+  const quickActionCountText =
+    secondaryActions.length > 0
+      ? `${secondaryActions.length}개 보조 동작`
+      : "바로 가기 동작이 없습니다.";
+
+  const showSectionFlowPanel = sectionFlow.previous !== null || sectionFlow.next !== null;
+  const routeReadout = route.title;
 
   return (
-    <header className="app-header panel">
-      <div className="app-shell-topline">
-        <div className="app-shell-identity">
+      <header className="app-header panel app-header-v2">
+      <div className="route-hero-grid">
+        <section className="route-kicker-stack">
           <p className="kicker">{routeContext.pageBlueprint.heroText.kicker}</p>
           <h1>{routeContext.pageBlueprint.heroText.title}</h1>
           <p className="hero-description">
             {routeContext.pageBlueprint.heroText.description}
           </p>
           <p className="hero-intent" id="route-intent">
-            {currentActionHint}
+            <span aria-hidden="true">다음 액션</span>
+            <strong>{heroNextAction}</strong>
           </p>
-        </div>
+          <p className="hero-assistant">{assistantPhrase}</p>
+        </section>
 
-        <div className="route-progress" aria-label="현재 위치">
-          <span className="meta-chip">
-            {isHome ? "홈" : `${composition.globalRouteProgress}% 완성도`}
-          </span>
-          <span className="meta-chip">현재: {route.section}</span>
-          <span className="meta-chip">
-            단계 {globalFlow.index + 1}/{globalFlow.total}
-          </span>
-        </div>
+        <section className="route-progress-band" aria-label="현재 진행률">
+          <div className="route-progress-meta route-progress-top">
+            <p className="route-progress-label">진행 상태</p>
+            <div className="route-progress-meta-wrap" role="status" aria-live="polite">
+              <span className="meta-chip route-progress-main">{routeModeLabel}</span>
+              <span className="meta-chip">완료 {composition.globalRouteProgress}%</span>
+              <span className="meta-chip">단계 {progressLabel}</span>
+            </div>
+          </div>
+          <div className="route-progress-meter-wrap" aria-hidden="true">
+            <div
+              className="route-progress-meter-fill"
+              style={{ width: `${composition.globalRouteProgress}%` }}
+            />
+          </div>
+          <div className="route-progress-actions">
+            <button
+              type="button"
+              className="route-tab route-tab-subtle"
+              onClick={onRefresh}
+              disabled={isLoading}
+            >
+              {isLoading ? "새로고침 중" : "최신화"}
+            </button>
+            <p className="small-note" aria-live="polite">
+              최근 업데이트: {new Date().toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+          </div>
+        </section>
       </div>
 
       {isReadOnly ? (
@@ -85,16 +148,7 @@ const RouteShell = ({
         </p>
       ) : null}
 
-      <div className="hero-metrics" role="list" aria-label="주요 현황">
-        {heroMetrics.map((metric) => (
-          <article className="kpi-ribbon" role="listitem" key={metric.label}>
-            <p>{metric.label}</p>
-            <strong aria-label={metric.aria}>{metric.value}</strong>
-          </article>
-        ))}
-      </div>
-
-      <nav className="top-nav route-top-nav" role="tablist" aria-label="주요 메뉴">
+      <nav className="top-nav route-top-nav route-main-nav" role="tablist" aria-label="주요 메뉴">
         {topTabs.map((item) => {
           const isActive = routeContext.activeTopRoutePath === item.path;
           return (
@@ -112,145 +166,46 @@ const RouteShell = ({
         })}
       </nav>
 
-      <section
-        className="breadcrumb-and-actions"
-        aria-label="현재 경로와 다음 액션"
-        aria-describedby="route-intent"
-      >
-        <div className="breadcrumb" role="navigation" aria-label="현재 경로">
-          {trail.map((item, index) => (
-            <span className="crumb" key={`${item.path}-${index}`}>
-              {index > 0 && <span aria-hidden="true">/</span>}
-              <button
-                type="button"
-                className="crumb-link"
-                onClick={() => onNavigate(item.path)}
-                disabled={item.path === route.path}
-                aria-current={item.path === route.path ? "page" : undefined}
-              >
-                {item.title}
-              </button>
-            </span>
-          ))}
-        </div>
-
-        <div className="primary-actions">
-          {primaryAction ? (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => onNavigate(primaryAction.path)}
-              aria-label={`${primaryAction.label}로 이동`}
-            >
-              {primaryAction.label}로 바로 가기
-            </button>
-          ) : null}
-
-          {secondaryActions.length > 0 ? (
-            <div
-              className="action-strip"
-              role="list"
-              aria-label="바로가기 액션"
-            >
-              {secondaryActions.map((action) => (
-                <button
-                  type="button"
-                  className="route-tab route-tab-subtle"
-                  key={action.path}
-                  onClick={() => onNavigate(action.path)}
-                  aria-label={`${action.label} 이동`}
-                >
-                  <span aria-hidden="true">{action.emoji}</span>
-                  <span>{action.label}</span>
-                </button>
+      <section className="route-command-band" aria-label="업무 탐색 가이드">
+        <div className="route-command-row route-command-row-with-breadcrumb">
+          <nav
+            className="route-breadcrumb"
+            aria-label="현재 경로"
+            aria-describedby="route-intent"
+          >
+            <span className="route-breadcrumb-label">현재 경로</span>
+            <div className="breadcrumb" role="navigation" aria-label="현재 경로">
+              {trail.map((item, index) => (
+                <span className="crumb" key={`${item.path}-${index}`}>
+                  {index > 0 && <span aria-hidden="true">/</span>}
+                  <button
+                    type="button"
+                    className="crumb-link"
+                    onClick={() => onNavigate(item.path)}
+                    disabled={item.path === route.path}
+                    aria-current={item.path === route.path ? "page" : undefined}
+                  >
+                    {item.title}
+                  </button>
+                </span>
               ))}
             </div>
-          ) : null}
+          </nav>
 
-          {sectionQuickActions.length === 0 ? (
-            <p className="route-command-empty" role="note">
-              지금 화면에서 바로 할 일이 없으면 위 메뉴에서 원하는 업무를 선택하세요.
-            </p>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="route-controls" aria-label="탐색 가이드">
-        <div className="route-command-row">
           {hasSectionTabs ? (
-            <>
-              <button
-                type="button"
-                className="route-tab route-tab-subtle"
-                onClick={() =>
-                  sectionFlow.previous && onNavigate(sectionFlow.previous)
-                }
-                disabled={!sectionFlow.previous}
-                aria-label="이전 섹션으로 이동"
-              >
-                이전 섹션
-              </button>
-              <button
-                type="button"
-                className="route-tab route-tab-subtle"
-                onClick={() =>
-                  sectionFlow.next && onNavigate(sectionFlow.next)
-                }
-                disabled={!sectionFlow.next}
-                aria-label="다음 섹션으로 이동"
-              >
-                다음 섹션
-              </button>
-            </>
+            <div className="route-section-status" role="status">
+              <p className="route-breadcrumb-label">섹션 상태</p>
+              <p className="small-note">
+                현재 위치: {isHome ? "홈" : routeReadout}
+              </p>
+              <p className="small-note">단계 {progressLabel}</p>
+            </div>
           ) : null}
-
-          <button
-            type="button"
-            className="route-tab route-tab-subtle"
-            onClick={() =>
-              globalFlow.previous && onNavigate(globalFlow.previous)
-            }
-            disabled={!globalFlow.previous}
-            aria-label="이전 화면으로 이동"
-          >
-            이전 화면
-          </button>
-          <button
-            type="button"
-            className="route-tab route-tab-subtle"
-            onClick={() => globalFlow.next && onNavigate(globalFlow.next)}
-            disabled={!globalFlow.next}
-            aria-label="다음 화면으로 이동"
-          >
-            다음 화면
-          </button>
-          <button
-            type="button"
-            className="route-tab route-tab-outline"
-            onClick={onRefresh}
-            disabled={isLoading}
-          >
-            {isLoading ? "새로고침 중" : "새로고침"}
-          </button>
         </div>
 
-        {!isHome && sectionFlow.next ? (
-          <button
-            type="button"
-            className="btn btn-primary route-accelerator"
-            onClick={() => sectionFlow.next && onNavigate(sectionFlow.next)}
-          >
-            다음 할 일로 이동
-          </button>
-        ) : null}
-
-        {hasSectionTabs ? (
-          <div
-            className="section-tabs"
-            role="tablist"
-            aria-label="하위 화면 탭"
-          >
-            {sectionTabs.map((item) => (
+        <nav className="section-tabs" role="tablist" aria-label="하위 화면 탭">
+          {hasSectionTabs ? (
+            sectionTabs.map((item) => (
               <button
                 type="button"
                 key={item.path}
@@ -261,14 +216,120 @@ const RouteShell = ({
                 <span aria-hidden="true">{item.emoji}</span>
                 <span>{item.label}</span>
               </button>
-            ))}
+            ))
+          ) : (
+            <p className="route-command-empty" role="note">
+              현재 화면은 단계 탭이 없습니다.
+            </p>
+          )}
+        </nav>
+
+        <section className="route-command-surface" aria-label="빠른 동작" aria-describedby="route-intent">
+          <div className="route-command-copy">
+            <p className="route-command-kicker">
+              {isHome ? "지금 바로 시작" : "이 화면의 다음 동작"}
+            </p>
+            <p className="route-command-title">{commandHint}</p>
+            <p className="route-command-subtitle">{commandAssist}</p>
           </div>
-        ) : (
-          <p className="route-command-empty" role="note">
-            이 화면은 단독 화면입니다.
-          </p>
-        )}
+
+          <div className="route-command-grid">
+            <div className="route-primary-actions">
+              {primaryAction ? (
+              <button
+                type="button"
+                className="btn btn-primary route-primary-cta"
+                onClick={() => onNavigate(primaryAction.path)}
+                title={`${primaryAction.label} 화면으로 이동`}
+                aria-label={`${primaryAction.label}로 이동`}
+              >
+                  {primaryAction.label} 시작
+              </button>
+            ) : null}
+              {!primaryAction && isHome ? (
+                <p className="route-command-empty" role="note">
+                  표시할 핵심 동작이 아직 없습니다.
+                </p>
+              ) : null}
+              {isHome && (
+                <button
+                  type="button"
+                  className="route-tab route-tab-subtle"
+                  onClick={() => onNavigate("/operations")}
+                  aria-label="운영 화면으로 이동"
+                >
+                  운영 시작하기
+                </button>
+              )}
+            </div>
+            <div className="route-command-meta" aria-live="polite">
+              <p className="route-command-kicker">바로가기</p>
+              <p className="route-command-subtitle">
+                {quickActionCountText}
+              </p>
+
+              <div className="route-quick-actions" role="list" aria-label="바로 가기 작업">
+                {secondaryActions.map((action) => (
+                <button
+                  type="button"
+                  className="route-tab route-tab-subtle route-quick-action"
+                  key={action.path}
+                  onClick={() => onNavigate(action.path)}
+                  aria-label={`${action.label} 빠른 이동`}
+                >
+                  <span aria-hidden="true" className="route-quick-action-emoji">
+                    {action.emoji}
+                  </span>
+                    <span>{action.label}</span>
+                  </button>
+                ))}
+                {quickActionsOverflow > 0 ? (
+                  <p className="route-command-overflow" role="note">
+                    외 {quickActionsOverflow}개는 아래 메뉴에서 이어서 이동하세요.
+                  </p>
+                ) : null}
+                {quickActionRows.length === 0 && (
+                <p className="route-command-empty" role="note">
+                  현재 표시할 바로가기 작업이 없습니다.
+                </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {showSectionFlowPanel ? (
+            <div className="route-command-stepper" role="group" aria-label="단계 이동">
+              <button
+                type="button"
+                className="route-tab route-tab-subtle"
+                onClick={() => sectionFlow.previous && onNavigate(sectionFlow.previous)}
+                disabled={!sectionFlow.previous}
+                aria-label="이전 업무로 이동"
+              >
+                이전 업무
+              </button>
+              <button
+                type="button"
+                className="route-tab route-tab-subtle"
+                onClick={() => sectionFlow.next && onNavigate(sectionFlow.next)}
+                disabled={!sectionFlow.next}
+                aria-label="다음 업무로 이동"
+              >
+                다음 업무
+              </button>
+            </div>
+          ) : null}
+        </section>
       </section>
+
+      <div className="hero-metrics" role="list" aria-label="주요 현황">
+        {heroMetrics.map((metric) => (
+          <article className="kpi-ribbon" role="listitem" key={metric.label}>
+            <p>{metric.label}</p>
+            <strong aria-label={metric.aria}>{metric.value}</strong>
+          </article>
+        ))}
+      </div>
     </header>
   );
 };

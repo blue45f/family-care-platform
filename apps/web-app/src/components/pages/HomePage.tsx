@@ -1,4 +1,8 @@
-import type { AppRoute, RouteTopNavItem, HomeLandingSectionBlueprint } from "../../routeConfig";
+import type {
+  AppRoute,
+  HomeLandingSectionBlueprint,
+  RouteTopNavItem,
+} from "../../routeConfig";
 import { formatWon } from "../../utils";
 
 type HomeScenarioValues = {
@@ -33,121 +37,154 @@ const HomePage = ({
     },
   ];
 
-  const entryActions = topCards.filter((item) => item.path !== "/");
-  const primaryAction = entryActions[0] ?? null;
-  const secondaryActions = entryActions.slice(1);
+  const onboardingFlow = [
+    {
+      step: 1,
+      title: "돌봄 기록",
+      description: "보호자와 대상, 돌봄 내용을 입력해요.",
+    },
+    {
+      step: 2,
+      title: "돌봄비 정산",
+      description: "돌봄 시간·금액을 넣으면 합계가 즉시 계산돼요.",
+    },
+    {
+      step: 3,
+      title: "보험청구",
+      description: "기관·금액·상태를 남겨 승인 흐름을 점검해요.",
+    },
+  ];
+
+  const quickActions = topCards
+    .filter((item) => item.path !== "/")
+    .slice(0, 4);
+
+  const primaryAction = quickActions[0] ?? null;
+  const secondaryActions = quickActions.slice(1);
+  const quickActionOverflow = Math.max(0, quickActions.length - 3);
+
+  const isDataReady =
+    scenario.activeHouseholds > 0 ||
+    scenario.totalSettlement > 0 ||
+    scenario.claimsLength > 0;
+  const quickActionSummary = quickActions.length > 0 ? `${quickActions.length}개` : "0개";
+
   const homeTasks = [
     {
       title: "돌봄 기록 남기기",
-      summary: "방문, 상담, 투약 같은 오늘의 돌봄 내용을 기록합니다.",
+      summary: "보호자·돌봄 받는 분·내용을 한 번에 입력",
       path: "/operations/care" as const,
+      primaryButton: "기록 입력으로 이동",
     },
     {
-      title: "돌봄비 계산하기",
-      summary: "돌봄 시간과 금액을 입력해 정산액을 확인합니다.",
+      title: "돌봄비 정산",
+      summary: "돌봄 시간·단가로 정산액을 계산",
       path: "/operations/settlement" as const,
+      primaryButton: "정산 화면으로 이동",
     },
     {
-      title: "보험청구 확인하기",
-      summary: "요청, 검토, 승인 상태를 빠르게 점검합니다.",
+      title: "보험청구 점검",
+      summary: "요청/검토/승인 상태를 빠르게 점검",
       path: "/operations/claims" as const,
+      primaryButton: "청구 화면으로 이동",
     },
   ];
 
   return (
-    <section className="view-stack">
+    <section className="view-stack home-view-stack">
       <section className="panel panel-overview home-start-panel">
-        <div className="home-hero-layout">
-          <div className="panel-head">
-            <div className="home-hero-copy">
-              <p className="kicker">빠른 시작</p>
-              <h2>가장 먼저 할 일을 바로 확인하세요</h2>
-              <p className="subtle">
-                처음이라도 3단계로 시작할 수 있습니다.
+        <div className="panel-head home-panel-head">
+          <div className="home-hero-copy">
+            <p className="kicker">빠른 시작</p>
+            <h2>3단계로 바로 시작하세요</h2>
+            <p className="subtle">
+              기록 → 정산 → 보험청구 순으로 진행하면 처음이더라도 빠르게 끝낼 수 있습니다.
+            </p>
+            {isDataReady ? (
+              <p className="home-start-current" role="status" aria-live="polite">
+                현재 상태 기준으로 <strong>다음 작업</strong>을 추천합니다.
               </p>
-            </div>
-            {hasReadOnlyError ? (
+            ) : (
               <p className="feedback feedback-warning" role="note">
-                읽기 전용 모드에서는 등록/수정이 제한될 수 있습니다.
+                아직 데이터가 없습니다. 지금 바로 기록을 시작해 주세요.
               </p>
+            )}
+          </div>
+          <div className="home-start-strip">
+            <p className="small-note">주요 바로가기</p>
+            <p className="home-start-count" aria-label={`${quickActionSummary}개 바로가기 항목`}>
+              {quickActionSummary}
+            </p>
+          </div>
+        </div>
+
+        <div className="home-hero-actions">
+          <div className="home-quick-grid compact" role="list" aria-label="빠른 이동">
+            {primaryAction ? (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => onNavigate(primaryAction.path)}
+                role="listitem"
+                aria-describedby="home-quick-start-description"
+              >
+                {primaryAction.label}로 시작하기
+              </button>
             ) : null}
+            {secondaryActions.map((item) => (
+              <button
+                type="button"
+                key={item.path}
+                className="route-tab route-tab-subtle"
+                onClick={() => onNavigate(item.path)}
+                aria-label={`${item.label}로 이동`}
+                role="listitem"
+                aria-describedby="home-quick-start-description"
+              >
+                <span aria-hidden="true">{item.emoji}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
           </div>
-
-          <div className="home-start-strip" aria-label="추천 시작 순서">
-            <p>오늘의 시작 흐름</p>
-            <p className="home-start-current" role="status" aria-live="polite">
-              지금은 <strong>돌봄 기록 → 정산 → 보험청구</strong> 순서를 권장해요.
+          {quickActionOverflow > 0 ? (
+            <p className="home-quick-overflow" role="note">
+              아래 전체 메뉴에서 더 많은 항목으로 이동할 수 있습니다.
             </p>
-          </div>
-
-          <div className="home-hero-callout" role="note">
-            <p className="home-hero-callout-title">처음 보는 사용자용 플로우</p>
-            <p className="home-hero-callout-subtle">
-              돌봄 기록에서 시작해 정산·보험청구로 이어서 진행하면 운영이 누락 없이 끝납니다.
-            </p>
-          </div>
-
-          {primaryAction ? (
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => onNavigate(primaryAction.path)}
-              disabled={
-                hasReadOnlyError &&
-                primaryAction.path !== "/operations" &&
-                primaryAction.path !== "/admin"
-              }
-            >
-              {primaryAction.label} 시작하기
-            </button>
           ) : null}
+        </div>
 
-          {secondaryActions.length > 0 ? (
-            <div className="home-quick-grid compact" role="list" aria-label="빠른 메뉴">
-              {secondaryActions.map((item) => (
-                <button
-                  type="button"
-                  className="home-quick-card"
-                  key={item.path}
-                  onClick={() => onNavigate(item.path)}
-                  aria-label={`${item.label} 시작`}
-                  disabled={
-                    hasReadOnlyError &&
-                    item.path !== "/operations" &&
-                    item.path !== "/admin"
-                  }
-                  role="listitem"
-                >
-                  <span aria-hidden="true" className="home-icon" role="presentation">
-                    {item.emoji}
-                  </span>
-                  <strong>{item.label}</strong>
-                  <p>{item.summary ?? "해당 화면으로 이동해 작업을 시작하세요."}</p>
-                </button>
-              ))}
-            </div>
-          ) : null}
-
-          {entryActions.length === 0 ? (
-            <p className="route-command-empty">현재 표시할 빠른 메뉴가 없습니다.</p>
-          ) : null}
+        <div className="home-flow-list-wrap">
+          <p className="home-quick-title">오늘의 업무 흐름</p>
+          <ol className="home-flow-list" aria-label="시작 가이드">
+            {onboardingFlow.map((flow) => (
+              <li key={flow.title}>
+                <span className="home-flow-index" aria-hidden="true">
+                  {flow.step}
+                </span>
+                <span className="home-flow-copy">
+                  <strong>{flow.title}</strong>
+                  <small>{flow.description}</small>
+                </span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
       <section className="home-main-grid">
         <section className="panel panel-summary">
           <div className="panel-head">
-            <h2>추천 시작하기</h2>
-            <p className="subtle">오늘 바로 처리해야 할 핵심 흐름입니다.</p>
+            <h2>오늘 바로 처리</h2>
+            <p className="subtle">한 번 누르면 바로 다음 화면으로 이동합니다.</p>
           </div>
-          <ol className="home-task-list" aria-label="오늘의 추천 작업">
+          <ol className="home-task-list" aria-label="추천 작업">
             {homeTasks.map((task, index) => (
               <li key={task.path}>
                 <button
                   type="button"
                   className="home-task-row"
                   onClick={() => onNavigate(task.path)}
-                  aria-label={`${task.title} 화면으로 이동`}
+                  aria-label={`${task.title}로 이동`}
                 >
                   <span className="home-task-index" aria-hidden="true">
                     {index + 1}
@@ -164,8 +201,8 @@ const HomePage = ({
 
         <section className="panel panel-overview">
           <div className="panel-head">
-            <h2>현재 상태</h2>
-            <p className="subtle">오늘 확인할 돌봄 운영 현황입니다.</p>
+            <h2>현재 핵심 지표</h2>
+            <p className="subtle">의사결정에 필요한 핵심 숫자만 표시</p>
           </div>
           <div className="kpi-ribbons kpi-ribbons--compact">
             {kpis.map((metric) => (
@@ -182,15 +219,21 @@ const HomePage = ({
         <div className="panel-head">
           <div>
             <h2>전체 메뉴</h2>
-            <p className="subtle">
-              필요한 일을 고르면 해당 화면으로 바로 이동합니다.
-            </p>
+          <p className="subtle">운영·관리를 빠르게 찾아 필요한 작업으로 바로 이동하세요.</p>
           </div>
+          {hasReadOnlyError ? (
+            <p className="feedback feedback-warning" role="note">
+              조회 전용 모드입니다. 이동은 가능하지만 저장/수정은 제한됩니다.
+            </p>
+          ) : null}
         </div>
+        <p id="home-quick-start-description" className="sr-only">
+          버튼을 누르면 이동할 수 있는 빠른 시작 경로입니다.
+        </p>
 
         {sections.length === 0 ? (
           <p className="feedback feedback-error" role="note">
-            현재 표시할 메뉴가 없습니다. 잠시 후 다시 시도해 주세요.
+            현재 표시할 메뉴가 없습니다. 잠시 후 새로고침해 주세요.
           </p>
         ) : null}
 

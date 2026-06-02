@@ -53,6 +53,8 @@ const renderOverview = ({
   claims,
   totalClaimExpected,
   onNavigate,
+  isReadOnly,
+  nextRoutePath,
 }: {
   activeHouseholds: number;
   pendingClaims: number;
@@ -61,17 +63,46 @@ const renderOverview = ({
   claims: PlatformData["claims"];
   totalClaimExpected: number;
   onNavigate: (path: NonHomeRoutePath) => void;
+  isReadOnly: boolean;
+  nextRoutePath: NonHomeRoutePath | null;
 }): ReactNode => {
+  const pendingNotice =
+    pendingClaims > 0
+      ? `미처리 청구가 ${pendingClaims}건 있습니다. 먼저 상태를 점검하면 마감이 빨라집니다.`
+      : "미처리 청구가 없습니다. 먼저 돌봄 기록을 입력하면 정산과 청구가 바로 이어집니다.";
+
+  const nextActions = [
+      {
+        title: "돌봄 기록",
+        value: `${claims.length}건`,
+        path: "/operations/care" as const,
+        action: "새로 입력",
+        helper: "돌봄 내용이 있어야 정산과 청구 흐름이 정확해집니다.",
+      },
+      {
+        title: "확인할 청구",
+        value: `${pendingClaims}건`,
+        path: "/operations/claims" as const,
+        action: "상태 확인",
+        helper: "요청·검토·승인 흐름을 먼저 점검하세요.",
+      },
+      {
+        title: "예상 정산액",
+        value: formatWon(totalClaimExpected),
+        path: "/operations/settlement" as const,
+        action: "정산 계산",
+        helper: "시간·금액 기준 합계를 점검해 마감 속도를 높이세요.",
+      },
+    ];
+
   return (
     <section className="panel panel-ops panel-overview">
       <div className="panel-head">
         <div className="panel-title-wrap">
           <span className="panel-chip">운영 개요</span>
-          <h2>오늘 확인할 돌봄 현황</h2>
+          <h2>오늘 처리 우선순위</h2>
         </div>
-        <p className="subtle">
-          돌봄 기록, 정산, 보험청구 중 먼저 확인할 일만 보여줍니다.
-        </p>
+        <p className="subtle">{pendingNotice}</p>
       </div>
 
       <div className="kpi-ribbons">
@@ -93,65 +124,52 @@ const renderOverview = ({
         </article>
       </div>
 
-      <div className="kpi-table-wrap">
-        <table className="kpi-table">
-          <caption className="sr-only">돌봄 관리 현황</caption>
-          <thead>
-            <tr>
-              <th scope="col">항목</th>
-              <th scope="col">현재 수치</th>
-              <th scope="col">권장 다음 작업</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th scope="row">돌봄 기록</th>
-              <td>
-                <strong>{claims.length}건</strong>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  className="inline-link"
-                  onClick={() => onNavigate("/operations/care")}
-                >
-                  새 돌봄 기록 남기기
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">확인할 청구</th>
-              <td>
-                <strong>{pendingClaims}건</strong>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  className="inline-link"
-                  onClick={() => onNavigate("/operations/claims")}
-                >
-                  청구 상태 확인하기
-                </button>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">청구 예상 금액</th>
-              <td>
-                <strong>{formatWon(totalClaimExpected)}</strong>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  className="inline-link"
-                  onClick={() => onNavigate("/operations/settlement")}
-                >
-                  정산 금액 함께 확인
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="ops-overview-actions">
+        {nextActions.map((item, index) => (
+          <article key={item.title} className="control-card operation-overview-action">
+            <div>
+              <p>{item.title}</p>
+              <strong>{item.value}</strong>
+              <span className="small-note">{item.helper}</span>
+            </div>
+            <button
+              type="button"
+              className={`route-tab route-tab-subtle ${index === 0 ? "operation-overview-action-primary" : ""}`}
+              disabled={isReadOnly}
+              title={
+                isReadOnly
+                  ? "조회 전용 모드에서는 이동만 가능합니다."
+                  : `${item.action} 화면으로 이동`
+              }
+              onClick={() => {
+                if (isReadOnly) {
+                  return;
+                }
+                onNavigate(item.path);
+              }}
+            >
+              {item.action}
+            </button>
+          </article>
+        ))}
       </div>
+
+      {isReadOnly ? (
+        <p className="small-note" role="note">
+          조회 전용 모드입니다. 화면 이동은 가능하지만 기록·정산·청구 편집은 잠시 제한됩니다.
+        </p>
+      ) : null}
+
+      {nextRoutePath ? (
+        <button
+          type="button"
+          className="route-tab route-tab-subtle"
+          onClick={() => onNavigate(nextRoutePath)}
+          disabled={isReadOnly}
+        >
+          다음 단계로 이동
+        </button>
+      ) : null}
     </section>
   );
 };
@@ -185,6 +203,9 @@ const renderCareForm = (
         <span className="panel-chip">{moduleMeta.panelChip}</span>
         <h2>{moduleMeta.panelTitle}</h2>
         <p className="subtle">{moduleMeta.panelDescription}</p>
+        <p className="small-note" role="note">
+          대상자, 담당자, 내용이 모두 입력되면 저장 가능해집니다.
+        </p>
       </div>
 
       <form className="row" onSubmit={onSubmitProtected}>
@@ -270,7 +291,7 @@ const renderCareForm = (
 
       {!canSubmit && !isSubmitting ? (
         <p className="small-note" role="note">
-          보호자명, 돌봄 담당자, 돌봄 내용은 모두 입력해야 저장할 수 있습니다.
+          대상자, 담당자, 내용은 필수 입력입니다.
         </p>
       ) : null}
 
@@ -291,7 +312,7 @@ const renderCareForm = (
         </ul>
       ) : (
         <p className="empty">
-          아직 돌봄 기록이 없습니다. 오늘 있었던 일을 먼저 남겨보세요.
+          아직 돌봄 기록이 없습니다. 오늘은 기록부터 시작해 주세요.
         </p>
       )}
     </section>
@@ -330,6 +351,9 @@ const renderSettlementForm = (
         <span className="panel-chip">{moduleMeta.panelChip}</span>
         <h2>{moduleMeta.panelTitle}</h2>
         <p className="subtle">{moduleMeta.panelDescription}</p>
+        <p className="small-note" role="note">
+          시간 × 금액이 자동 계산되어 정산액이 즉시 표시됩니다.
+        </p>
       </div>
 
       <form className="row" onSubmit={onSubmitProtected}>
@@ -414,7 +438,7 @@ const renderSettlementForm = (
 
       {!canSubmit && !isSubmitting ? (
         <p className="small-note" role="note">
-          보호자명, 돌봄 시간, 시간당 금액은 정산 저장에 필요합니다.
+          대상자명, 돌봄 시간, 시간당 금액은 필수 입력입니다.
         </p>
       ) : null}
 
@@ -440,7 +464,7 @@ const renderSettlementForm = (
         </ul>
       ) : (
         <p className="empty">
-          아직 정산 내역이 없습니다. 돌봄 시간과 금액을 입력해 보세요.
+          아직 정산 내역이 없습니다. 돌봄 기록을 입력하면 정산값이 쌓입니다.
         </p>
       )}
     </section>
@@ -479,6 +503,9 @@ const renderClaims = (
         <span className="panel-chip">{moduleMeta.panelChip}</span>
         <h2>{moduleMeta.panelTitle}</h2>
         <p className="subtle">{moduleMeta.panelDescription}</p>
+        <p className="small-note" role="note">
+          청구 대상자·기관·금액을 남기면 승인 흐름 추적이 쉬워집니다.
+        </p>
       </div>
 
       <form className="row" onSubmit={onSubmitProtected}>
@@ -583,7 +610,7 @@ const renderClaims = (
 
       {!canSubmit && !isSubmitting ? (
         <p className="small-note" role="note">
-          보호자명, 병원명, 청구액은 모두 입력해야 저장할 수 있습니다.
+          대상자명, 병원명, 청구액은 필수 입력입니다.
         </p>
       ) : null}
 
@@ -635,7 +662,7 @@ const renderClaims = (
         </ul>
       ) : (
         <p className="empty">
-          아직 보험청구 내역이 없습니다. 병원/기관과 예상 금액을 입력해 보세요.
+          아직 보험청구가 없습니다. 기관/병원과 금액을 입력해 청구를 시작하세요.
         </p>
       )}
     </section>
@@ -645,29 +672,68 @@ const renderClaims = (
 const renderSectionGuide = ({
   approvalRate,
   nextAction,
+  nextRoutePath,
+  onNavigate,
 }: {
   approvalRate: number;
   nextAction: string;
+  nextRoutePath: NonHomeRoutePath | null;
+  onNavigate: (path: NonHomeRoutePath) => void;
 }): ReactNode => (
   <section className="panel panel-summary">
     <div className="panel-head">
       <h2>다음에 확인할 일</h2>
-      <p className="subtle">현재 화면 기준에서 이어서 할 일만 보여드립니다.</p>
+      <p className="subtle">지금은 이 순서로 점검하면 일이 빨라집니다.</p>
     </div>
     <div className="kpi-ribbons">
       <article className="kpi-ribbon">
         <p>추천</p>
         <strong>{nextAction}</strong>
-        <span className="small-note">권장 순서로 진행하면 누락이 줄어듭니다.</span>
+        <span className="small-note">
+          이 순서를 따라가면 승인 보류·누락을 줄일 수 있습니다.
+        </span>
       </article>
       <article className="kpi-ribbon">
         <p>현재</p>
         <strong>청구 승인률 {formatRate(approvalRate)}</strong>
-        <span className="small-note">목표: 청구 상태 정합성 유지</span>
+        <span className="small-note">목표: 상태 정합성 유지</span>
       </article>
+      {nextRoutePath ? (
+        <article className="kpi-ribbon">
+          <p>바로가기</p>
+          <strong>다음 단계 진행</strong>
+          <button
+            type="button"
+            className="route-tab route-tab-subtle"
+            onClick={() => onNavigate(nextRoutePath)}
+          >
+            {nextAction}
+          </button>
+        </article>
+      ) : null}
     </div>
   </section>
 );
+
+const getOperationsNextRoutePath = (
+  modules: readonly OperationsRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): NonHomeRoutePath | null => {
+  if (activeRoutePath === "/operations") {
+    return "/operations/care";
+  }
+
+  const ordered = modules.length > 0 ? modules : operationsModuleSequence;
+  const activeModule = getOperationsActiveModule(ordered, activeRoutePath);
+  const activeIndex = ordered.indexOf(activeModule);
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+
+  if (!next) {
+    return null;
+  }
+
+  return operationsModuleRoute[next];
+};
 
 const getOperationsActiveModule = (
   modules: readonly OperationsRouteModule[],
@@ -746,6 +812,8 @@ const OperationsPage = ({
         claims: data.claims,
         totalClaimExpected: data.totalClaimExpected,
         onNavigate,
+        isReadOnly,
+        nextRoutePath: getOperationsNextRoutePath(modules, activeRoutePath),
       }),
     care: () =>
       renderCareForm(
@@ -775,6 +843,7 @@ const OperationsPage = ({
 
   const visibleModules = getOperationsFocusModules(modules, activeRoutePath);
   const nextAction = getOperationsNextAction(modules, activeRoutePath);
+  const nextRoutePath = getOperationsNextRoutePath(modules, activeRoutePath);
 
   return (
     <section className="view-stack">
@@ -836,6 +905,8 @@ const OperationsPage = ({
       {renderSectionGuide({
         approvalRate: data.approvalRate,
         nextAction,
+        nextRoutePath,
+        onNavigate,
       })}
     </section>
   );

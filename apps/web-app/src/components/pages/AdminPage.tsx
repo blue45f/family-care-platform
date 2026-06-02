@@ -61,7 +61,7 @@ const renderKpiTable = ({
         <div>
           <span className="panel-chip">{adminModuleMeta.kpi.panelChip}</span>
           <h2>{adminModuleMeta.kpi.panelTitle}</h2>
-          <p className="subtle">{adminModuleMeta.kpi.panelDescription}</p>
+          <p className="subtle">오늘 운영 판단에 바로 쓰는 지표만 보여드릴게요.</p>
         </div>
       </div>
 
@@ -88,13 +88,13 @@ const renderKpiTable = ({
               adminOverview.monthlyRecurringRevenue || data.kpiMonthlyRevenue,
             )}
           </strong>
-          <span className="small-note">요금제 기반 예산</span>
+          <span className="small-note">요금제 기반 수익 기준</span>
         </article>
       </div>
 
       <div className="kpi-table-wrap">
         <table className="kpi-table">
-          <caption className="sr-only">서비스 전체 현황</caption>
+          <caption className="sr-only">서비스 운영 지표 표</caption>
           <thead>
             <tr>
               <th scope="col">항목</th>
@@ -126,14 +126,14 @@ const renderKpiTable = ({
                   )}
                 </strong>
               </td>
-              <td>요금제를 이용 중인 비율</td>
+            <td>요금제 이용 비율</td>
             </tr>
             <tr>
               <th scope="row">예상 연 금액</th>
               <td>
                 <strong>{formatWon(data.kpiAnnualRevenue)}</strong>
               </td>
-              <td>현재 월 금액 기준 12개월 추정</td>
+              <td>현재 월 금액 기준 연 환산치</td>
             </tr>
           </tbody>
         </table>
@@ -169,7 +169,7 @@ const renderTrends = ({
 
     {!isUsingServerTrend ? (
       <p className="trend-fallback-banner" role="note" aria-live="polite">
-        서버 월별 집계를 불러오지 못해 현재 브라우저 데이터로 계산했습니다.
+        서버 월별 집계를 불러오지 못해 최근 입력 데이터 기반으로 계산했습니다.
       </p>
     ) : null}
 
@@ -221,13 +221,15 @@ const renderTrends = ({
                 ? `${formatSignedRatePoint(entry.approvalRateDelta)} (${formatSignedRate(entry.approvalRateDeltaRate)})`
                 : "비교 데이터 없음"}
             </p>
-            <p className="small-note">
+          <p className="small-note">
               현재 값: 청구 {entry.claimCount}건, 승인 {entry.approvedClaimCount}건
             </p>
           </article>
         ))
       ) : (
-        <p className="empty">아직 표시할 월별 변화 데이터가 없습니다.</p>
+        <p className="empty">
+          월별 데이터가 아직 충분하지 않습니다. 정산/청구를 입력하면 추이가 채워집니다.
+        </p>
       )}
     </div>
   </section>
@@ -256,7 +258,7 @@ const renderPlans = ({
     <div className="panel-head">
       <span className="panel-chip">{adminModuleMeta.plans.panelChip}</span>
       <h2>{adminModuleMeta.plans.panelTitle}</h2>
-      <p className="subtle">{adminModuleMeta.plans.panelDescription}</p>
+      <p className="subtle">월 요금·할인율·이용 가구 수를 바꾸면 결과가 바로 반영됩니다.</p>
     </div>
 
     <div className="plan-grid">
@@ -271,7 +273,7 @@ const renderPlans = ({
 
         return (
           <article key={plan.id} className="plan-card">
-            <div className="plan-head">
+      <div className="plan-head">
               <input
                 value={draft.name}
                 onChange={(event) =>
@@ -327,18 +329,21 @@ const renderPlans = ({
               />
             </label>
             <label>
-              설명
+              메모
               <input
                 value={draft.description}
                 onChange={(event) =>
                   onPlanDescriptionInput(plan.id, event.target.value)
                 }
-                aria-label={`${draft.name} 설명 입력`}
+                aria-label={`${draft.name} 메모 입력`}
                 disabled={isReadOnly || savingPlanId === plan.id}
               />
             </label>
 
             <div className="plan-feature">{draft.featureFlags.join(" · ")}</div>
+            <p className="small-note" role="note">
+              요금/할인율/이용 가구 수가 함께 월 수익에 반영됩니다.
+            </p>
 
             <div className="plan-footer">
               <p>
@@ -354,7 +359,7 @@ const renderPlans = ({
                 onClick={() => void submitPlan(plan.id)}
                 disabled={isReadOnly || savingPlanId === plan.id}
               >
-                {savingPlanId === plan.id ? "저장 중..." : "요금 저장"}
+                {savingPlanId === plan.id ? "저장 중..." : "요금 반영"}
               </button>
             </div>
           </article>
@@ -388,9 +393,9 @@ const renderSimulator = ({
       <p className="subtle">{adminModuleMeta.simulator.panelDescription}</p>
     </div>
 
-    <div className="sim-grid">
-      <label className="control-card">
-        요금 변화
+      <div className="sim-grid">
+        <label className="control-card">
+          요금 변화
         <input
           type="range"
           min={0}
@@ -470,7 +475,7 @@ const renderSimulator = ({
       </article>
     </div>
 
-    <div className="recommend-box">
+        <div className="recommend-box">
       <h3>확인 가이드</h3>
       <ul>
         {growthRecommendations.map((item) => (
@@ -484,16 +489,22 @@ const renderSimulator = ({
 const renderSummary = ({
   kpiMonthlyRevenue,
   planPotentialAnnual,
+  onNavigate,
+  nextRoutePath,
+  nextActionText,
 }: {
   kpiMonthlyRevenue: number;
   planPotentialAnnual: number;
+  onNavigate: (path: NonHomeRoutePath) => void;
+  nextRoutePath: NonHomeRoutePath | null;
+  nextActionText: string;
 }): ReactNode => (
   <section className="panel panel-admin panel-summary">
-    <div className="panel-head">
-      <span className="panel-chip">{adminModuleMeta.summary.panelChip}</span>
-      <h2>{adminModuleMeta.summary.panelTitle}</h2>
-      <p className="subtle">{adminModuleMeta.summary.panelDescription}</p>
-    </div>
+      <div className="panel-head">
+        <span className="panel-chip">{adminModuleMeta.summary.panelChip}</span>
+        <h2>{adminModuleMeta.summary.panelTitle}</h2>
+        <p className="subtle">핵심 수치를 바탕으로 다음 점검 포인트를 바로 확인하세요.</p>
+      </div>
     <div className="growth-summary">
       <p>
         <strong>현재 월 관리 금액:</strong> {formatWon(kpiMonthlyRevenue)}
@@ -502,8 +513,17 @@ const renderSummary = ({
         <strong>예상 연 금액:</strong> {formatWon(planPotentialAnnual)}
       </p>
       <p className="small-note">
-        요금, 이용 가구 수, 보험청구 승인률을 함께 보면 다음 관리 방향을 정하기 쉽습니다.
+        요금, 이용 가구 수, 보험청구 승인률을 함께 보면 다음 관리 우선순위를 정하기 쉽습니다.
       </p>
+      {nextRoutePath ? (
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => onNavigate(nextRoutePath)}
+        >
+          {nextActionText}
+        </button>
+      ) : null}
     </div>
   </section>
 );
@@ -549,6 +569,9 @@ const AdminPage = ({
       renderSummary({
         kpiMonthlyRevenue: data.kpiMonthlyRevenue,
         planPotentialAnnual: data.planPotentialAnnual,
+        onNavigate,
+        nextRoutePath: getAdminNextRoutePath(modules, activeRoutePath),
+        nextActionText: getAdminNextAction(modules, activeRoutePath),
       }),
   };
 
@@ -616,9 +639,20 @@ const AdminPage = ({
       ))}
 
       <section className="panel panel-summary">
-        <h2 className="sr-only">요약 액션</h2>
+        <div className="panel-head">
+          <span className="panel-chip">다음 액션</span>
+          <h2>오늘의 실행 순서</h2>
+          <p className="subtle">
+            순서를 그대로 따라가면 오늘 운영 점검을 빠르게 정리할 수 있습니다.
+          </p>
+        </div>
         <div className="recommend-box">
-          <p className="small-note">추천 순서: {nextAction}</p>
+          <p className="recommend-box-main">
+            <strong>권장 순서:</strong> {nextAction}
+          </p>
+          <p className="small-note">
+            현재 화면에서 핵심 지표를 확인하고, 다음 화면에서 관리 대상을 점검하세요.
+          </p>
         </div>
       </section>
     </section>
@@ -685,6 +719,26 @@ const getAdminNextAction = (
   }
 
   return `${adminModuleMeta[next].title}로 이동`;
+};
+
+const getAdminNextRoutePath = (
+  modules: readonly AdminRouteModule[],
+  activeRoutePath: NonHomeRoutePath,
+): NonHomeRoutePath | null => {
+  if (activeRoutePath === "/admin") {
+    return "/admin/overview";
+  }
+
+  const ordered = modules.length > 0 ? modules : adminModuleSequence;
+  const activeModule = getAdminActiveModule(ordered, activeRoutePath);
+  const activeIndex = ordered.indexOf(activeModule);
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+
+  if (!next) {
+    return null;
+  }
+
+  return adminModuleRoute[next];
 };
 
 export { AdminPage };
