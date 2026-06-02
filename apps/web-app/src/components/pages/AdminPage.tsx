@@ -41,6 +41,20 @@ const renderKpiTable = ({
   const approvalRate =
     data.claims.length > 0 ? (approvedClaims / data.claims.length) * 100 : 0;
 
+  const totalHouseholds =
+    adminOverview.activeHouseholds || data.activeHouseholds;
+  const totalSettlement =
+    adminOverview.thisMonthSettlement || data.totalSettlement;
+  const claimRate = adminOverview.totalClaims
+    ? adminOverview.conversionRate
+    : approvalRate;
+  const claimCount = adminOverview.totalClaims
+    ? adminOverview.totalClaims
+    : data.claims.length;
+  const approvedCount = adminOverview.totalClaims
+    ? adminOverview.approvedClaims
+    : approvedClaims;
+
   return (
     <section className="panel panel-admin panel-overview">
       <div className="panel-head">
@@ -49,6 +63,33 @@ const renderKpiTable = ({
           <h2>{adminModuleMeta.kpi.panelTitle}</h2>
           <p className="subtle">{adminModuleMeta.kpi.panelDescription}</p>
         </div>
+      </div>
+
+      <div className="kpi-ribbons">
+        <article className="kpi-ribbon">
+          <p>돌봄 가구</p>
+          <strong>{totalHouseholds}개</strong>
+          <span className="small-note">현재 관리 중인 가구 수</span>
+        </article>
+        <article className="kpi-ribbon">
+          <p>이번 달 정산액</p>
+          <strong>{formatWon(totalSettlement)}</strong>
+          <span className="small-note">돌봄비 누적 합계</span>
+        </article>
+        <article className="kpi-ribbon">
+          <p>보험청구 승인률</p>
+          <strong>{formatRate(claimRate)}</strong>
+          <span className="small-note">{approvedCount}/{claimCount}건</span>
+        </article>
+        <article className="kpi-ribbon">
+          <p>월 관리 금액</p>
+          <strong>
+            {formatWon(
+              adminOverview.monthlyRecurringRevenue || data.kpiMonthlyRevenue,
+            )}
+          </strong>
+          <span className="small-note">요금제 기반 예산</span>
+        </article>
       </div>
 
       <div className="kpi-table-wrap">
@@ -63,52 +104,13 @@ const renderKpiTable = ({
           </thead>
           <tbody>
             <tr>
-              <th scope="row">돌봄 가구</th>
-              <td>
-                <strong>
-                  {adminOverview.activeHouseholds || data.activeHouseholds}개
-                </strong>
-              </td>
-              <td>현재 관리 중인 가구 수</td>
-            </tr>
-            <tr>
-              <th scope="row">이번 달 정산액</th>
-              <td>
-                <strong>
-                  {formatWon(
-                    adminOverview.thisMonthSettlement || data.totalSettlement,
-                  )}
-                </strong>
-              </td>
-              <td>이번 달에 기록된 정산 합계</td>
-            </tr>
-            <tr>
-              <th scope="row">보험청구 승인률</th>
-              <td>
-                <strong>
-                  {formatRate(
-                    adminOverview.totalClaims
-                      ? adminOverview.conversionRate
-                      : approvalRate,
-                  )}
-                </strong>
-              </td>
-              <td>
-                {adminOverview.totalClaims
-                  ? `${adminOverview.approvedClaims}/${adminOverview.totalClaims} 건 승인`
-                  : `총 ${data.claims.length}건 중 ${approvedClaims}건`}
-              </td>
-            </tr>
-            <tr>
               <th scope="row">가구당 평균 정산액</th>
               <td>
                 <strong>
                   {formatWon(
                     adminOverview.averageSettlement ||
                       (data.activeHouseholds > 0
-                        ? Math.round(
-                            data.totalSettlement / data.activeHouseholds,
-                          )
+                        ? Math.round(data.totalSettlement / data.activeHouseholds)
                         : 0),
                   )}
                 </strong>
@@ -116,24 +118,11 @@ const renderKpiTable = ({
               <td>가구별 평균 돌봄비</td>
             </tr>
             <tr>
-              <th scope="row">월 관리 금액</th>
-              <td>
-                <strong>
-                  {formatWon(
-                    adminOverview.monthlyRecurringRevenue ||
-                      data.kpiMonthlyRevenue,
-                  )}
-                </strong>
-              </td>
-              <td>요금제 기준 예상 월 금액</td>
-            </tr>
-            <tr>
               <th scope="row">요금제 이용률</th>
               <td>
                 <strong>
                   {formatRate(
-                    adminOverview.planTakeRate ||
-                      data.scenarioRevenue.conversionRate,
+                    adminOverview.planTakeRate || data.scenarioRevenue.conversionRate,
                   )}
                 </strong>
               </td>
@@ -144,7 +133,7 @@ const renderKpiTable = ({
               <td>
                 <strong>{formatWon(data.kpiAnnualRevenue)}</strong>
               </td>
-              <td>현재 월 금액을 1년으로 계산한 값</td>
+              <td>현재 월 금액 기준 12개월 추정</td>
             </tr>
           </tbody>
         </table>
@@ -203,8 +192,7 @@ const renderTrends = ({
                   : "전월 비교 데이터 없음"
               }`}
             >
-              정산액{" "}
-              {entry.hasPreviousMonth
+              정산액 {entry.hasPreviousMonth
                 ? `${formatSignedWon(entry.settlementDelta)} (${formatSignedRate(entry.settlementDeltaRate)})`
                 : "비교 데이터 없음"}
             </p>
@@ -217,8 +205,7 @@ const renderTrends = ({
                   : "전월 비교 데이터 없음"
               }`}
             >
-              청구 건수{" "}
-              {entry.hasPreviousMonth
+              청구 건수 {entry.hasPreviousMonth
                 ? `${entry.claimCountDelta} (${formatSignedRate(entry.claimCountDeltaRate)})`
                 : "비교 데이터 없음"}
             </p>
@@ -230,14 +217,12 @@ const renderTrends = ({
                   : "전월 비교 데이터 없음"
               }`}
             >
-              승인률{" "}
-              {entry.hasPreviousMonth
+              승인률 {entry.hasPreviousMonth
                 ? `${formatSignedRatePoint(entry.approvalRateDelta)} (${formatSignedRate(entry.approvalRateDeltaRate)})`
                 : "비교 데이터 없음"}
             </p>
             <p className="small-note">
-              현재 값: 청구 {entry.claimCount}건, 승인{" "}
-              {entry.approvedClaimCount}건
+              현재 값: 청구 {entry.claimCount}건, 승인 {entry.approvedClaimCount}건
             </p>
           </article>
         ))
@@ -360,8 +345,7 @@ const renderPlans = ({
                 <span
                   aria-label={`월 예상 금액 ${formatWon(planContribution)}, 연 예상 금액 ${formatWon(Math.round(annualContribution))}`}
                 >
-                  월 {formatWon(planContribution)} · 연{" "}
-                  {formatWon(Math.round(annualContribution))}
+                  월 {formatWon(planContribution)} · 연 {formatWon(Math.round(annualContribution))}
                 </span>
               </p>
               <button
@@ -476,7 +460,7 @@ const renderSimulator = ({
       <article>
         <p>청구 반영 후 월 금액</p>
         <strong
-          aria-label={`청구 반영 후 월 금액 ${formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}`}
+          aria-label={`예상 월 금액 ${formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}`}
         >
           {formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}
         </strong>
@@ -518,8 +502,7 @@ const renderSummary = ({
         <strong>예상 연 금액:</strong> {formatWon(planPotentialAnnual)}
       </p>
       <p className="small-note">
-        요금, 이용 가구 수, 보험청구 승인률을 함께 보면 다음 관리 방향을 정하기
-        쉽습니다.
+        요금, 이용 가구 수, 보험청구 승인률을 함께 보면 다음 관리 방향을 정하기 쉽습니다.
       </p>
     </div>
   </section>
@@ -589,9 +572,7 @@ const AdminPage = ({
       >
         <div className="panel-head">
           <div className="panel-title-wrap">
-            <span className="panel-chip">
-              {compositionMeta.compositionChip}
-            </span>
+            <span className="panel-chip">{compositionMeta.compositionChip}</span>
             <h2>{compositionMeta.compositionTitle}</h2>
           </div>
           <p className="subtle">{compositionMeta.compositionDescription}</p>
@@ -617,7 +598,7 @@ const AdminPage = ({
                 aria-current={isActiveModule ? "page" : undefined}
                 title={config.note}
               >
-                <p className="subtle" aria-hidden="true">
+                <p className="small-note" aria-hidden="true">
                   {config.chip}
                 </p>
                 <strong>{config.title}</strong>
@@ -637,9 +618,7 @@ const AdminPage = ({
       <section className="panel panel-summary">
         <h2 className="sr-only">요약 액션</h2>
         <div className="recommend-box">
-          <p className="small-note">
-            추천 순서: {nextAction}
-          </p>
+          <p className="small-note">추천 순서: {nextAction}</p>
         </div>
       </section>
     </section>

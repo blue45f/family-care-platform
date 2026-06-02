@@ -52,6 +52,7 @@ const renderOverview = ({
   approvalRate,
   claims,
   totalClaimExpected,
+  onNavigate,
 }: {
   activeHouseholds: number;
   pendingClaims: number;
@@ -59,6 +60,7 @@ const renderOverview = ({
   approvalRate: number;
   claims: PlatformData["claims"];
   totalClaimExpected: number;
+  onNavigate: (path: NonHomeRoutePath) => void;
 }): ReactNode => {
   return (
     <section className="panel panel-ops panel-overview">
@@ -68,7 +70,7 @@ const renderOverview = ({
           <h2>오늘 확인할 돌봄 현황</h2>
         </div>
         <p className="subtle">
-          돌봄 기록, 정산, 보험청구 중 먼저 확인할 일을 보여줍니다.
+          돌봄 기록, 정산, 보험청구 중 먼저 확인할 일만 보여줍니다.
         </p>
       </div>
 
@@ -98,7 +100,7 @@ const renderOverview = ({
             <tr>
               <th scope="col">항목</th>
               <th scope="col">현재 수치</th>
-              <th scope="col">다음 할 일</th>
+              <th scope="col">권장 다음 작업</th>
             </tr>
           </thead>
           <tbody>
@@ -107,21 +109,45 @@ const renderOverview = ({
               <td>
                 <strong>{claims.length}건</strong>
               </td>
-              <td>새 돌봄 기록 남기기</td>
+              <td>
+                <button
+                  type="button"
+                  className="inline-link"
+                  onClick={() => onNavigate("/operations/care")}
+                >
+                  새 돌봄 기록 남기기
+                </button>
+              </td>
             </tr>
             <tr>
               <th scope="row">확인할 청구</th>
               <td>
                 <strong>{pendingClaims}건</strong>
               </td>
-              <td>청구 상태 확인하기</td>
+              <td>
+                <button
+                  type="button"
+                  className="inline-link"
+                  onClick={() => onNavigate("/operations/claims")}
+                >
+                  청구 상태 확인하기
+                </button>
+              </td>
             </tr>
             <tr>
               <th scope="row">청구 예상 금액</th>
               <td>
                 <strong>{formatWon(totalClaimExpected)}</strong>
               </td>
-              <td>정산 내용과 함께 확인하기</td>
+              <td>
+                <button
+                  type="button"
+                  className="inline-link"
+                  onClick={() => onNavigate("/operations/settlement")}
+                >
+                  정산 금액 함께 확인
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -140,8 +166,13 @@ const renderCareForm = (
   const moduleMeta = operationsModuleMeta[module];
   const { careLogDraft } = data;
   const isBusy = isReadOnly || isSubmitting;
+  const canSubmit =
+    careLogDraft.recipient.trim() &&
+    careLogDraft.caregiver.trim() &&
+    careLogDraft.note.trim();
+
   const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
-    if (isBusy) {
+    if (isBusy || !canSubmit) {
       event.preventDefault();
       return;
     }
@@ -149,10 +180,7 @@ const renderCareForm = (
   };
 
   return (
-    <section
-      key={module}
-      className={`panel panel-ops ${moduleMeta.panelClass}`}
-    >
+    <section key={module} className={`panel panel-ops ${moduleMeta.panelClass}`}>
       <div className="panel-head">
         <span className="panel-chip">{moduleMeta.panelChip}</span>
         <h2>{moduleMeta.panelTitle}</h2>
@@ -193,10 +221,7 @@ const renderCareForm = (
             id={`care-type-${module}`}
             value={careLogDraft.type}
             onChange={(event) =>
-              data.updateCareLogField(
-                "type",
-                event.target.value as CareLogPayload["type"],
-              )
+              data.updateCareLogField("type", event.target.value as CareLogPayload["type"])
             }
             disabled={isBusy}
           >
@@ -237,11 +262,17 @@ const renderCareForm = (
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={isBusy}
+          disabled={isBusy || !canSubmit}
         >
           {isSubmitting ? "저장 중..." : "기록 저장"}
         </button>
       </form>
+
+      {!canSubmit && !isSubmitting ? (
+        <p className="small-note" role="note">
+          보호자명, 돌봄 담당자, 돌봄 내용은 모두 입력해야 저장할 수 있습니다.
+        </p>
+      ) : null}
 
       {data.careLogs.length > 0 ? (
         <ul className="list" aria-label="돌봄 기록 목록">
@@ -277,8 +308,13 @@ const renderSettlementForm = (
   const moduleMeta = operationsModuleMeta[module];
   const { settlementDraft } = data;
   const isBusy = isReadOnly || isSubmitting;
+  const canSubmit =
+    settlementDraft.recipient.trim() &&
+    settlementDraft.careHours > 0 &&
+    settlementDraft.baseRate > 0;
+
   const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
-    if (isBusy) {
+    if (isBusy || !canSubmit) {
       event.preventDefault();
       return;
     }
@@ -370,11 +406,17 @@ const renderSettlementForm = (
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={isBusy}
+          disabled={isBusy || !canSubmit}
         >
           {isSubmitting ? "저장 중..." : "정산 저장"}
         </button>
       </form>
+
+      {!canSubmit && !isSubmitting ? (
+        <p className="small-note" role="note">
+          보호자명, 돌봄 시간, 시간당 금액은 정산 저장에 필요합니다.
+        </p>
+      ) : null}
 
       {data.settlements.length > 0 ? (
         <ul className="list" aria-label="정산 목록">
@@ -392,9 +434,7 @@ const renderSettlementForm = (
                   {formatWon(settlement.totalAmount)}
                 </strong>
               </p>
-              {settlement.note ? (
-                <p className="subtle">{settlement.note}</p>
-              ) : null}
+              {settlement.note ? <p className="subtle">{settlement.note}</p> : null}
             </li>
           ))}
         </ul>
@@ -417,8 +457,13 @@ const renderClaims = (
   const moduleMeta = operationsModuleMeta[module];
   const { claimDraft } = data;
   const isBusy = isReadOnly || isSubmitting;
+  const canSubmit =
+    claimDraft.recipient.trim() &&
+    claimDraft.hospitalName.trim() &&
+    claimDraft.expectedAmount > 0;
+
   const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
-    if (isBusy) {
+    if (isBusy || !canSubmit) {
       event.preventDefault();
       return;
     }
@@ -530,11 +575,17 @@ const renderClaims = (
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={isBusy}
+          disabled={isBusy || !canSubmit}
         >
           {isSubmitting ? "저장 중..." : "청구 저장"}
         </button>
       </form>
+
+      {!canSubmit && !isSubmitting ? (
+        <p className="small-note" role="note">
+          보호자명, 병원명, 청구액은 모두 입력해야 저장할 수 있습니다.
+        </p>
+      ) : null}
 
       {data.claims.length > 0 ? (
         <ul className="list" aria-label="보험청구 목록">
@@ -553,8 +604,7 @@ const renderClaims = (
               <p
                 aria-label={`보험청구 금액 ${formatWon(claim.expectedAmount)}, 접수일 ${claim.issueDate}`}
               >
-                청구액 {formatWon(claim.expectedAmount)} · 접수일{" "}
-                {claim.issueDate}
+                청구액 {formatWon(claim.expectedAmount)} · 접수일 {claim.issueDate}
               </p>
 
               <label className="inline-label">
@@ -602,15 +652,13 @@ const renderSectionGuide = ({
   <section className="panel panel-summary">
     <div className="panel-head">
       <h2>다음에 확인할 일</h2>
-      <p className="subtle">
-        지금 기준으로 바로 이어서 해야 할 작업이 명확해집니다.
-      </p>
+      <p className="subtle">현재 화면 기준에서 이어서 할 일만 보여드립니다.</p>
     </div>
     <div className="kpi-ribbons">
       <article className="kpi-ribbon">
         <p>추천</p>
         <strong>{nextAction}</strong>
-        <span className="small-note">아래 순서로 진행하면 누락이 줄어듭니다.</span>
+        <span className="small-note">권장 순서로 진행하면 누락이 줄어듭니다.</span>
       </article>
       <article className="kpi-ribbon">
         <p>현재</p>
@@ -655,7 +703,9 @@ const getOperationsFocusModules = (
   const previous = ordered[activeIndex - 1];
   const next = ordered[activeIndex + 1];
 
-  return Array.from(new Set([previous, activeModule, next].filter(Boolean) as OperationsRouteModule[]));
+  return Array.from(
+    new Set([previous, activeModule, next].filter(Boolean) as OperationsRouteModule[]),
+  );
 };
 
 const getOperationsNextAction = (
@@ -695,6 +745,7 @@ const OperationsPage = ({
         approvalRate: data.approvalRate,
         claims: data.claims,
         totalClaimExpected: data.totalClaimExpected,
+        onNavigate,
       }),
     care: () =>
       renderCareForm(
@@ -732,9 +783,7 @@ const OperationsPage = ({
       >
         <div className="panel-head">
           <div className="panel-title-wrap">
-            <span className="panel-chip">
-              {compositionMeta.compositionChip}
-            </span>
+            <span className="panel-chip">{compositionMeta.compositionChip}</span>
             <h2>{compositionMeta.compositionTitle}</h2>
           </div>
           <p className="subtle">{compositionMeta.compositionDescription}</p>
@@ -749,6 +798,7 @@ const OperationsPage = ({
             const config = operationsModuleMeta[moduleName];
             const path = operationsModuleRoute[moduleName];
             const isActiveModule = path === activeRoutePath;
+            const index = modules.indexOf(moduleName) + 1;
             return (
               <button
                 type="button"
@@ -760,8 +810,8 @@ const OperationsPage = ({
                 aria-current={isActiveModule ? "page" : undefined}
                 title={config.note}
               >
-                <p className="subtle" aria-hidden="true">
-                  {config.chip}
+                <p className="small-note" aria-hidden="true">
+                  {index}. {config.chip}
                 </p>
                 <strong>{config.title}</strong>
                 <p>{config.note}</p>

@@ -49,13 +49,15 @@ const RouteShell = ({
   const primaryAction = sectionQuickActions[0] ?? null;
   const secondaryActions = sectionQuickActions.slice(1);
   const composition = getRouteCompositionState(route.path);
+  const hasSectionTabs = sectionTabs.length > 0;
   const currentActionHint =
     route.summary ?? "현재 화면의 다음 액션을 바로 진행하세요.";
+  const isHome = route.path === "/";
 
   return (
     <header className="app-header panel">
-      <div className="app-shell-top">
-        <div className="hero-copy">
+      <div className="app-shell-topline">
+        <div className="app-shell-identity">
           <p className="kicker">{routeContext.pageBlueprint.heroText.kicker}</p>
           <h1>{routeContext.pageBlueprint.heroText.title}</h1>
           <p className="hero-description">
@@ -64,26 +66,24 @@ const RouteShell = ({
           <p className="hero-intent" id="route-intent">
             {currentActionHint}
           </p>
-          {isReadOnly ? (
-            <p className="route-readonly-note" role="note">
-              현재 조회 전용 모드입니다. 이동은 가능하지만 저장/수정은 잠시
-              비활성화됩니다.
-            </p>
-          ) : null}
         </div>
 
         <div className="route-progress" aria-label="현재 위치">
           <span className="meta-chip">
-            {route.path === "/"
-              ? "홈"
-              : `${routeContext.globalFlow.index}번째 화면`}
+            {isHome ? "홈" : `${composition.globalRouteProgress}% 완성도`}
           </span>
-          <span className="meta-chip">현재 위치: {route.section}</span>
+          <span className="meta-chip">현재: {route.section}</span>
           <span className="meta-chip">
-            진행 {composition.globalRouteProgress}%
+            단계 {globalFlow.index + 1}/{globalFlow.total}
           </span>
         </div>
       </div>
+
+      {isReadOnly ? (
+        <p className="route-readonly-note" role="note">
+          현재 조회 전용 모드입니다. 이동은 가능하지만 저장/수정은 잠시 비활성화됩니다.
+        </p>
+      ) : null}
 
       <div className="hero-metrics" role="list" aria-label="주요 현황">
         {heroMetrics.map((metric) => (
@@ -94,13 +94,13 @@ const RouteShell = ({
         ))}
       </div>
 
-      <nav className="top-nav" role="tablist" aria-label="주요 메뉴">
+      <nav className="top-nav route-top-nav" role="tablist" aria-label="주요 메뉴">
         {topTabs.map((item) => {
           const isActive = routeContext.activeTopRoutePath === item.path;
           return (
             <button
               type="button"
-              className={`route-tab ${isActive ? "active" : ""}`}
+              className={`route-tab route-tab-main ${isActive ? "active" : ""}`}
               key={item.path}
               onClick={() => onNavigate(item.path)}
               aria-current={isActive ? "page" : undefined}
@@ -140,8 +140,9 @@ const RouteShell = ({
               type="button"
               className="btn btn-primary"
               onClick={() => onNavigate(primaryAction.path)}
+              aria-label={`${primaryAction.label}로 이동`}
             >
-              {primaryAction.label}
+              {primaryAction.label}로 바로 가기
             </button>
           ) : null}
 
@@ -168,8 +169,7 @@ const RouteShell = ({
 
           {sectionQuickActions.length === 0 ? (
             <p className="route-command-empty" role="note">
-              지금 화면에서 바로 할 일이 없으면 위 메뉴에서 원하는 업무를
-              선택하세요.
+              지금 화면에서 바로 할 일이 없으면 위 메뉴에서 원하는 업무를 선택하세요.
             </p>
           ) : null}
         </div>
@@ -177,7 +177,7 @@ const RouteShell = ({
 
       <section className="route-controls" aria-label="탐색 가이드">
         <div className="route-command-row">
-          {routeContext.hasSectionTabs ? (
+          {hasSectionTabs ? (
             <>
               <button
                 type="button"
@@ -193,7 +193,9 @@ const RouteShell = ({
               <button
                 type="button"
                 className="route-tab route-tab-subtle"
-                onClick={() => sectionFlow.next && onNavigate(sectionFlow.next)}
+                onClick={() =>
+                  sectionFlow.next && onNavigate(sectionFlow.next)
+                }
                 disabled={!sectionFlow.next}
                 aria-label="다음 섹션으로 이동"
               >
@@ -232,7 +234,7 @@ const RouteShell = ({
           </button>
         </div>
 
-        {route.mode !== "home" && sectionFlow.next ? (
+        {!isHome && sectionFlow.next ? (
           <button
             type="button"
             className="btn btn-primary route-accelerator"
@@ -242,9 +244,13 @@ const RouteShell = ({
           </button>
         ) : null}
 
-        <div className="section-tabs" role="tablist" aria-label="하위 화면 탭">
-          {routeContext.hasSectionTabs ? (
-            sectionTabs.map((item) => (
+        {hasSectionTabs ? (
+          <div
+            className="section-tabs"
+            role="tablist"
+            aria-label="하위 화면 탭"
+          >
+            {sectionTabs.map((item) => (
               <button
                 type="button"
                 key={item.path}
@@ -255,60 +261,14 @@ const RouteShell = ({
                 <span aria-hidden="true">{item.emoji}</span>
                 <span>{item.label}</span>
               </button>
-            ))
-          ) : (
-            <p className="route-command-empty" role="note">
-              {"이 화면은 단독 화면입니다."}
-            </p>
-          )}
-        </div>
-      </section>
-
-      {route.mode !== "home" ? (
-        <section className="route-composition" aria-label="페이지 구성도">
-          <header className="route-composition-head">
-            <p className="route-composition-title">화면 구성</p>
-            <p className="route-composition-meta">
-              현재 진행 {composition.globalRouteProgress}%
-            </p>
-          </header>
-
-          <div
-            className="route-composition-section-strip"
-            role="list"
-            aria-label="섹션 상태 요약"
-          >
-            {composition.sectionSummaries.map((summary) => (
-              <article
-                className={`route-composition-section-card route-composition-section-card-${summary.state}`}
-                key={summary.sectionId}
-                role="listitem"
-              >
-                <p className="route-composition-section-card-title">
-                  <span aria-hidden="true">{summary.icon}</span>
-                  {summary.title}
-                </p>
-                <p className="route-composition-section-card-progress">
-                  {summary.progressRate}%
-                </p>
-                <p className="route-composition-section-card-meta">
-                  <span>{summary.completedRoutes} 완료</span>
-                  <span>
-                    {summary.routesCount - summary.completedRoutes} 예정
-                  </span>
-                </p>
-              </article>
             ))}
           </div>
-
-          <div className="route-composition-meter" aria-hidden="true">
-            <span
-              className="route-composition-meter-fill"
-              style={{ width: `${composition.globalRouteProgress}%` }}
-            />
-          </div>
-        </section>
-      ) : null}
+        ) : (
+          <p className="route-command-empty" role="note">
+            이 화면은 단독 화면입니다.
+          </p>
+        )}
+      </section>
     </header>
   );
 };
@@ -448,15 +408,15 @@ const App = () => {
     }
 
     return (
-        <AdminPage
-          modules={routeContext.modules as readonly AdminRouteModule[]}
-          compositionMeta={getCompositionMeta(routeContext)}
-          data={data}
-          onNavigate={(path) => navigate(path)}
-          activeRoutePath={routeContext.route.path as NonHomeRoutePath}
-          isReadOnly={hasReadOnlyError}
-        />
-      );
+      <AdminPage
+        modules={routeContext.modules as readonly AdminRouteModule[]}
+        compositionMeta={getCompositionMeta(routeContext)}
+        data={data}
+        onNavigate={(path) => navigate(path)}
+        activeRoutePath={routeContext.route.path as NonHomeRoutePath}
+        isReadOnly={hasReadOnlyError}
+      />
+    );
   };
 
   return (
@@ -471,27 +431,15 @@ const App = () => {
       />
 
       {hasReadOnlyError ? (
-        <p
-          className="feedback feedback-warning"
-          role="status"
-          aria-live="polite"
-        >
+        <p className="feedback feedback-warning" role="status" aria-live="polite">
           현재 계정은 일부 기능이 제한될 수 있습니다.
         </p>
       ) : null}
 
       {data.errorMessage ? (
-        <p
-          className="feedback feedback-error"
-          role="alert"
-          aria-live="assertive"
-        >
+        <p className="feedback feedback-error" role="alert" aria-live="assertive">
           {data.errorMessage}
-          <button
-            type="button"
-            className="inline-action"
-            onClick={data.clearError}
-          >
+          <button type="button" className="inline-action" onClick={data.clearError}>
             닫기
           </button>
         </p>
