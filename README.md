@@ -6,7 +6,7 @@
 
 ## 프로젝트 구조
 
-- `apps/web-app`: Vite + React 프론트엔드
+- `apps/web-app`: Vite + React 프론트엔드 (React Compiler 활성화)
 - `apps/api-server`: NestJS 백엔드
 - `pnpm-workspace.yaml`: 워크스페이스 정의
 - `docs/DEVELOPMENT.md`, `docs/ARCHITECTURE.md`: 운영 가이드
