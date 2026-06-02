@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 import type {
   AppRoute,
   HomeLandingSectionBlueprint,
@@ -20,6 +22,104 @@ type HomePageProps = {
   hasReadOnlyError?: boolean;
 };
 
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" &&
+  typeof window.matchMedia === "function" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Eases a value from 0 to its target once the cluster scrolls into view.
+// Reduced-motion users (and non-IO environments) get the final value at once.
+const useCountUp = (target: number, durationMs = 900) => {
+  const [value, setValue] = useState(() =>
+    prefersReducedMotion() ? target : 0,
+  );
+  const nodeRef = useRef<HTMLDivElement | null>(null);
+  const hasRunRef = useRef(false);
+
+  useEffect(() => {
+    const node = nodeRef.current;
+
+    if (prefersReducedMotion()) {
+      setValue(target);
+      return;
+    }
+
+    if (
+      !node ||
+      typeof IntersectionObserver !== "function" ||
+      typeof requestAnimationFrame !== "function"
+    ) {
+      setValue(target);
+      return;
+    }
+
+    let frame = 0;
+    let startedAt = 0;
+    // ease-out-quint: confident deceleration, no overshoot.
+    const ease = (t: number) => 1 - Math.pow(1 - t, 5);
+
+    const tick = (now: number) => {
+      if (startedAt === 0) {
+        startedAt = now;
+      }
+      const progress = Math.min(1, (now - startedAt) / durationMs);
+      setValue(target * ease(progress));
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      } else {
+        setValue(target);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting && !hasRunRef.current) {
+          hasRunRef.current = true;
+          frame = requestAnimationFrame(tick);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+      if (frame) {
+        cancelAnimationFrame(frame);
+      }
+    };
+  }, [target, durationMs]);
+
+  return { value, nodeRef };
+};
+
+type HeroFigure = {
+  label: string;
+  target: number;
+  format: (value: number) => string;
+  foot: string;
+  lead?: boolean;
+};
+
+const HeroFigureCard = ({ figure }: { figure: HeroFigure }) => {
+  const { value, nodeRef } = useCountUp(figure.target);
+  return (
+    <div
+      ref={nodeRef}
+      className={`home-kpi${figure.lead ? " home-kpi-lead" : ""}`}
+    >
+      <p className="home-kpi-label">{figure.label}</p>
+      <strong className="home-kpi-value" aria-label={figure.format(figure.target)}>
+        <span aria-hidden="true">{figure.format(value)}</span>
+      </strong>
+      <p className="home-kpi-foot">{figure.foot}</p>
+    </div>
+  );
+};
+
 const HomePage = ({
   sections,
   topCards,
@@ -27,13 +127,31 @@ const HomePage = ({
   onNavigate,
   hasReadOnlyError = false,
 }: HomePageProps) => {
-  const kpis = [
-    { label: "돌봄 가구", value: `${scenario.activeHouseholds}개` },
-    { label: "이번 달 정산", value: formatWon(scenario.totalSettlement) },
-    { label: "보험청구", value: `${scenario.claimsLength}건` },
+  const heroFigures: HeroFigure[] = [
+    {
+      label: "이번 달 정산 합계",
+      target: scenario.totalSettlement,
+      format: (value) => formatWon(value),
+      foot: "기록된 돌봄비를 실시간으로 합산",
+      lead: true,
+    },
+    {
+      label: "돌봄 가구",
+      target: scenario.activeHouseholds,
+      format: (value) => `${Math.round(value)}개`,
+      foot: "운영 중인 케어 대상",
+    },
+    {
+      label: "보험청구",
+      target: scenario.claimsLength,
+      format: (value) => `${Math.round(value)}건`,
+      foot: "요청·검토·승인 전체",
+    },
     {
       label: "청구 승인률",
-      value: `${scenario.conversionRate.toFixed(1)}%`,
+      target: scenario.conversionRate,
+      format: (value) => `${value.toFixed(1)}%`,
+      foot: "승인 완료 비율",
     },
   ];
 
@@ -92,11 +210,60 @@ const HomePage = ({
 
   return (
     <section className="view-stack home-view-stack">
+      <section className="home-hero" aria-labelledby="home-hero-title">
+        <span className="home-hero-orbit" aria-hidden="true" />
+        <div className="home-hero-lede">
+          <p className="home-hero-eyebrow">가족 돌봄 운영</p>
+          <h2 id="home-hero-title" className="home-hero-title">
+            돌봄 기록부터 정산, 보험청구까지{" "}
+            <span className="home-hero-accent">한 흐름으로</span>
+          </h2>
+          <p className="home-hero-sub">
+            흩어진 돌봄 업무를 기록 → 정산 → 보험청구 세 단계로 묶었습니다. 처음
+            여는 화면에서 다음 할 일이 바로 보입니다.
+          </p>
+          <div className="home-hero-cta">
+            {primaryAction ? (
+              <button
+                type="button"
+                className="btn home-hero-primary"
+                onClick={() => onNavigate(primaryAction.path)}
+                aria-describedby="home-quick-start-description"
+              >
+                {primaryAction.label}로 시작하기
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className="btn home-hero-ghost"
+              onClick={() => onNavigate("/operations/care")}
+              aria-label="돌봄 기록 화면으로 이동"
+            >
+              돌봄 기록 바로가기
+            </button>
+          </div>
+        </div>
+
+        <div
+          className="home-hero-figures"
+          role="group"
+          aria-label="현재 핵심 지표"
+        >
+          {heroFigures.map((figure) => (
+            <HeroFigureCard key={figure.label} figure={figure} />
+          ))}
+        </div>
+      </section>
+
       <section className="panel panel-overview home-start-panel">
         <div className="panel-head home-panel-head">
           <div className="home-hero-copy">
-            <p className="kicker">빠른 시작</p>
-            <h2>3단계로 바로 시작하세요</h2>
+            <div className="home-panel-headline">
+              <span className="panel-index" aria-hidden="true">
+                1
+              </span>
+              <h2>3단계로 바로 시작하세요</h2>
+            </div>
             <p className="subtle">
               기록 → 정산 → 보험청구 순으로 진행하면 처음이더라도 빠르게 끝낼 수 있습니다.
             </p>
@@ -174,7 +341,12 @@ const HomePage = ({
       <section className="home-main-grid">
         <section className="panel panel-summary">
           <div className="panel-head">
-            <h2>오늘 바로 처리</h2>
+            <div className="home-panel-headline">
+              <span className="panel-index" aria-hidden="true">
+                2
+              </span>
+              <h2>오늘 바로 처리</h2>
+            </div>
             <p className="subtle">한 번 누르면 바로 다음 화면으로 이동합니다.</p>
           </div>
           <ol className="home-task-list" aria-label="추천 작업">
@@ -201,14 +373,19 @@ const HomePage = ({
 
         <section className="panel panel-overview">
           <div className="panel-head">
-            <h2>현재 핵심 지표</h2>
+            <div className="home-panel-headline">
+              <span className="panel-index" aria-hidden="true">
+                3
+              </span>
+              <h2>현재 핵심 지표</h2>
+            </div>
             <p className="subtle">의사결정에 필요한 핵심 숫자만 표시</p>
           </div>
           <div className="kpi-ribbons kpi-ribbons--compact">
-            {kpis.map((metric) => (
+            {heroFigures.map((metric) => (
               <article className="kpi-ribbon" key={metric.label}>
                 <p>{metric.label}</p>
-                <strong>{metric.value}</strong>
+                <strong>{metric.format(metric.target)}</strong>
               </article>
             ))}
           </div>

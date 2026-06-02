@@ -1,35 +1,48 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap");
 
 :root {
-  --bg: #f3f5f9;
-  --surface: #fbfcff;
-  --surface-muted: #f8fafc;
-  --surface-subtle: #f1f5f9;
-  --surface-soft: #f4f8ff;
-  --surface-elevated: #ffffff;
+  /* Hue anchors (OKLCH). Neutrals are tinted toward the brand, never pure. */
+  --hue-brand: 264; /* deep iris-indigo: trustworthy, not stock-SaaS blue */
+  --hue-warm: 38; /* amber-coral: the warmth of care, the "act now" accent */
+  --hue-neutral: 262; /* cool slate, faintly toward brand for cohesion */
+
+  /* Surfaces: a faintly warm-cool page, lifting off true white in steps. */
+  --bg: oklch(96.4% 0.009 264);
+  --surface: oklch(99% 0.004 264);
+  --surface-muted: oklch(97.4% 0.007 264);
+  --surface-subtle: oklch(96% 0.011 264);
+  --surface-soft: oklch(97.6% 0.018 264);
+  --surface-elevated: oklch(99.6% 0.0025 264);
   --border: var(--line);
 
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #55657a;
-  --text-subtle: #8ca0b8;
-  --text-disabled: #8e97a4;
-  --text-on-primary: #f8fbff;
+  /* Text: near-ink slate, never #000; cool but high-contrast. */
+  --text-primary: oklch(24% 0.035 264);
+  --text-secondary: oklch(38% 0.03 264);
+  --text-muted: oklch(50% 0.026 264);
+  --text-subtle: oklch(60% 0.026 264);
+  --text-disabled: oklch(64% 0.018 264);
+  --text-on-primary: oklch(98.5% 0.012 264);
 
-  --line: #dce4f0;
-  --line-strong: #b8c6da;
+  --line: oklch(89% 0.016 264);
+  --line-strong: oklch(78% 0.024 264);
 
-  --primary: #0f5cdb;
-  --primary-hover: #0d4db7;
-  --primary-soft: #e6f0ff;
-  --primary-strong: #1d4ed8;
-  --secondary: #0f766e;
-  --success: #047857;
-  --warning: #b45309;
-  --danger: #b91c1c;
-  --success-soft: #dcfce7;
-  --warning-soft: #fef3c7;
-  --danger-soft: #fee2e2;
+  /* Primary: committed iris-indigo. Reserved for action + selection + state. */
+  --primary: oklch(52% 0.196 264);
+  --primary-hover: oklch(46% 0.198 264);
+  --primary-soft: oklch(94.5% 0.034 264);
+  --primary-strong: oklch(43% 0.2 264);
+
+  /* Secondary: warm amber-coral. The human, "do this next" energy. */
+  --secondary: oklch(63% 0.155 38);
+  --secondary-strong: oklch(52% 0.14 38);
+  --secondary-soft: oklch(94% 0.05 52);
+
+  --success: oklch(53% 0.13 158);
+  --warning: oklch(62% 0.15 64);
+  --danger: oklch(55% 0.2 25);
+  --success-soft: oklch(94% 0.05 158);
+  --warning-soft: oklch(94% 0.06 78);
+  --danger-soft: oklch(94% 0.04 25);
 
   --surface-primary-bg: color-mix(
     in srgb,
@@ -53,20 +66,23 @@
   --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Inter", sans-serif;
   --font-heading: "Inter", "Noto Sans KR", sans-serif;
 
-  --shadow-sm: 0 8px 24px rgb(15 23 42 / 7%);
-  --shadow-md: 0 12px 34px rgb(15 23 42 / 12%);
+  /* Shadows tinted with the brand hue so elevation reads cohesive, not gray. */
+  --shadow-sm: 0 6px 20px oklch(40% 0.06 264 / 9%);
+  --shadow-md: 0 14px 38px oklch(38% 0.07 264 / 14%);
 
-  --focus-ring: 0 0 0 3px rgb(59 130 246 / 22%);
+  --focus-ring: 0 0 0 3px oklch(52% 0.196 264 / 32%);
   --touch-target: 44px;
 
   --motion-fast: 140ms;
   --motion-mid: 220ms;
   --transition-base: 180ms;
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --danger-strong: #7f1d1d;
-  --success-strong: #064e3b;
-  --warning-strong: #7c4a07;
+  --danger-strong: oklch(42% 0.18 25);
+  --success-strong: oklch(38% 0.1 158);
+  --warning-strong: oklch(44% 0.11 64);
   --container-width: min(1240px, 100% - 2.4rem);
   --page-padding: clamp(0.8rem, 2.6vw, 1.5rem);
 }
@@ -90,13 +106,22 @@ body,
 body {
   font-family: var(--font-body);
   color: var(--text-primary);
-  background: color-mix(in srgb, var(--bg) 90%, #fff 10%);
+  /* A quiet diagonal lift in the page itself: warm top-left, cool settle. */
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      oklch(97.6% 0.022 52 / 70%),
+      transparent 58%
+    ),
+    var(--bg);
+  background-attachment: fixed;
   min-height: 100vh;
   line-height: 1.55;
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--primary) 18%, var(--surface) 82%);
+  background: color-mix(in oklab, var(--secondary) 26%, var(--surface) 74%);
+  color: var(--text-primary);
 }
 
 h1,
@@ -179,20 +204,53 @@ a {
   margin-bottom: 0.95rem;
 }
 
-.panel-overview {
-  border-top: 4px solid var(--primary);
+/*
+ * Section identity without side/top accent stripes (banned).
+ * Each variant gets a full hairline border, a faint hue-matched surface wash,
+ * and a corner tint so the role reads from the whole surface, not an edge bar.
+ */
+.panel-overview,
+.panel-ops,
+.panel-admin,
+.panel-summary {
+  position: relative;
+  border-color: color-mix(in oklab, var(--line) 86%, var(--primary) 14%);
+  background:
+    radial-gradient(
+      90% 60% at 100% 0%,
+      var(--primary-soft) 0%,
+      transparent 52%
+    ),
+    var(--surface-elevated);
 }
 
 .panel-ops {
-  border-top-color: var(--secondary);
+  border-color: color-mix(in oklab, var(--line) 84%, var(--secondary) 16%);
+  background:
+    radial-gradient(
+      90% 60% at 100% 0%,
+      var(--secondary-soft) 0%,
+      transparent 52%
+    ),
+    var(--surface-elevated);
 }
 
 .panel-admin {
-  border-top-color: #0ea5a4;
+  border-color: color-mix(in oklab, var(--line) 84%, var(--success) 16%);
+  background:
+    radial-gradient(90% 60% at 100% 0%, var(--success-soft) 0%, transparent 52%),
+    var(--surface-elevated);
 }
 
 .panel-summary {
-  border-top-color: var(--text-muted);
+  border-color: var(--line);
+  background:
+    radial-gradient(
+      90% 60% at 100% 0%,
+      var(--surface-soft) 0%,
+      transparent 56%
+    ),
+    var(--surface-elevated);
 }
 
 .panel-head {
@@ -350,9 +408,9 @@ a {
 .home-hero-callout {
   display: grid;
   gap: 0.35rem;
-  border: 1px solid color-mix(in srgb, var(--secondary) 26%, var(--line) 74%);
+  border: 1px solid color-mix(in oklab, var(--secondary) 26%, var(--line) 74%);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, #e2f1ff 30%, var(--surface) 70%);
+  background: color-mix(in oklab, var(--secondary-soft) 44%, var(--surface) 56%);
   padding: 0.65rem 0.72rem;
 }
 
@@ -409,10 +467,28 @@ a {
 }
 
 .route-progress-meter-fill {
+  position: relative;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  transition: width var(--motion-mid) var(--motion-ease);
+  background: var(--primary);
+  transition: width 520ms var(--ease-out-expo);
+  overflow: hidden;
+}
+
+/* A single confident sheen sweeps the filled portion to signal "live". */
+.route-progress-meter-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    oklch(100% 0 0 / 30%) 50%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  animation: meter-sheen 2.6s var(--ease-out-quint) infinite;
 }
 
 .route-progress-actions {
@@ -1009,8 +1085,8 @@ textarea:disabled {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  transition: width var(--motion-mid) var(--motion-ease);
+  background: var(--primary);
+  transition: width 480ms var(--ease-out-expo);
 }
 
 .feedback {
@@ -1686,7 +1762,7 @@ textarea:disabled {
 .status-pill {
   border-radius: 999px;
   border: 1px solid transparent;
-  color: #f8fbff;
+  color: var(--text-on-primary);
   min-height: 26px;
   min-width: 57px;
   display: inline-flex;
@@ -1832,9 +1908,9 @@ textarea:disabled {
   margin: 0;
   border-radius: var(--radius-sm);
   border: 1px dashed
-    color-mix(in srgb, var(--warning) 38%, var(--line-strong) 62%);
+    color-mix(in oklab, var(--warning) 38%, var(--line-strong) 62%);
   color: var(--warning-strong);
-  background: #fefce8;
+  background: color-mix(in oklab, var(--warning-soft) 60%, var(--surface) 40%);
   padding: 0.6rem;
 }
 
@@ -1853,8 +1929,9 @@ textarea:disabled {
   height: 100%;
   width: 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
-  transition: width var(--motion-mid) var(--motion-ease);
+  /* Goal progress earns the warm accent: it is the human "how close" signal. */
+  background: var(--secondary);
+  transition: width 480ms var(--ease-out-expo);
 }
 
 .home-panel-head {
@@ -1918,7 +1995,7 @@ textarea:disabled {
 .home-card:hover,
 .home-route-row:hover,
 .home-task-row:hover {
-  box-shadow: 0 5px 16px rgb(2 132 199 / 8%);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-0.8px);
 }
 
@@ -1974,20 +2051,20 @@ textarea:disabled {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid #c7d2fe;
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, var(--line) 70%);
   color: var(--primary-hover);
   padding: 0.16rem 0.58rem;
   font-size: 0.76rem;
   font-weight: 700;
-  background: #eff6ff;
+  background: var(--primary-soft);
   width: fit-content;
 }
 
 .recommend-box {
-  border-color: color-mix(in srgb, var(--secondary) 28%, var(--line) 72%);
-  background: color-mix(in srgb, #ecfdf5 46%, var(--surface) 54%);
+  border-color: color-mix(in oklab, var(--success) 28%, var(--line) 72%);
+  background: color-mix(in oklab, var(--success-soft) 52%, var(--surface) 48%);
   box-shadow: inset 0 0 0 1px
-    color-mix(in srgb, var(--secondary) 12%, transparent);
+    color-mix(in oklab, var(--success) 14%, transparent);
 }
 
 .recommend-box ul {
@@ -2137,8 +2214,8 @@ textarea:disabled {
 .home-card:hover,
 .home-route-row:hover,
 .home-task-row:hover {
-  border-color: color-mix(in srgb, var(--primary) 45%, var(--line) 55%);
-  box-shadow: 0 8px 24px rgb(2 132 199 / 10%);
+  border-color: color-mix(in oklab, var(--primary) 45%, var(--line) 55%);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
@@ -2168,6 +2245,276 @@ button:focus-visible {
 code,
 pre {
   font-family: var(--font-body);
+}
+
+/* ============================================================
+   Home first-screen: a confident care console, not a flat panel.
+   The hero is a single owned band; KPI numbers are alive (count-up).
+   ============================================================ */
+
+.home-hero {
+  position: relative;
+  overflow: clip;
+  border: 1px solid color-mix(in oklab, var(--line) 78%, var(--primary) 22%);
+  border-radius: var(--radius-xl);
+  /* Deep iris field, warmed at the lower-right where the numbers live. */
+  background:
+    radial-gradient(
+      130% 120% at 100% 120%,
+      oklch(58% 0.13 38 / 55%),
+      transparent 46%
+    ),
+    radial-gradient(
+      120% 130% at 0% 0%,
+      oklch(40% 0.16 264) 0%,
+      oklch(33% 0.13 270) 55%,
+      oklch(28% 0.1 274) 100%
+    );
+  color: var(--text-on-primary);
+  padding: clamp(1.4rem, 3.4vw, 2.6rem);
+  display: grid;
+  /* 62/38 split: the pitch leads, the live numbers anchor the right. */
+  grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr);
+  gap: clamp(1.2rem, 3vw, 2.4rem);
+  align-items: center;
+}
+
+/* One slow ambient halo, the only orchestral motion on the page. */
+.home-hero-orbit {
+  position: absolute;
+  inset: auto -18% -55% auto;
+  width: clamp(18rem, 32vw, 30rem);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    oklch(70% 0.13 44 / 38%),
+    transparent 62%
+  );
+  filter: blur(8px);
+  pointer-events: none;
+  animation: home-orbit 22s var(--ease-out-quint) infinite alternate;
+}
+
+@keyframes home-orbit {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  to {
+    transform: translate3d(-8%, -10%, 0) scale(1.08);
+  }
+}
+
+.home-hero-lede {
+  display: grid;
+  gap: var(--space-3);
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.home-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  margin: 0;
+  padding: 0.26rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid oklch(100% 0 0 / 26%);
+  background: oklch(100% 0 0 / 10%);
+  color: oklch(96% 0.03 52);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.home-hero-eyebrow::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--secondary);
+  box-shadow: 0 0 0 4px oklch(70% 0.15 40 / 32%);
+}
+
+.home-hero-title {
+  margin: 0;
+  /* Extreme scale: this is the focal point. Tight tracking, heavy weight. */
+  font-size: clamp(1.9rem, 4.4vw, 3.05rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-weight: 800;
+  color: oklch(99% 0.01 264);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.home-hero-title .home-hero-accent {
+  color: oklch(86% 0.13 52);
+}
+
+.home-hero-sub {
+  margin: 0;
+  max-width: 46ch;
+  color: oklch(90% 0.02 264);
+  font-size: clamp(0.96rem, 1.4vw, 1.06rem);
+  line-height: 1.55;
+}
+
+.home-hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* Hero CTA: a bright, decisive button against the dark field. */
+.home-hero-cta .home-hero-primary {
+  border: 0;
+  background: oklch(98% 0.012 264);
+  color: oklch(34% 0.16 266);
+  font-weight: 800;
+  box-shadow: 0 10px 26px oklch(20% 0.08 266 / 45%);
+}
+
+.home-hero-cta .home-hero-primary:hover:not(:disabled) {
+  background: oklch(94% 0.05 52);
+  color: var(--primary-strong);
+}
+
+.home-hero-cta .home-hero-ghost {
+  border: 1px solid oklch(100% 0 0 / 32%);
+  background: oklch(100% 0 0 / 8%);
+  color: oklch(97% 0.01 264);
+}
+
+.home-hero-cta .home-hero-ghost:hover:not(:disabled) {
+  background: oklch(100% 0 0 / 16%);
+  border-color: oklch(100% 0 0 / 48%);
+  color: oklch(99% 0.01 264);
+}
+
+/* Live KPI cluster: NOT a 4-up template. One lead figure, a stacked rail. */
+.home-hero-figures {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.home-kpi {
+  display: grid;
+  gap: 0.18rem;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid oklch(100% 0 0 / 14%);
+  background: oklch(100% 0 0 / 8%);
+  min-width: 0;
+  animation: home-kpi-rise 560ms var(--ease-out-expo) both;
+}
+
+.home-kpi:nth-child(2) {
+  animation-delay: 80ms;
+}
+
+.home-kpi:nth-child(3) {
+  animation-delay: 160ms;
+}
+
+.home-kpi:nth-child(4) {
+  animation-delay: 240ms;
+}
+
+/* The lead figure is bigger and warm-bordered: the number that matters most. */
+.home-kpi-lead {
+  border-color: oklch(78% 0.12 46 / 45%);
+  background: linear-gradient(
+    180deg,
+    oklch(100% 0 0 / 13%),
+    oklch(100% 0 0 / 6%)
+  );
+}
+
+.home-kpi-label {
+  margin: 0;
+  color: oklch(86% 0.02 264);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.home-kpi-value {
+  font-family: var(--font-heading);
+  color: oklch(99% 0.01 264);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.home-kpi-lead .home-kpi-value {
+  font-size: clamp(2rem, 3.4vw, 2.7rem);
+  color: oklch(92% 0.11 52);
+}
+
+.home-kpi-foot {
+  margin: 0;
+  color: oklch(82% 0.02 264);
+  font-size: 0.74rem;
+}
+
+/* Leading section numerals replace the banned top-stripe as role markers. */
+.panel-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  flex: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary-strong);
+  background: var(--primary-soft);
+  border: 1px solid color-mix(in oklab, var(--primary) 22%, var(--line) 78%);
+}
+
+.panel-summary .panel-index {
+  color: var(--secondary-strong);
+  background: var(--secondary-soft);
+  border-color: color-mix(in oklab, var(--secondary) 24%, var(--line) 76%);
+}
+
+.home-panel-headline {
+  display: flex;
+  align-items: center;
+  gap: 0.62rem;
+  min-width: 0;
+}
+
+.home-panel-headline h2 {
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .home-hero {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .home-hero-orbit {
+    inset: auto -30% -65% auto;
+    width: 22rem;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -2356,6 +2703,13 @@ pre {
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  /* Looping ambient motion is purely atmospheric: remove it entirely. */
+  .route-progress-meter-fill::after,
+  .home-hero-orbit {
+    display: none;
   }
 }
 
@@ -2370,5 +2724,28 @@ pre {
     background-position:
       142% 0,
       0 0;
+  }
+}
+
+@keyframes meter-sheen {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  60%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes home-kpi-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
