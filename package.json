@@ -26,7 +26,6 @@
     "clean": "rm -rf node_modules apps/web-app/node_modules apps/api-server/node_modules"
   },
   "devDependencies": {
-    "prettier": "^3.8.3",
     "typescript": "^6.0.3"
   }
 }
