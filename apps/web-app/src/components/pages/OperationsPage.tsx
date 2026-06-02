@@ -139,6 +139,14 @@ const renderCareForm = (
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { careLogDraft } = data;
+  const isBusy = isReadOnly || isSubmitting;
+  const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
+    if (isBusy) {
+      event.preventDefault();
+      return;
+    }
+    onSubmitStatus(event);
+  };
 
   return (
     <section
@@ -151,7 +159,7 @@ const renderCareForm = (
         <p className="subtle">{moduleMeta.panelDescription}</p>
       </div>
 
-      <form className="row" onSubmit={onSubmitStatus}>
+      <form className="row" onSubmit={onSubmitProtected}>
         <RouteField id={`care-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`care-recipient-${module}`}
@@ -162,7 +170,7 @@ const renderCareForm = (
             }
             placeholder="예: 김영희"
             required
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -176,7 +184,7 @@ const renderCareForm = (
             }
             placeholder="예: 박돌봄"
             required
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -190,7 +198,7 @@ const renderCareForm = (
                 event.target.value as CareLogPayload["type"],
               )
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           >
             {careLogTypeOptions.map((type) => (
               <option key={type} value={type}>
@@ -208,7 +216,7 @@ const renderCareForm = (
             onChange={(event) =>
               data.updateCareLogField("date", event.target.value)
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -222,14 +230,14 @@ const renderCareForm = (
             placeholder="예: 점심 식사 도움, 약 복용 확인"
             required
             rows={3}
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={isReadOnly || isSubmitting}
+          disabled={isBusy}
         >
           {isSubmitting ? "저장 중..." : "기록 저장"}
         </button>
@@ -268,6 +276,14 @@ const renderSettlementForm = (
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { settlementDraft } = data;
+  const isBusy = isReadOnly || isSubmitting;
+  const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
+    if (isBusy) {
+      event.preventDefault();
+      return;
+    }
+    onSubmitStatus(event);
+  };
 
   return (
     <section
@@ -280,7 +296,7 @@ const renderSettlementForm = (
         <p className="subtle">{moduleMeta.panelDescription}</p>
       </div>
 
-      <form className="row" onSubmit={onSubmitStatus}>
+      <form className="row" onSubmit={onSubmitProtected}>
         <RouteField id={`settlement-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`settlement-recipient-${module}`}
@@ -291,7 +307,7 @@ const renderSettlementForm = (
             }
             placeholder="예: 김영희"
             required
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -303,7 +319,7 @@ const renderSettlementForm = (
             onChange={(event) =>
               data.updateSettlementField("date", event.target.value)
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -319,7 +335,7 @@ const renderSettlementForm = (
                 Number(event.target.value) || 0,
               )
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -335,7 +351,7 @@ const renderSettlementForm = (
                 Number(event.target.value) || 0,
               )
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -347,14 +363,14 @@ const renderSettlementForm = (
               data.updateSettlementField("note", event.target.value)
             }
             placeholder="예: 야간 돌봄 포함"
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={isReadOnly || isSubmitting}
+          disabled={isBusy}
         >
           {isSubmitting ? "저장 중..." : "정산 저장"}
         </button>
@@ -400,6 +416,14 @@ const renderClaims = (
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { claimDraft } = data;
+  const isBusy = isReadOnly || isSubmitting;
+  const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
+    if (isBusy) {
+      event.preventDefault();
+      return;
+    }
+    onSubmitStatus(event);
+  };
 
   return (
     <section
@@ -412,7 +436,7 @@ const renderClaims = (
         <p className="subtle">{moduleMeta.panelDescription}</p>
       </div>
 
-      <form className="row" onSubmit={onSubmitStatus}>
+      <form className="row" onSubmit={onSubmitProtected}>
         <RouteField id={`claim-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`claim-recipient-${module}`}
@@ -423,7 +447,7 @@ const renderClaims = (
             }
             placeholder="예: 김영희"
             required
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -437,7 +461,7 @@ const renderClaims = (
             }
             placeholder="예: 희망요양병원"
             required
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -454,7 +478,7 @@ const renderClaims = (
               )
             }
             required
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -466,7 +490,7 @@ const renderClaims = (
             onChange={(event) =>
               data.updateClaimField("issueDate", event.target.value)
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
@@ -480,7 +504,7 @@ const renderClaims = (
                 event.target.value as ClaimPayload["status"],
               )
             }
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           >
             {claimStatusOptions.map((status) => (
               <option key={status} value={status}>
@@ -499,14 +523,14 @@ const renderClaims = (
               data.updateClaimField("note", event.target.value)
             }
             placeholder="예: 영수증 확인 필요"
-            disabled={isReadOnly || isSubmitting}
+            disabled={isBusy}
           />
         </RouteField>
 
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={isReadOnly || isSubmitting}
+          disabled={isBusy}
         >
           {isSubmitting ? "저장 중..." : "청구 저장"}
         </button>
