@@ -26,17 +26,10 @@ export const formatSignedRatePoint = (value: number) => {
   }
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}pt`;
 };
-export const formatSignedCount = (value: number) => {
-  if (!Number.isFinite(value)) {
-    return '0';
-  }
-  return `${value > 0 ? '+' : ''}${value}`;
-};
 export const formatSignedWon = (value: number) => {
   const rounded = roundMoney(value);
   return `${rounded > 0 ? '+' : ''}${rounded.toLocaleString()}원`;
 };
-export const formatInputNumber = (value: number) => (Number.isFinite(value) ? value : 0);
 export const formatMonthLabel = (month: string) => {
   const [, monthNumber] = month.split('-');
   return `${monthNumber}월`;
