@@ -5,3 +5,7 @@ dist/
 **/*.tsbuildinfo
 *.log
 .DS_Store
+
+# 런타임 JSON 파일 스토어 데이터(원자적 파일 영속화). 커밋하지 않는다.
+data/
+**/data/

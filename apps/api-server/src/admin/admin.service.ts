@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CareLogService } from '../care-logs/care-logs.service';
 import { ClaimsService } from '../claims/claims.service';
 import { localMonthKey } from '../common/date.util';
+import { JsonCollectionStore } from '../common/json-store';
 import { parseWithSchema } from '../common/zod-validation.pipe';
 import { SettlementService } from '../settlements/settlement.service';
 
@@ -45,7 +46,16 @@ const initialPlans: RevenuePlan[] = [
 
 @Injectable()
 export class AdminService {
-  private readonly plans = initialPlans.map((plan) => ({ ...plan }));
+  // 요금제는 고정 id(starter/pro/enterprise)라 seq 없이 items만 사용한다.
+  // 파일이 없으면 initialPlans를 seed로 깔아 기존 dev 동작을 그대로 유지한다.
+  private readonly store = new JsonCollectionStore<RevenuePlan>('admin-plans.json', () => ({
+    items: initialPlans.map((plan) => ({ ...plan, featureFlags: [...plan.featureFlags] })),
+  }));
+  private readonly state = this.store.load();
+
+  private get plans(): RevenuePlan[] {
+    return this.state.items;
+  }
 
   constructor(
     private readonly careLogService: CareLogService,
@@ -140,6 +150,7 @@ export class AdminService {
     target.description = parsed.description;
     target.featureFlags = [...parsed.featureFlags];
 
+    this.store.save(this.state);
     return { ...target };
   }
 }

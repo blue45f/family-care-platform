@@ -22,12 +22,24 @@
 | --- | --- | --- |
 | 웹 UI | `react`, `react-dom` (v19) | 프론트엔드 전부. UI 라이브러리/상태관리 라이브러리 없음 |
 | 웹 빌드/개발 서버 | `vite` | React Compiler(`reactCompilerPreset`) 활성화 |
-| API 서버 | NestJS 코어(`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) | 인메모리 서비스, DB/ORM 없음 |
+| API 서버 | NestJS 코어(`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) | DB/ORM 없음. 데이터는 원자적 JSON 파일 스토어로 영속화(아래 참고) |
 | API 입력 검증 | `zod` (4.x) | 요청 입력 스키마 검증(모듈별 `*.schema.ts` + `ZodValidationPipe`) |
 | 테스트 | `vitest` | 웹·API 공통 유닛 테스트 |
 | 타입 | `typescript` | 모노레포 전역 + 워크스페이스별 typecheck |
 
 위 외 추가 라이브러리가 정말 필요해지기 전까지는 표준 라이브러리/네이티브 API로 해결하는 것을 우선합니다.
+
+## 데이터 영속화 (DB 없이 JSON 파일 스토어)
+
+API 서버의 도메인 데이터(`care-logs`, `settlements`, `claims`, 어드민 요금제)는 **DB/ORM나 새 npm 의존성 없이** `node:fs`만으로 재시작 후에도 살아남습니다. sibling 저장소 **proto-live의 "atomic JSON file store" 패턴**(`backend/src/projects/projects.store.ts`)을 이식한 것입니다.
+
+- 구현: `apps/api-server/src/common/json-store.ts`의 재사용 헬퍼 `JsonCollectionStore<T>`. 각 서비스(`@Injectable` 싱글톤)가 컬렉션별 JSON 파일 하나를 백킹 스토어로 가집니다.
+  - `care-logs.json`, `settlements.json`, `claims.json` — 자동 증가 id(`seq`)를 사용하는 컬렉션
+  - `admin-plans.json` — 고정 id(starter/pro/enterprise) 컬렉션(`seq` 없음)
+- 원자적 쓰기: 임시 파일에 기록 후 `rename`으로 교체해 부분 기록을 방지합니다.
+- 시작 시 로드: 파일이 없으면 기존 seed(빈 배열 또는 초기 요금제 3종)로 초기화하므로 dev 경험은 그대로입니다. 파일이 있으면 관용적으로 역직렬화하며, `items` 누락/형식 오류는 빈 배열로, `seq` 누락은 데이터의 `max(id)+1`로 복원합니다(스키마 마이그레이션 내성). 손상된 파일은 seed로 폴백합니다.
+- 저장 위치: 기본 `<cwd>/data/` (api-server 실행 위치 기준). 환경 변수 `FCP_DATA_DIR`로 덮어쓸 수 있습니다. `data/`는 `.gitignore`로 제외되어 런타임 데이터는 커밋되지 않습니다.
+- 테스트 격리: vitest(`VITEST`) 또는 `NODE_ENV=test` 환경에서는 파일 I/O 없이 **인메모리로만** 동작하고 `save()`는 no-op입니다. 따라서 각 서비스 인스턴스는 항상 seed에서 시작하며, 기존 유닛 테스트의 격리(매 테스트 fresh seed)가 그대로 유지됩니다.
 
 ## 개발 플로우
 
