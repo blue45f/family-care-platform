@@ -14,17 +14,20 @@
 
 ## 라이브러리 (용도별)
 
-이 저장소는 **의도적으로 의존성을 최소화**합니다(toss-assignment 기준선). 날짜/라우터/유틸리티 라이브러리(date-fns, react-router, lodash 등)는 추가하지 않으며, 필요한 동작은 작은 네이티브 헬퍼로 직접 구현합니다(예: 로컬 타임존 날짜 키를 만드는 `localYmd`/`localMonthKey`).
+이 저장소는 **의존성을 최소화**하는 것을 기본으로 합니다(toss-assignment 기준선). 날짜/라우터/유틸리티 라이브러리(date-fns, react-router, lodash 등)는 추가하지 않으며, 필요한 동작은 작은 네이티브 헬퍼로 직접 구현합니다(예: 로컬 타임존 날짜 키를 만드는 `localYmd`/`localMonthKey`).
+
+예외적으로, **API 입력 검증에는 유지보수자 결정에 따라 `zod`를 도입**했습니다(sibling 저장소와 동일한 zod 4.x). API 서버의 요청 입력(돌봄 기록·정산·보험청구 생성, 청구 상태 변경, 어드민 요금제 수정)은 손으로 작성한 `if (!x) throw ...` 검증 대신 모듈별 `*.schema.ts`의 zod 스키마로 검증합니다. 검증 실패는 작은 재사용 헬퍼/파이프(`common/zod-validation.pipe.ts`)가 `BadRequestException`으로 변환해, `AllExceptionsFilter`의 `ApiErrorBody`(`error: 'BadRequest'`, `statusCode: 400`, `detail: 메시지`) 형태를 그대로 유지합니다.
 
 | 용도 | 라이브러리 | 비고 |
 | --- | --- | --- |
 | 웹 UI | `react`, `react-dom` (v19) | 프론트엔드 전부. UI 라이브러리/상태관리 라이브러리 없음 |
 | 웹 빌드/개발 서버 | `vite` | React Compiler(`reactCompilerPreset`) 활성화 |
 | API 서버 | NestJS 코어(`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) | 인메모리 서비스, DB/ORM 없음 |
+| API 입력 검증 | `zod` (4.x) | 요청 입력 스키마 검증(모듈별 `*.schema.ts` + `ZodValidationPipe`) |
 | 테스트 | `vitest` | 웹·API 공통 유닛 테스트 |
 | 타입 | `typescript` | 모노레포 전역 + 워크스페이스별 typecheck |
 
-추가 라이브러리가 정말 필요해지기 전까지는 표준 라이브러리/네이티브 API로 해결하는 것을 우선합니다.
+위 외 추가 라이브러리가 정말 필요해지기 전까지는 표준 라이브러리/네이티브 API로 해결하는 것을 우선합니다.
 
 ## 개발 플로우
 
