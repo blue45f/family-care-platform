@@ -5,7 +5,7 @@
   "description": "가족 돌봄 운영 플랫폼 (Vite + NestJS + pnpm monorepo)",
   "packageManager": "pnpm@11.4.0",
   "engines": {
-    "node": ">=22",
+    "node": ">=22.12.0",
     "pnpm": ">=11"
   },
   "scripts": {
