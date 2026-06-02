@@ -12,6 +12,20 @@
 - `pnpm run ci`              # verify와 동일한 CI 게이트
 - `pnpm run smoke:web`       # 샘플 시나리오 기반 브라우저/API 스모크 실행
 
+## 라이브러리 (용도별)
+
+이 저장소는 **의도적으로 의존성을 최소화**합니다(toss-assignment 기준선). 날짜/라우터/유틸리티 라이브러리(date-fns, react-router, lodash 등)는 추가하지 않으며, 필요한 동작은 작은 네이티브 헬퍼로 직접 구현합니다(예: 로컬 타임존 날짜 키를 만드는 `localYmd`/`localMonthKey`).
+
+| 용도 | 라이브러리 | 비고 |
+| --- | --- | --- |
+| 웹 UI | `react`, `react-dom` (v19) | 프론트엔드 전부. UI 라이브러리/상태관리 라이브러리 없음 |
+| 웹 빌드/개발 서버 | `vite` | React Compiler(`reactCompilerPreset`) 활성화 |
+| API 서버 | NestJS 코어(`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) | 인메모리 서비스, DB/ORM 없음 |
+| 테스트 | `vitest` | 웹·API 공통 유닛 테스트 |
+| 타입 | `typescript` | 모노레포 전역 + 워크스페이스별 typecheck |
+
+추가 라이브러리가 정말 필요해지기 전까지는 표준 라이브러리/네이티브 API로 해결하는 것을 우선합니다.
+
 ## 개발 플로우
 
 1. 운영 탭에서 `care-logs`, `settlements`, `claims` API 흐름을 먼저 사용해 실데이터 등록 동선을 확인
