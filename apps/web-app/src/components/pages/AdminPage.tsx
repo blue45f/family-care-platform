@@ -1,4 +1,6 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
   adminModuleMeta,
@@ -18,6 +20,11 @@ import {
   trendDirectionLabel,
 } from "../../utils";
 import { type PlatformData } from "../../state/usePlatformData";
+import {
+  revenuePlanFormSchema,
+  type RevenuePlanFormValues,
+} from "../../features/revenue-plan/schema";
+import type { RevenuePlan } from "../../types";
 
 type AdminPageProps = {
   modules: readonly AdminRouteModule[];
@@ -235,21 +242,143 @@ const renderTrends = ({
   </section>
 );
 
+type PlanCardProps = {
+  plan: RevenuePlan;
+  submitPlan: PlatformData["submitPlan"];
+  isSaving: boolean;
+  isReadOnly: boolean;
+};
+
+const PlanCard = ({
+  plan,
+  submitPlan,
+  isSaving,
+  isReadOnly,
+}: PlanCardProps): ReactNode => {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { isValid },
+  } = useForm<RevenuePlanFormValues>({
+    resolver: zodResolver(revenuePlanFormSchema),
+    defaultValues: plan,
+    mode: "onChange",
+  });
+
+  // 서버 상태(plan)가 바뀌면(저장 성공·재로딩) 카드 입력을 최신 값으로 동기화한다.
+  // 기존 planDrafts 재구성과 동일하게, 진행 중인 사용자 편집은 갱신 시점에 덮어쓴다.
+  useEffect(() => {
+    reset(plan);
+  }, [plan, reset]);
+
+  const isBusy = isReadOnly || isSaving;
+  const name = watch("name");
+  const monthlyPrice = watch("monthlyPrice");
+  const annualDiscountRate = watch("annualDiscountRate");
+  const activeClients = watch("activeClients");
+
+  const safeMonthly = Number.isFinite(monthlyPrice) ? monthlyPrice : 0;
+  const safeClients = Number.isFinite(activeClients) ? activeClients : 0;
+  const safeDiscount = Number.isFinite(annualDiscountRate)
+    ? annualDiscountRate
+    : 0;
+  const planContribution = safeMonthly * safeClients;
+  const annualContribution =
+    safeMonthly * 12 * (1 - safeDiscount) * safeClients;
+
+  const onValid = handleSubmit(async (values) => {
+    if (isBusy) {
+      return;
+    }
+    await submitPlan(values);
+  });
+
+  return (
+    <article className="plan-card">
+      <form onSubmit={onValid}>
+        <div className="plan-head">
+          <input
+            className="plan-title"
+            aria-label={`${plan.id} 요금제명 입력`}
+            disabled={isBusy}
+            {...register("name")}
+          />
+          <span className="tag">이용 가구 {safeClients}개</span>
+        </div>
+
+        <label>
+          월 요금
+          <input
+            type="number"
+            min={0}
+            disabled={isBusy}
+            {...register("monthlyPrice", { valueAsNumber: true })}
+          />
+        </label>
+        <label>
+          연 결제 할인율
+          <input
+            type="number"
+            min={0}
+            max={0.99}
+            step={0.01}
+            disabled={isBusy}
+            {...register("annualDiscountRate", { valueAsNumber: true })}
+          />
+        </label>
+        <label>
+          이용 가구 수
+          <input
+            type="number"
+            min={0}
+            disabled={isBusy}
+            {...register("activeClients", { valueAsNumber: true })}
+          />
+        </label>
+        <label>
+          메모
+          <input
+            aria-label={`${name} 메모 입력`}
+            disabled={isBusy}
+            {...register("description")}
+          />
+        </label>
+
+        <div className="plan-feature">{plan.featureFlags.join(" · ")}</div>
+        <p className="small-note" role="note">
+          요금/할인율/이용 가구 수가 함께 월 수익에 반영됩니다.
+        </p>
+
+        <div className="plan-footer">
+          <p>
+            <span
+              aria-label={`월 예상 금액 ${formatWon(planContribution)}, 연 예상 금액 ${formatWon(Math.round(annualContribution))}`}
+            >
+              월 {formatWon(planContribution)} · 연 {formatWon(Math.round(annualContribution))}
+            </span>
+          </p>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isBusy || !isValid}
+          >
+            {isSaving ? "저장 중..." : "요금 반영"}
+          </button>
+        </div>
+      </form>
+    </article>
+  );
+};
+
 const renderPlans = ({
   plans,
-  planDrafts,
-  updatePlanDraft,
-  onPlanNameInput,
-  onPlanDescriptionInput,
   submitPlan,
   savingPlanId,
   isReadOnly,
 }: {
   plans: PlatformData["plans"];
-  planDrafts: PlatformData["planDrafts"];
-  updatePlanDraft: PlatformData["updatePlanDraft"];
-  onPlanNameInput: PlatformData["onPlanNameInput"];
-  onPlanDescriptionInput: PlatformData["onPlanDescriptionInput"];
   submitPlan: PlatformData["submitPlan"];
   savingPlanId: string | null;
   isReadOnly: boolean;
@@ -262,109 +391,15 @@ const renderPlans = ({
     </div>
 
     <div className="plan-grid">
-      {plans.map((plan) => {
-        const draft = planDrafts[plan.id] ?? plan;
-        const planContribution = draft.monthlyPrice * draft.activeClients;
-        const annualContribution =
-          draft.monthlyPrice *
-          12 *
-          (1 - draft.annualDiscountRate) *
-          draft.activeClients;
-
-        return (
-          <article key={plan.id} className="plan-card">
-      <div className="plan-head">
-              <input
-                value={draft.name}
-                onChange={(event) =>
-                  onPlanNameInput(plan.id, event.target.value)
-                }
-                className="plan-title"
-                aria-label={`${plan.id} 요금제명 입력`}
-                disabled={isReadOnly || savingPlanId === plan.id}
-              />
-              <span className="tag">이용 가구 {draft.activeClients}개</span>
-            </div>
-
-            <label>
-              월 요금
-              <input
-                type="number"
-                min={0}
-                value={draft.monthlyPrice}
-                onChange={(event) =>
-                  updatePlanDraft(plan.id, "monthlyPrice", event.target.value)
-                }
-                disabled={isReadOnly || savingPlanId === plan.id}
-              />
-            </label>
-            <label>
-              연 결제 할인율
-              <input
-                type="number"
-                min={0}
-                max={0.99}
-                step={0.01}
-                value={draft.annualDiscountRate}
-                onChange={(event) =>
-                  updatePlanDraft(
-                    plan.id,
-                    "annualDiscountRate",
-                    event.target.value,
-                  )
-                }
-                disabled={isReadOnly || savingPlanId === plan.id}
-              />
-            </label>
-            <label>
-              이용 가구 수
-              <input
-                type="number"
-                min={0}
-                value={draft.activeClients}
-                onChange={(event) =>
-                  updatePlanDraft(plan.id, "activeClients", event.target.value)
-                }
-                disabled={isReadOnly || savingPlanId === plan.id}
-              />
-            </label>
-            <label>
-              메모
-              <input
-                value={draft.description}
-                onChange={(event) =>
-                  onPlanDescriptionInput(plan.id, event.target.value)
-                }
-                aria-label={`${draft.name} 메모 입력`}
-                disabled={isReadOnly || savingPlanId === plan.id}
-              />
-            </label>
-
-            <div className="plan-feature">{draft.featureFlags.join(" · ")}</div>
-            <p className="small-note" role="note">
-              요금/할인율/이용 가구 수가 함께 월 수익에 반영됩니다.
-            </p>
-
-            <div className="plan-footer">
-              <p>
-                <span
-                  aria-label={`월 예상 금액 ${formatWon(planContribution)}, 연 예상 금액 ${formatWon(Math.round(annualContribution))}`}
-                >
-                  월 {formatWon(planContribution)} · 연 {formatWon(Math.round(annualContribution))}
-                </span>
-              </p>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => void submitPlan(plan.id)}
-                disabled={isReadOnly || savingPlanId === plan.id}
-              >
-                {savingPlanId === plan.id ? "저장 중..." : "요금 반영"}
-              </button>
-            </div>
-          </article>
-        );
-      })}
+      {plans.map((plan) => (
+        <PlanCard
+          key={plan.id}
+          plan={plan}
+          submitPlan={submitPlan}
+          isSaving={savingPlanId === plan.id}
+          isReadOnly={isReadOnly}
+        />
+      ))}
     </div>
   </section>
 );
@@ -547,10 +582,6 @@ const AdminPage = ({
     plans: () =>
       renderPlans({
         plans: data.plans,
-        planDrafts: data.planDrafts,
-        updatePlanDraft: data.updatePlanDraft,
-        onPlanNameInput: data.onPlanNameInput,
-        onPlanDescriptionInput: data.onPlanDescriptionInput,
         submitPlan: data.submitPlan,
         savingPlanId: data.savingPlanId,
         isReadOnly,

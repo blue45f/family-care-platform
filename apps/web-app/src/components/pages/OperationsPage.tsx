@@ -1,12 +1,22 @@
-import { type FormEvent, type ReactNode } from "react";
+import { type ReactNode } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { claimStatusClass, formatRate, formatWon } from "../../utils";
+import { claimStatusOptions, type PlatformData } from "../../state/usePlatformData";
 import {
-  careLogTypeOptions,
-  claimStatusOptions,
-  type CareLogDraftState,
-  type PlatformData,
-} from "../../state/usePlatformData";
+  careLogFormSchema,
+  careLogTypes,
+  type CareLogFormValues,
+} from "../../features/care-log/schema";
+import {
+  settlementFormSchema,
+  type SettlementFormValues,
+} from "../../features/settlement/schema";
+import {
+  claimFormSchema,
+  type ClaimFormValues,
+} from "../../features/claim/schema";
 import {
   operationsModuleMeta,
   operationsModuleSequence,
@@ -17,6 +27,7 @@ import type {
   OperationsRouteModule,
   NonHomeRoutePath,
 } from "../../routeConfig";
+import type { ClaimStatus } from "../../types";
 import { RouteField } from "../common/RouteField";
 
 type OperationsPageProps = {
@@ -26,23 +37,6 @@ type OperationsPageProps = {
   onNavigate: (path: NonHomeRoutePath) => void;
   activeRoutePath: NonHomeRoutePath;
   isReadOnly: boolean;
-};
-
-type CareLogPayload = {
-  recipient: string;
-  caregiver: string;
-  type: CareLogDraftState["type"];
-  date: string;
-  note: string;
-};
-
-type ClaimPayload = {
-  recipient: string;
-  hospitalName: string;
-  expectedAmount: number;
-  issueDate: string;
-  status: (typeof claimStatusOptions)[number];
-  note: string;
 };
 
 const renderOverview = ({
@@ -174,28 +168,42 @@ const renderOverview = ({
   );
 };
 
-const renderCareForm = (
-  module: "care",
-  data: PlatformData,
-  onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
-  isSubmitting: boolean,
-  isReadOnly: boolean,
-): ReactNode => {
-  const moduleMeta = operationsModuleMeta[module];
-  const { careLogDraft } = data;
-  const isBusy = isReadOnly || isSubmitting;
-  const canSubmit =
-    careLogDraft.recipient.trim() &&
-    careLogDraft.caregiver.trim() &&
-    careLogDraft.note.trim();
+type CareLogFormProps = {
+  module: "care";
+  data: PlatformData;
+  isSubmitting: boolean;
+  isReadOnly: boolean;
+};
 
-  const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
-    if (isBusy || !canSubmit) {
-      event.preventDefault();
+const CareLogForm = ({
+  module,
+  data,
+  isSubmitting,
+  isReadOnly,
+}: CareLogFormProps): ReactNode => {
+  const moduleMeta = operationsModuleMeta[module];
+  const isBusy = isReadOnly || isSubmitting;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isValid },
+  } = useForm<CareLogFormValues>({
+    resolver: zodResolver(careLogFormSchema),
+    defaultValues: data.defaultCareLogValues,
+    mode: "onChange",
+  });
+
+  const canSubmit = isValid;
+
+  const onValid = handleSubmit(async (values) => {
+    if (isBusy) {
       return;
     }
-    onSubmitStatus(event);
-  };
+    await data.submitCareLog(values);
+    reset(data.defaultCareLogValues);
+  });
 
   return (
     <section key={module} className={`panel panel-ops ${moduleMeta.panelClass}`}>
@@ -208,18 +216,15 @@ const renderCareForm = (
         </p>
       </div>
 
-      <form className="row" onSubmit={onSubmitProtected}>
+      <form className="row" onSubmit={onValid}>
         <RouteField id={`care-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`care-recipient-${module}`}
             type="text"
-            value={careLogDraft.recipient}
-            onChange={(event) =>
-              data.updateCareLogField("recipient", event.target.value)
-            }
             placeholder="예: 김영희"
             required
             disabled={isBusy}
+            {...register("recipient")}
           />
         </RouteField>
 
@@ -227,26 +232,16 @@ const renderCareForm = (
           <input
             id={`caregiver-${module}`}
             type="text"
-            value={careLogDraft.caregiver}
-            onChange={(event) =>
-              data.updateCareLogField("caregiver", event.target.value)
-            }
             placeholder="예: 박돌봄"
             required
             disabled={isBusy}
+            {...register("caregiver")}
           />
         </RouteField>
 
         <RouteField id={`care-type-${module}`} label="돌봄 종류">
-          <select
-            id={`care-type-${module}`}
-            value={careLogDraft.type}
-            onChange={(event) =>
-              data.updateCareLogField("type", event.target.value as CareLogPayload["type"])
-            }
-            disabled={isBusy}
-          >
-            {careLogTypeOptions.map((type) => (
+          <select id={`care-type-${module}`} disabled={isBusy} {...register("type")}>
+            {careLogTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
               </option>
@@ -258,25 +253,19 @@ const renderCareForm = (
           <input
             id={`care-date-${module}`}
             type="date"
-            value={careLogDraft.date}
-            onChange={(event) =>
-              data.updateCareLogField("date", event.target.value)
-            }
             disabled={isBusy}
+            {...register("date")}
           />
         </RouteField>
 
         <RouteField id={`care-note-${module}`} label="돌봄 내용">
           <textarea
             id={`care-note-${module}`}
-            value={careLogDraft.note}
-            onChange={(event) =>
-              data.updateCareLogField("note", event.target.value)
-            }
             placeholder="예: 점심 식사 도움, 약 복용 확인"
             required
             rows={3}
             disabled={isBusy}
+            {...register("note")}
           />
         </RouteField>
 
@@ -319,28 +308,41 @@ const renderCareForm = (
   );
 };
 
-const renderSettlementForm = (
-  module: "settlement",
-  data: PlatformData,
-  onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
-  isSubmitting: boolean,
-  isReadOnly: boolean,
-): ReactNode => {
-  const moduleMeta = operationsModuleMeta[module];
-  const { settlementDraft } = data;
-  const isBusy = isReadOnly || isSubmitting;
-  const canSubmit =
-    settlementDraft.recipient.trim() &&
-    settlementDraft.careHours > 0 &&
-    settlementDraft.baseRate > 0;
+type SettlementFormProps = {
+  module: "settlement";
+  data: PlatformData;
+  isSubmitting: boolean;
+  isReadOnly: boolean;
+};
 
-  const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
-    if (isBusy || !canSubmit) {
-      event.preventDefault();
+const SettlementForm = ({
+  module,
+  data,
+  isSubmitting,
+  isReadOnly,
+}: SettlementFormProps): ReactNode => {
+  const moduleMeta = operationsModuleMeta[module];
+  const isBusy = isReadOnly || isSubmitting;
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<SettlementFormValues>({
+    resolver: zodResolver(settlementFormSchema),
+    defaultValues: data.defaultSettlementValues,
+    mode: "onChange",
+  });
+
+  const canSubmit = isValid;
+
+  const onValid = handleSubmit(async (values) => {
+    if (isBusy) {
       return;
     }
-    onSubmitStatus(event);
-  };
+    // 정산 폼은 제출 후에도 입력값을 유지한다(기존 동작과 동일하게 reset 없음).
+    await data.submitSettlement(values);
+  });
 
   return (
     <section
@@ -356,18 +358,15 @@ const renderSettlementForm = (
         </p>
       </div>
 
-      <form className="row" onSubmit={onSubmitProtected}>
+      <form className="row" onSubmit={onValid}>
         <RouteField id={`settlement-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`settlement-recipient-${module}`}
             type="text"
-            value={settlementDraft.recipient}
-            onChange={(event) =>
-              data.updateSettlementField("recipient", event.target.value)
-            }
             placeholder="예: 김영희"
             required
             disabled={isBusy}
+            {...register("recipient")}
           />
         </RouteField>
 
@@ -375,11 +374,8 @@ const renderSettlementForm = (
           <input
             id={`settlement-date-${module}`}
             type="date"
-            value={settlementDraft.date}
-            onChange={(event) =>
-              data.updateSettlementField("date", event.target.value)
-            }
             disabled={isBusy}
+            {...register("date")}
           />
         </RouteField>
 
@@ -387,15 +383,9 @@ const renderSettlementForm = (
           <input
             id={`settlement-hours-${module}`}
             type="number"
-            value={settlementDraft.careHours}
             min={1}
-            onChange={(event) =>
-              data.updateSettlementField(
-                "careHours",
-                Number(event.target.value) || 0,
-              )
-            }
             disabled={isBusy}
+            {...register("careHours", { valueAsNumber: true })}
           />
         </RouteField>
 
@@ -403,27 +393,18 @@ const renderSettlementForm = (
           <input
             id={`settlement-rate-${module}`}
             type="number"
-            value={settlementDraft.baseRate}
             min={1}
-            onChange={(event) =>
-              data.updateSettlementField(
-                "baseRate",
-                Number(event.target.value) || 0,
-              )
-            }
             disabled={isBusy}
+            {...register("baseRate", { valueAsNumber: true })}
           />
         </RouteField>
 
         <RouteField id={`settlement-note-${module}`} label="메모">
           <input
             id={`settlement-note-${module}`}
-            value={settlementDraft.note}
-            onChange={(event) =>
-              data.updateSettlementField("note", event.target.value)
-            }
             placeholder="예: 야간 돌봄 포함"
             disabled={isBusy}
+            {...register("note")}
           />
         </RouteField>
 
@@ -471,28 +452,43 @@ const renderSettlementForm = (
   );
 };
 
-const renderClaims = (
-  module: "claims",
-  data: PlatformData,
-  onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
-  isSubmitting: boolean,
-  isReadOnly: boolean,
-): ReactNode => {
-  const moduleMeta = operationsModuleMeta[module];
-  const { claimDraft } = data;
-  const isBusy = isReadOnly || isSubmitting;
-  const canSubmit =
-    claimDraft.recipient.trim() &&
-    claimDraft.hospitalName.trim() &&
-    claimDraft.expectedAmount > 0;
+type ClaimsFormProps = {
+  module: "claims";
+  data: PlatformData;
+  isSubmitting: boolean;
+  isReadOnly: boolean;
+};
 
-  const onSubmitProtected = (event: FormEvent<HTMLFormElement>) => {
-    if (isBusy || !canSubmit) {
-      event.preventDefault();
+const ClaimsForm = ({
+  module,
+  data,
+  isSubmitting,
+  isReadOnly,
+}: ClaimsFormProps): ReactNode => {
+  const moduleMeta = operationsModuleMeta[module];
+  const isBusy = isReadOnly || isSubmitting;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isValid },
+  } = useForm<ClaimFormValues>({
+    resolver: zodResolver(claimFormSchema),
+    // claimType은 UI에 노출하지 않지만 API 검증을 위해 기본값으로 유지한다.
+    defaultValues: data.defaultClaimValues,
+    mode: "onChange",
+  });
+
+  const canSubmit = isValid;
+
+  const onValid = handleSubmit(async (values) => {
+    if (isBusy) {
       return;
     }
-    onSubmitStatus(event);
-  };
+    await data.submitClaim(values);
+    reset(data.defaultClaimValues);
+  });
 
   return (
     <section
@@ -508,18 +504,15 @@ const renderClaims = (
         </p>
       </div>
 
-      <form className="row" onSubmit={onSubmitProtected}>
+      <form className="row" onSubmit={onValid}>
         <RouteField id={`claim-recipient-${module}`} label="돌봄 받는 분">
           <input
             id={`claim-recipient-${module}`}
             type="text"
-            value={claimDraft.recipient}
-            onChange={(event) =>
-              data.updateClaimField("recipient", event.target.value)
-            }
             placeholder="예: 김영희"
             required
             disabled={isBusy}
+            {...register("recipient")}
           />
         </RouteField>
 
@@ -527,13 +520,10 @@ const renderClaims = (
           <input
             id={`claim-hospital-${module}`}
             type="text"
-            value={claimDraft.hospitalName}
-            onChange={(event) =>
-              data.updateClaimField("hospitalName", event.target.value)
-            }
             placeholder="예: 희망요양병원"
             required
             disabled={isBusy}
+            {...register("hospitalName")}
           />
         </RouteField>
 
@@ -541,16 +531,10 @@ const renderClaims = (
           <input
             id={`claim-amount-${module}`}
             type="number"
-            value={claimDraft.expectedAmount}
             min={1}
-            onChange={(event) =>
-              data.updateClaimField(
-                "expectedAmount",
-                Number(event.target.value) || 0,
-              )
-            }
             required
             disabled={isBusy}
+            {...register("expectedAmount", { valueAsNumber: true })}
           />
         </RouteField>
 
@@ -558,26 +542,13 @@ const renderClaims = (
           <input
             id={`claim-date-${module}`}
             type="date"
-            value={claimDraft.issueDate}
-            onChange={(event) =>
-              data.updateClaimField("issueDate", event.target.value)
-            }
             disabled={isBusy}
+            {...register("issueDate")}
           />
         </RouteField>
 
         <RouteField id={`claim-status-${module}`} label="현재 상태">
-          <select
-            id={`claim-status-${module}`}
-            value={claimDraft.status}
-            onChange={(event) =>
-              data.updateClaimField(
-                "status",
-                event.target.value as ClaimPayload["status"],
-              )
-            }
-            disabled={isBusy}
-          >
+          <select id={`claim-status-${module}`} disabled={isBusy} {...register("status")}>
             {claimStatusOptions.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -590,12 +561,9 @@ const renderClaims = (
           <input
             id={`claim-note-${module}`}
             type="text"
-            value={claimDraft.note}
-            onChange={(event) =>
-              data.updateClaimField("note", event.target.value)
-            }
             placeholder="예: 영수증 확인 필요"
             disabled={isBusy}
+            {...register("note")}
           />
         </RouteField>
 
@@ -642,7 +610,7 @@ const renderClaims = (
                   onChange={(event) =>
                     void data.updateClaimStatus(
                       claim.id,
-                      event.target.value as ClaimPayload["status"],
+                      event.target.value as ClaimStatus,
                     )
                   }
                   disabled={
@@ -815,30 +783,30 @@ const OperationsPage = ({
         isReadOnly,
         nextRoutePath: getOperationsNextRoutePath(modules, activeRoutePath),
       }),
-    care: () =>
-      renderCareForm(
-        "care",
-        data,
-        data.submitCareLog,
-        data.isSubmittingCareLog,
-        isReadOnly,
-      ),
-    settlement: () =>
-      renderSettlementForm(
-        "settlement",
-        data,
-        data.submitSettlement,
-        data.isSubmittingSettlement,
-        isReadOnly,
-      ),
-    claims: () =>
-      renderClaims(
-        "claims",
-        data,
-        data.submitClaim,
-        data.isSubmittingClaim,
-        isReadOnly,
-      ),
+    care: () => (
+      <CareLogForm
+        module="care"
+        data={data}
+        isSubmitting={data.isSubmittingCareLog}
+        isReadOnly={isReadOnly}
+      />
+    ),
+    settlement: () => (
+      <SettlementForm
+        module="settlement"
+        data={data}
+        isSubmitting={data.isSubmittingSettlement}
+        isReadOnly={isReadOnly}
+      />
+    ),
+    claims: () => (
+      <ClaimsForm
+        module="claims"
+        data={data}
+        isSubmitting={data.isSubmittingClaim}
+        isReadOnly={isReadOnly}
+      />
+    ),
   };
 
   const visibleModules = getOperationsFocusModules(modules, activeRoutePath);

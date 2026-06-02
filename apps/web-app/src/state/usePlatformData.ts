@@ -1,11 +1,4 @@
-import {
-  type ChangeEvent,
-  type FormEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   fetchAdminOverview,
@@ -22,6 +15,7 @@ import {
 import type {
   AdminOverview,
   CareLog,
+  CareLogDraft,
   Claim,
   ClaimDraft,
   ClaimStatus,
@@ -47,18 +41,8 @@ const PLAN_TARGET_MONTHLY = 5_000_000;
 const careLogTypes = ["방문", "원격상담", "투약", "식사관리", "기타"] as const;
 const claimStatuses = ["요청", "검토중", "승인", "거절"] as const;
 
-export const careLogTypeOptions = careLogTypes;
+// 인라인 청구 상태 변경(목록 행)에서 쓰는 옵션. 폼 enum은 features/*/schema.ts가 소유한다.
 export const claimStatusOptions = claimStatuses;
-
-export type CareLogDraftState = {
-  recipient: string;
-  caregiver: string;
-  type: (typeof careLogTypes)[number];
-  note: string;
-  date: string;
-};
-
-export type DraftPlanMap = Record<string, RevenuePlan>;
 
 export type AdminMonthlyTrendWithDelta = AdminMonthlyTrend & {
   settlementDelta: number;
@@ -97,16 +81,11 @@ type UsePlatformDataResult = {
   claims: Claim[];
   adminOverview: AdminOverview;
   plans: RevenuePlan[];
-  planDrafts: DraftPlanMap;
   savingPlanId: string | null;
   updatingClaimId: number | null;
   isSubmittingCareLog: boolean;
   isSubmittingSettlement: boolean;
   isSubmittingClaim: boolean;
-
-  careLogDraft: CareLogDraftState;
-  settlementDraft: SettlementDraft;
-  claimDraft: ClaimDraft;
 
   activeHouseholds: number;
   totalSettlement: number;
@@ -133,36 +112,20 @@ type UsePlatformDataResult = {
   scenarioRevenue: ScenarioRevenue;
   growthRecommendations: string[];
 
-  updateCareLogField: (
-    field: keyof CareLogDraftState,
-    value: CareLogDraftState[keyof CareLogDraftState],
-  ) => void;
-  updateSettlementField: (
-    field: keyof SettlementDraft,
-    value: SettlementDraft[keyof SettlementDraft],
-  ) => void;
-  updateClaimField: (
-    field: keyof ClaimDraft,
-    value: ClaimDraft[keyof ClaimDraft],
-  ) => void;
+  submitCareLog: (values: CareLogDraft) => Promise<void>;
+  submitSettlement: (values: SettlementDraft) => Promise<void>;
+  submitClaim: (values: ClaimDraft) => Promise<void>;
 
-  submitCareLog: (event: FormEvent<HTMLFormElement>) => Promise<void>;
-  submitSettlement: (event: FormEvent<HTMLFormElement>) => Promise<void>;
-  submitClaim: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  defaultCareLogValues: CareLogDraft;
+  defaultSettlementValues: SettlementDraft;
+  defaultClaimValues: ClaimDraft;
 
   updateClaimStatus: (
     claimId: number,
     nextStatus: ClaimStatus,
   ) => Promise<void>;
 
-  updatePlanDraft: (
-    planId: string,
-    key: keyof RevenuePlan,
-    value: string,
-  ) => void;
-  onPlanNameInput: (planId: string, value: string) => void;
-  onPlanDescriptionInput: (planId: string, value: string) => void;
-  submitPlan: (planId: string) => Promise<void>;
+  submitPlan: (draft: RevenuePlanDraft) => Promise<void>;
 
   onPriceLiftInput: (event: ChangeEvent<HTMLInputElement>) => void;
   onUpgradePushInput: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -221,12 +184,7 @@ const buildMonthKeys = (monthCount = 3): string[] => {
   });
 };
 
-const toNumberFromInput = (raw: string): number => {
-  const value = Number(raw);
-  return Number.isFinite(value) ? value : 0;
-};
-
-export const createInitialCareLogDraft = (): CareLogDraftState => ({
+export const createInitialCareLogDraft = (): CareLogDraft => ({
   recipient: "",
   caregiver: "",
   type: careLogTypes[0],
@@ -263,7 +221,6 @@ export const usePlatformData = (): UsePlatformDataResult => {
   const [adminOverview, setAdminOverview] =
     useState<AdminOverview>(initialAdminOverview);
   const [plans, setPlans] = useState<RevenuePlan[]>([]);
-  const [planDrafts, setPlanDrafts] = useState<DraftPlanMap>({});
   const [savingPlanId, setSavingPlanId] = useState<string | null>(null);
   const [updatingClaimId, setUpdatingClaimId] = useState<number | null>(null);
   const [isSubmittingCareLog, setIsSubmittingCareLog] = useState(false);
@@ -273,15 +230,14 @@ export const usePlatformData = (): UsePlatformDataResult => {
   const [priceLiftPercent, setPriceLiftPercent] = useState(4);
   const [upgradePushPercent, setUpgradePushPercent] = useState(8);
 
-  const [careLogDraft, setCareLogDraft] = useState<CareLogDraftState>(
-    createInitialCareLogDraft(),
+  // 폼 기본값은 마운트 시 한 번 계산한다(초기 날짜를 안정적으로 고정 — 기존 draft 초기화와 동일).
+  const [defaultCareLogValues] = useState<CareLogDraft>(
+    createInitialCareLogDraft,
   );
-  const [settlementDraft, setSettlementDraft] = useState<SettlementDraft>(
-    createInitialSettlementDraft(),
+  const [defaultSettlementValues] = useState<SettlementDraft>(
+    createInitialSettlementDraft,
   );
-  const [claimDraft, setClaimDraft] = useState<ClaimDraft>(
-    createInitialClaimDraft(),
-  );
+  const [defaultClaimValues] = useState<ClaimDraft>(createInitialClaimDraft);
 
   const activeHouseholds = useMemo(() => {
     const recipients = new Set([
@@ -563,12 +519,6 @@ export const usePlatformData = (): UsePlatformDataResult => {
       setClaims(claimsResult);
       setAdminOverview(overviewResult);
       setPlans(plansResult);
-
-      const newDrafts: DraftPlanMap = {};
-      plansResult.forEach((plan) => {
-        newDrafts[plan.id] = { ...plan };
-      });
-      setPlanDrafts(newDrafts);
     } catch (error) {
       const message = normalizeErrorMessage(
         error,
@@ -584,66 +534,18 @@ export const usePlatformData = (): UsePlatformDataResult => {
     void load();
   }, [load]);
 
-  const updateCareLogField = useCallback(
-    (
-      field: keyof CareLogDraftState,
-      value: CareLogDraftState[keyof CareLogDraftState],
-    ) => {
-      setCareLogDraft((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    },
-    [],
-  );
-
-  const updateSettlementField = useCallback(
-    (
-      field: keyof SettlementDraft,
-      value: SettlementDraft[keyof SettlementDraft],
-    ) => {
-      setSettlementDraft((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    },
-    [],
-  );
-
-  const updateClaimField = useCallback(
-    (field: keyof ClaimDraft, value: ClaimDraft[keyof ClaimDraft]) => {
-      setClaimDraft((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    },
-    [],
-  );
-
+  // 검증은 폼(zodResolver)에서 끝난 뒤 검증된 값을 받는다. 여기서는 제출 부수효과만 처리한다.
   const submitCareLog = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+    async (values: CareLogDraft) => {
       if (isSubmittingCareLog) {
-        return;
-      }
-
-      if (
-        !careLogDraft.recipient ||
-        !careLogDraft.caregiver ||
-        !careLogDraft.note
-      ) {
-        setErrorMessage(
-          "돌봄 기록 입력값이 부족합니다. 보호자명, 돌봄인력, 상세 내용을 모두 입력해 주세요.",
-        );
         return;
       }
 
       try {
         setIsSubmittingCareLog(true);
         setErrorMessage("");
-        const next = await postCareLog(careLogDraft);
+        const next = await postCareLog(values);
         setCareLogs((prev) => [next, ...prev]);
-        setCareLogDraft(createInitialCareLogDraft());
         await load();
       } catch (error) {
         setErrorMessage(
@@ -656,31 +558,19 @@ export const usePlatformData = (): UsePlatformDataResult => {
         setIsSubmittingCareLog(false);
       }
     },
-    [careLogDraft, load, isSubmittingCareLog],
+    [load, isSubmittingCareLog],
   );
 
   const submitSettlement = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+    async (values: SettlementDraft) => {
       if (isSubmittingSettlement) {
-        return;
-      }
-
-      if (!settlementDraft.recipient) {
-        setErrorMessage("정산 등록을 위해 보호자명을 입력해 주세요.");
-        return;
-      }
-      if (settlementDraft.careHours <= 0 || settlementDraft.baseRate <= 0) {
-        setErrorMessage(
-          "돌봄 시간과 시간당 요금은 0보다 큰 값만 저장할 수 있습니다.",
-        );
         return;
       }
 
       try {
         setIsSubmittingSettlement(true);
         setErrorMessage("");
-        const next = await postSettlement(settlementDraft);
+        const next = await postSettlement(values);
         setSettlements((prev) => [next, ...prev]);
         await load();
       } catch (error) {
@@ -694,33 +584,20 @@ export const usePlatformData = (): UsePlatformDataResult => {
         setIsSubmittingSettlement(false);
       }
     },
-    [settlementDraft, load, isSubmittingSettlement],
+    [load, isSubmittingSettlement],
   );
 
   const submitClaim = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+    async (values: ClaimDraft) => {
       if (isSubmittingClaim) {
-        return;
-      }
-
-      if (
-        !claimDraft.recipient ||
-        !claimDraft.hospitalName ||
-        claimDraft.expectedAmount <= 0
-      ) {
-        setErrorMessage(
-          "보험청구는 보호자명, 병원명, 청구액을 모두 입력해 주세요.",
-        );
         return;
       }
 
       try {
         setIsSubmittingClaim(true);
         setErrorMessage("");
-        const next = await postClaim(claimDraft);
+        const next = await postClaim(values);
         setClaims((prev) => [next, ...prev]);
-        setClaimDraft({ ...createInitialClaimDraft(), expectedAmount: 0 });
         await load();
       } catch (error) {
         setErrorMessage(
@@ -733,111 +610,25 @@ export const usePlatformData = (): UsePlatformDataResult => {
         setIsSubmittingClaim(false);
       }
     },
-    [claimDraft, load, isSubmittingClaim],
+    [load, isSubmittingClaim],
   );
 
-  const submitPlan = useCallback(
-    async (planId: string) => {
-      const draft = planDrafts[planId];
-      if (!draft) {
-        return;
-      }
-      if (draft.monthlyPrice <= 0) {
-        setErrorMessage("월 요금은 0보다 커야 저장할 수 있습니다.");
-        return;
-      }
-      if (draft.annualDiscountRate < 0 || draft.annualDiscountRate >= 1) {
-        setErrorMessage(
-          "연 할인율은 0 이상 1 미만(예: 0.1 = 10%) 범위여야 합니다.",
-        );
-        return;
-      }
-
-      try {
-        setSavingPlanId(planId);
-        const next = await updateAdminPlan(draft as RevenuePlanDraft);
-        setPlans((prev) =>
-          prev.map((plan) => (plan.id === next.id ? next : plan)),
-        );
-        setPlanDrafts((prev) => ({
-          ...prev,
-          [next.id]: { ...next },
-        }));
-      } catch (error) {
-        setErrorMessage(
-          normalizeErrorMessage(
-            error,
-            "요금제 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-          ),
-        );
-      } finally {
-        setSavingPlanId(null);
-      }
-    },
-    [planDrafts],
-  );
-
-  const updatePlanDraft = useCallback(
-    (planId: string, key: keyof RevenuePlan, value: string) => {
-      setPlanDrafts((prev) => {
-        const target = prev[planId];
-        if (!target) {
-          return prev;
-        }
-
-        const nextValue =
-          key === "monthlyPrice" ||
-          key === "activeClients" ||
-          key === "annualDiscountRate"
-            ? toNumberFromInput(value)
-            : value;
-
-        return {
-          ...prev,
-          [planId]: {
-            ...target,
-            [key]: nextValue,
-          },
-        };
-      });
-    },
-    [],
-  );
-
-  const onPlanNameInput = useCallback((planId: string, value: string) => {
-    setPlanDrafts((prev) => {
-      const target = prev[planId];
-      if (!target) {
-        return prev;
-      }
-      return {
-        ...prev,
-        [planId]: {
-          ...target,
-          name: value,
-        },
-      };
-    });
+  const submitPlan = useCallback(async (draft: RevenuePlanDraft) => {
+    try {
+      setSavingPlanId(draft.id);
+      const next = await updateAdminPlan(draft);
+      setPlans((prev) => prev.map((plan) => (plan.id === next.id ? next : plan)));
+    } catch (error) {
+      setErrorMessage(
+        normalizeErrorMessage(
+          error,
+          "요금제 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+        ),
+      );
+    } finally {
+      setSavingPlanId(null);
+    }
   }, []);
-
-  const onPlanDescriptionInput = useCallback(
-    (planId: string, value: string) => {
-      setPlanDrafts((prev) => {
-        const target = prev[planId];
-        if (!target) {
-          return prev;
-        }
-        return {
-          ...prev,
-          [planId]: {
-            ...target,
-            description: value,
-          },
-        };
-      });
-    },
-    [],
-  );
 
   const updateClaimStatus = useCallback(
     async (claimId: number, nextStatus: ClaimStatus) => {
@@ -894,16 +685,11 @@ export const usePlatformData = (): UsePlatformDataResult => {
     claims,
     adminOverview,
     plans,
-    planDrafts,
     savingPlanId,
     updatingClaimId,
     isSubmittingCareLog,
     isSubmittingSettlement,
     isSubmittingClaim,
-
-    careLogDraft,
-    settlementDraft,
-    claimDraft,
 
     activeHouseholds,
     totalSettlement,
@@ -925,17 +711,16 @@ export const usePlatformData = (): UsePlatformDataResult => {
     scenarioRevenue,
     growthRecommendations,
 
-    updateCareLogField,
-    updateSettlementField,
-    updateClaimField,
     submitCareLog,
     submitSettlement,
     submitClaim,
+
+    defaultCareLogValues,
+    defaultSettlementValues,
+    defaultClaimValues,
+
     updateClaimStatus,
 
-    updatePlanDraft,
-    onPlanNameInput,
-    onPlanDescriptionInput,
     submitPlan,
 
     onPriceLiftInput,
