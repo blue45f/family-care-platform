@@ -25,6 +25,7 @@ type OperationsPageProps = {
   data: PlatformData;
   onNavigate: (path: NonHomeRoutePath) => void;
   activeRoutePath: NonHomeRoutePath;
+  isReadOnly: boolean;
 };
 
 type CareLogPayload = {
@@ -134,6 +135,7 @@ const renderCareForm = (
   data: PlatformData,
   onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
   isSubmitting: boolean,
+  isReadOnly: boolean,
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { careLogDraft } = data;
@@ -160,6 +162,7 @@ const renderCareForm = (
             }
             placeholder="예: 김영희"
             required
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -173,6 +176,7 @@ const renderCareForm = (
             }
             placeholder="예: 박돌봄"
             required
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -186,6 +190,7 @@ const renderCareForm = (
                 event.target.value as CareLogPayload["type"],
               )
             }
+            disabled={isReadOnly || isSubmitting}
           >
             {careLogTypeOptions.map((type) => (
               <option key={type} value={type}>
@@ -203,6 +208,7 @@ const renderCareForm = (
             onChange={(event) =>
               data.updateCareLogField("date", event.target.value)
             }
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -216,10 +222,15 @@ const renderCareForm = (
             placeholder="예: 점심 식사 도움, 약 복용 확인"
             required
             rows={3}
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
-        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isReadOnly || isSubmitting}
+        >
           {isSubmitting ? "저장 중..." : "기록 저장"}
         </button>
       </form>
@@ -253,6 +264,7 @@ const renderSettlementForm = (
   data: PlatformData,
   onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
   isSubmitting: boolean,
+  isReadOnly: boolean,
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { settlementDraft } = data;
@@ -279,6 +291,7 @@ const renderSettlementForm = (
             }
             placeholder="예: 김영희"
             required
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -290,6 +303,7 @@ const renderSettlementForm = (
             onChange={(event) =>
               data.updateSettlementField("date", event.target.value)
             }
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -305,6 +319,7 @@ const renderSettlementForm = (
                 Number(event.target.value) || 0,
               )
             }
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -320,6 +335,7 @@ const renderSettlementForm = (
                 Number(event.target.value) || 0,
               )
             }
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -331,10 +347,15 @@ const renderSettlementForm = (
               data.updateSettlementField("note", event.target.value)
             }
             placeholder="예: 야간 돌봄 포함"
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
-        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isReadOnly || isSubmitting}
+        >
           {isSubmitting ? "저장 중..." : "정산 저장"}
         </button>
       </form>
@@ -375,6 +396,7 @@ const renderClaims = (
   data: PlatformData,
   onSubmitStatus: (event: FormEvent<HTMLFormElement>) => void,
   isSubmitting: boolean,
+  isReadOnly: boolean,
 ): ReactNode => {
   const moduleMeta = operationsModuleMeta[module];
   const { claimDraft } = data;
@@ -401,6 +423,7 @@ const renderClaims = (
             }
             placeholder="예: 김영희"
             required
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -414,6 +437,7 @@ const renderClaims = (
             }
             placeholder="예: 희망요양병원"
             required
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -430,6 +454,7 @@ const renderClaims = (
               )
             }
             required
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -441,6 +466,7 @@ const renderClaims = (
             onChange={(event) =>
               data.updateClaimField("issueDate", event.target.value)
             }
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
@@ -454,6 +480,7 @@ const renderClaims = (
                 event.target.value as ClaimPayload["status"],
               )
             }
+            disabled={isReadOnly || isSubmitting}
           >
             {claimStatusOptions.map((status) => (
               <option key={status} value={status}>
@@ -472,10 +499,15 @@ const renderClaims = (
               data.updateClaimField("note", event.target.value)
             }
             placeholder="예: 영수증 확인 필요"
+            disabled={isReadOnly || isSubmitting}
           />
         </RouteField>
 
-        <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isReadOnly || isSubmitting}
+        >
           {isSubmitting ? "저장 중..." : "청구 저장"}
         </button>
       </form>
@@ -512,7 +544,9 @@ const renderClaims = (
                       event.target.value as ClaimPayload["status"],
                     )
                   }
-                  disabled={data.updatingClaimId === claim.id}
+                  disabled={
+                    isReadOnly || data.updatingClaimId === claim.id
+                  }
                   aria-label={`${claim.recipient} 청구 상태 변경`}
                 >
                   {claimStatusOptions.map((status) => (
@@ -626,6 +660,7 @@ const OperationsPage = ({
   data,
   onNavigate,
   activeRoutePath,
+  isReadOnly,
 }: OperationsPageProps) => {
   const moduleRenderers: Record<OperationsRouteModule, () => ReactNode> = {
     overview: () =>
@@ -638,15 +673,29 @@ const OperationsPage = ({
         totalClaimExpected: data.totalClaimExpected,
       }),
     care: () =>
-      renderCareForm("care", data, data.submitCareLog, data.isSubmittingCareLog),
+      renderCareForm(
+        "care",
+        data,
+        data.submitCareLog,
+        data.isSubmittingCareLog,
+        isReadOnly,
+      ),
     settlement: () =>
       renderSettlementForm(
         "settlement",
         data,
         data.submitSettlement,
         data.isSubmittingSettlement,
+        isReadOnly,
       ),
-    claims: () => renderClaims("claims", data, data.submitClaim, data.isSubmittingClaim),
+    claims: () =>
+      renderClaims(
+        "claims",
+        data,
+        data.submitClaim,
+        data.isSubmittingClaim,
+        isReadOnly,
+      ),
   };
 
   const visibleModules = getOperationsFocusModules(modules, activeRoutePath);

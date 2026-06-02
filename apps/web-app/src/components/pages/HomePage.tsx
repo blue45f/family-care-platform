@@ -40,6 +40,7 @@ const HomePage = ({
   const entryActions = topCards.filter((item) => item.path !== "/");
   const primaryAction = entryActions[0] ?? null;
   const secondaryActions = entryActions.slice(1);
+  const quickActionCards = secondaryActions.slice(0, 3);
   const recommendedActionLabel = primaryAction?.label ?? "운영 메뉴";
   const homeTasks = [
     {
@@ -85,6 +86,15 @@ const HomePage = ({
           </p>
         </div>
 
+        <div className="home-hero-callout" role="note">
+          <p className="home-hero-callout-title">
+            처음 오면 이 순서가 가장 쉬운 출발점입니다.
+          </p>
+          <p className="home-hero-callout-subtle">
+            돌봄 기록 → 정산 → 보험청구 순으로 1개씩만 진행하면 오늘 관리가 완성됩니다.
+          </p>
+        </div>
+
         <div className="home-hero-actions" role="group" aria-label="빠른 시작">
           <div className="home-task-list" role="list" aria-label="추천 시작">
             {homeTasks.map((task, index) => (
@@ -121,9 +131,9 @@ const HomePage = ({
             </button>
           ) : null}
 
-          {secondaryActions.length > 0 ? (
+          {quickActionCards.length > 0 ? (
             <div className="home-quick-grid compact">
-              {secondaryActions.map((item) => (
+              {quickActionCards.map((item) => (
                 <button
                   type="button"
                   className="home-quick-card"

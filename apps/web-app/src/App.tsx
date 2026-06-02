@@ -31,6 +31,7 @@ type RouteShellProps = {
   onNavigate: (path: AppRoute) => void;
   onRefresh: () => void;
   isLoading: boolean;
+  isReadOnly: boolean;
 };
 
 const RouteShell = ({
@@ -39,6 +40,7 @@ const RouteShell = ({
   onNavigate,
   onRefresh,
   isLoading,
+  isReadOnly,
 }: RouteShellProps) => {
   const { route, pageBlueprint, trail, sectionFlow, globalFlow } = routeContext;
   const topTabs = pageBlueprint.topTabs;
@@ -62,6 +64,12 @@ const RouteShell = ({
           <p className="hero-intent" id="route-intent">
             {currentActionHint}
           </p>
+          {isReadOnly ? (
+            <p className="route-readonly-note" role="note">
+              현재 조회 전용 모드입니다. 이동은 가능하지만 저장/수정은 잠시
+              비활성화됩니다.
+            </p>
+          ) : null}
         </div>
 
         <div className="route-progress" aria-label="현재 위치">
@@ -434,19 +442,21 @@ const App = () => {
           data={data}
           onNavigate={(path) => navigate(path)}
           activeRoutePath={routeContext.route.path as NonHomeRoutePath}
+          isReadOnly={hasReadOnlyError}
         />
       );
     }
 
     return (
-      <AdminPage
-        modules={routeContext.modules as readonly AdminRouteModule[]}
-        compositionMeta={getCompositionMeta(routeContext)}
-        data={data}
-        onNavigate={(path) => navigate(path)}
-        activeRoutePath={routeContext.route.path as NonHomeRoutePath}
-      />
-    );
+        <AdminPage
+          modules={routeContext.modules as readonly AdminRouteModule[]}
+          compositionMeta={getCompositionMeta(routeContext)}
+          data={data}
+          onNavigate={(path) => navigate(path)}
+          activeRoutePath={routeContext.route.path as NonHomeRoutePath}
+          isReadOnly={hasReadOnlyError}
+        />
+      );
   };
 
   return (
@@ -457,6 +467,7 @@ const App = () => {
         onNavigate={(path) => navigate(path)}
         onRefresh={() => void data.load()}
         isLoading={data.loading}
+        isReadOnly={hasReadOnlyError}
       />
 
       {hasReadOnlyError ? (

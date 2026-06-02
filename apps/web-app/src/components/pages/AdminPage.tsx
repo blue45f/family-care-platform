@@ -25,6 +25,7 @@ type AdminPageProps = {
   data: PlatformData;
   onNavigate: (path: NonHomeRoutePath) => void;
   activeRoutePath: NonHomeRoutePath;
+  isReadOnly: boolean;
 };
 
 const renderKpiTable = ({
@@ -255,6 +256,7 @@ const renderPlans = ({
   onPlanDescriptionInput,
   submitPlan,
   savingPlanId,
+  isReadOnly,
 }: {
   plans: PlatformData["plans"];
   planDrafts: PlatformData["planDrafts"];
@@ -263,6 +265,7 @@ const renderPlans = ({
   onPlanDescriptionInput: PlatformData["onPlanDescriptionInput"];
   submitPlan: PlatformData["submitPlan"];
   savingPlanId: string | null;
+  isReadOnly: boolean;
 }): ReactNode => (
   <section className="panel panel-admin panel-plans">
     <div className="panel-head">
@@ -291,6 +294,7 @@ const renderPlans = ({
                 }
                 className="plan-title"
                 aria-label={`${plan.id} 요금제명 입력`}
+                disabled={isReadOnly || savingPlanId === plan.id}
               />
               <span className="tag">이용 가구 {draft.activeClients}개</span>
             </div>
@@ -304,6 +308,7 @@ const renderPlans = ({
                 onChange={(event) =>
                   updatePlanDraft(plan.id, "monthlyPrice", event.target.value)
                 }
+                disabled={isReadOnly || savingPlanId === plan.id}
               />
             </label>
             <label>
@@ -321,6 +326,7 @@ const renderPlans = ({
                     event.target.value,
                   )
                 }
+                disabled={isReadOnly || savingPlanId === plan.id}
               />
             </label>
             <label>
@@ -332,6 +338,7 @@ const renderPlans = ({
                 onChange={(event) =>
                   updatePlanDraft(plan.id, "activeClients", event.target.value)
                 }
+                disabled={isReadOnly || savingPlanId === plan.id}
               />
             </label>
             <label>
@@ -342,6 +349,7 @@ const renderPlans = ({
                   onPlanDescriptionInput(plan.id, event.target.value)
                 }
                 aria-label={`${draft.name} 설명 입력`}
+                disabled={isReadOnly || savingPlanId === plan.id}
               />
             </label>
 
@@ -360,7 +368,7 @@ const renderPlans = ({
                 type="button"
                 className="btn btn-primary"
                 onClick={() => void submitPlan(plan.id)}
-                disabled={savingPlanId === plan.id}
+                disabled={isReadOnly || savingPlanId === plan.id}
               >
                 {savingPlanId === plan.id ? "저장 중..." : "요금 저장"}
               </button>
@@ -379,6 +387,7 @@ const renderSimulator = ({
   priceLiftPercent,
   upgradePushPercent,
   growthRecommendations,
+  isReadOnly,
 }: {
   scenarioRevenue: PlatformData["scenarioRevenue"];
   onPriceLiftInput: PlatformData["onPriceLiftInput"];
@@ -386,6 +395,7 @@ const renderSimulator = ({
   priceLiftPercent: number;
   upgradePushPercent: number;
   growthRecommendations: string[];
+  isReadOnly: boolean;
 }): ReactNode => (
   <section className="panel panel-admin panel-simulator">
     <div className="panel-head">
@@ -404,6 +414,7 @@ const renderSimulator = ({
           step={1}
           value={priceLiftPercent}
           onChange={onPriceLiftInput}
+          disabled={isReadOnly}
         />
         <strong>{priceLiftPercent}%</strong>
       </label>
@@ -416,6 +427,7 @@ const renderSimulator = ({
           step={1}
           value={upgradePushPercent}
           onChange={onUpgradePushInput}
+          disabled={isReadOnly}
         />
         <strong>+{upgradePushPercent}%</strong>
       </label>
@@ -519,6 +531,7 @@ const AdminPage = ({
   data,
   onNavigate,
   activeRoutePath,
+  isReadOnly,
 }: AdminPageProps) => {
   const moduleRenderers: Record<AdminRouteModule, () => ReactNode> = {
     kpi: () => renderKpiTable({ adminOverview: data.adminOverview, data }),
@@ -537,6 +550,7 @@ const AdminPage = ({
         onPlanDescriptionInput: data.onPlanDescriptionInput,
         submitPlan: data.submitPlan,
         savingPlanId: data.savingPlanId,
+        isReadOnly,
       }),
     simulator: () =>
       renderSimulator({
@@ -546,6 +560,7 @@ const AdminPage = ({
         priceLiftPercent: data.priceLiftPercent,
         upgradePushPercent: data.upgradePushPercent,
         growthRecommendations: data.growthRecommendations,
+        isReadOnly,
       }),
     summary: () =>
       renderSummary({
