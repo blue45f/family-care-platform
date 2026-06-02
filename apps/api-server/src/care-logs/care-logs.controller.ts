@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 
+import { localYmd } from '../common/date.util';
 import type { CareLog, CareLogInput } from './care-log.model';
 import { CareLogService } from './care-logs.service';
 
@@ -17,7 +18,7 @@ export class CareLogController {
   createCareLog(@Body() input: CareLogInput): CareLog {
     return this.careLogService.create({
       ...input,
-      date: input.date ?? new Date().toISOString().slice(0, 10),
+      date: input.date ?? localYmd(),
     });
   }
 }

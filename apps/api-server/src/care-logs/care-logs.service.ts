@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 
+import { localYmd } from '../common/date.util';
 import type { CareLog, CareLogInput, CareLogType } from './care-log.model';
 
 const careLogTypes: CareLogType[] = ['방문', '원격상담', '투약', '식사관리', '기타'];
@@ -27,7 +28,7 @@ export class CareLogService {
       recipient: input.recipient.trim(),
       caregiver: input.caregiver.trim(),
       note: input.note.trim(),
-      date: input.date ?? new Date().toISOString().slice(0, 10),
+      date: input.date ?? localYmd(),
     };
 
     this.careLogs.push(next);

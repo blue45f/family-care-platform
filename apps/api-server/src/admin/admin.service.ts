@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CareLogService } from '../care-logs/care-logs.service';
 import { ClaimsService } from '../claims/claims.service';
+import { localMonthKey } from '../common/date.util';
 import { SettlementService } from '../settlements/settlement.service';
 
 import type {
@@ -78,7 +79,7 @@ export class AdminService {
     const approvedClaims = claims.filter((claim) => claim.status === '승인').length;
     const conversionRate = this.safeRate(approvedClaims, totalClaims);
 
-    const monthKey = new Date().toISOString().slice(0, 7);
+    const monthKey = localMonthKey();
     const thisMonthSettlement = settlements
       .filter((settlement) => settlement.date.startsWith(monthKey))
       .reduce((sum, settlement) => sum + settlement.totalAmount, 0);

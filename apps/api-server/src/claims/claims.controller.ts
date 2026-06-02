@@ -1,5 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 
+import { localYmd } from '../common/date.util';
 import type { Claim, ClaimInput, ClaimStatusUpdate } from './claim.model';
 import { ClaimsService } from './claims.service';
 
@@ -17,7 +18,7 @@ export class ClaimsController {
   createClaim(@Body() input: ClaimInput): Claim {
     return this.claimsService.create({
       ...input,
-      issueDate: input.issueDate ?? new Date().toISOString().slice(0, 10),
+      issueDate: input.issueDate ?? localYmd(),
       status: input.status ?? '요청',
     });
   }

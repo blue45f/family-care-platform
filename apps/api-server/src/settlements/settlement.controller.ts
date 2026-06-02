@@ -1,5 +1,6 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 
+import { localYmd } from '../common/date.util';
 import type { Settlement, SettlementInput } from './settlement.model';
 import { SettlementService } from './settlement.service';
 
@@ -17,7 +18,7 @@ export class SettlementController {
   createSettlement(@Body() input: SettlementInput): Settlement {
     return this.settlementService.create({
       ...input,
-      date: input.date ?? new Date().toISOString().slice(0, 10),
+      date: input.date ?? localYmd(),
     });
   }
 }

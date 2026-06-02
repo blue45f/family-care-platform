@@ -37,6 +37,7 @@ import {
   calculateTrendDelta,
   formatWon,
   formatRate,
+  localYmd,
   trendDirectionLabel,
   type TrendDeltaDirection,
 } from "../utils";
@@ -182,7 +183,7 @@ const initialAdminOverview: AdminOverview = {
   monthlyTrendSource: TREND_SOURCE_FALLBACK,
 };
 
-const formatInputDateNow = () => new Date().toISOString().slice(0, 10);
+const formatInputDateNow = () => localYmd();
 
 const normalizeErrorMessage = (error: unknown, fallback: string) => {
   if (!(error instanceof Error)) {
