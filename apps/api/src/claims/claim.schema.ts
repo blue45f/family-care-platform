@@ -1,10 +1,11 @@
+import { claimStatusSchema, claimStatuses } from '@family-care/shared';
 import { z } from 'zod';
 
 import type { ClaimInput, ClaimStatus } from './claim.model';
 
-export const claimStatuses = ['요청', '검토중', '승인', '거절'] as const;
+// 청구 상태 enum(claimStatuses/claimStatusSchema)은 @family-care/shared가 단일 소스다.
+export { claimStatuses, claimStatusSchema };
 
-const INVALID_STATUS_MESSAGE = '유효하지 않은 청구 상태입니다.';
 const REQUIRED_FIELDS_MESSAGE = 'recipient, hospitalName, claimType은(는) 필수입니다.';
 const EXPECTED_AMOUNT_MESSAGE = 'expectedAmount는 0보다 큰 숫자여야 합니다.';
 
@@ -12,8 +13,6 @@ const requiredText = z
   .string({ error: REQUIRED_FIELDS_MESSAGE })
   .transform((value) => value.trim())
   .refine((value) => value.length > 0, { message: REQUIRED_FIELDS_MESSAGE });
-
-export const claimStatusSchema = z.enum(claimStatuses, { error: INVALID_STATUS_MESSAGE });
 
 // 기존 서비스 검증과 동일:
 // - recipient/hospitalName/claimType 필수(+trim, 동일 메시지)

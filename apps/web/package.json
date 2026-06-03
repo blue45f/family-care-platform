@@ -18,6 +18,7 @@
     "start": "vite preview --port 4173"
   },
   "dependencies": {
+    "@family-care/shared": "workspace:*",
     "@hookform/resolvers": "^5.4.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

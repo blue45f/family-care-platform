@@ -1,5 +1,7 @@
 import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 
+import { careLogTypes, claimStatuses } from "@family-care/shared";
+
 import {
   fetchAdminOverview,
   fetchAdminPlans,
@@ -38,10 +40,8 @@ import {
 
 const PLAN_TARGET_MONTHLY = 5_000_000;
 
-const careLogTypes = ["방문", "원격상담", "투약", "식사관리", "기타"] as const;
-const claimStatuses = ["요청", "검토중", "승인", "거절"] as const;
-
-// 인라인 청구 상태 변경(목록 행)에서 쓰는 옵션. 폼 enum은 features/*/schema.ts가 소유한다.
+// 도메인 enum 리터럴(careLogTypes/claimStatuses)은 @family-care/shared가 단일 소스다.
+// 인라인 청구 상태 변경(목록 행)에서 쓰는 옵션. 폼 enum도 동일 소스를 재사용한다.
 export const claimStatusOptions = claimStatuses;
 
 export type AdminMonthlyTrendWithDelta = AdminMonthlyTrend & {

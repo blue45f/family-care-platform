@@ -1,8 +1,10 @@
+import { careLogTypes } from '@family-care/shared';
 import { z } from 'zod';
 
 import type { CareLogInput } from './care-log.model';
 
-export const careLogTypes = ['방문', '원격상담', '투약', '식사관리', '기타'] as const;
+// 돌봄 활동 유형 목록(careLogTypes)은 @family-care/shared가 단일 소스다.
+export { careLogTypes };
 
 // 필수 문자열(trim 후 비어 있지 않아야 함). 빈 값이면 기존 if-throw와 동일한 메시지를 던진다.
 const requiredText = (message: string) =>

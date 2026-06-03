@@ -9,7 +9,7 @@
     "pnpm": ">=11"
   },
   "scripts": {
-    "dev": "pnpm -r --parallel run dev",
+    "dev": "pnpm run shared:build && pnpm -r --parallel run dev",
     "lint": "eslint .",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
@@ -18,14 +18,17 @@
     "build:api": "pnpm --dir apps/api run build",
     "dev:web": "pnpm --dir apps/web run dev",
     "dev:api": "pnpm --dir apps/api run dev",
+    "dev:shared": "pnpm --filter @family-care/shared run dev",
     "start:web": "pnpm --dir apps/web run start",
     "start:api": "pnpm --dir apps/api run start",
-    "typecheck": "pnpm -r --if-present run typecheck",
-    "test": "pnpm -r --if-present run test",
+    "typecheck": "pnpm run shared:build && pnpm -r --if-present run typecheck",
+    "test": "pnpm run shared:build && pnpm -r --if-present run test",
+    "shared:build": "pnpm --filter @family-care/shared run build",
+    "postinstall": "pnpm --filter @family-care/shared run build",
     "smoke:web": "node scripts/browser-sample-smoke.mjs",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "ci": "pnpm run verify",
-    "clean": "rm -rf node_modules apps/web/node_modules apps/api/node_modules"
+    "clean": "rm -rf node_modules apps/web/node_modules apps/api/node_modules packages/shared/node_modules packages/shared/dist"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
