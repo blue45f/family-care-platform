@@ -2,49 +2,31 @@ import "reflect-metadata";
 
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import type { NextFunction, Request, Response } from "express";
 
 import { AppModule } from "./app.module";
+import { isCorsOriginAllowed, resolveAllowedOrigins } from "./common/cors-policy";
 import { AllExceptionsFilter } from "./http-exception.filter";
 
 type OriginCheck = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void;
 
-function resolveAllowedOrigins(): string[] {
-  const envValue = process.env.CORS_ALLOWED_ORIGINS?.trim();
-  if (!envValue) {
-    const appUrl = process.env.CORS_ALLOWED_ORIGIN?.trim();
-    return appUrl ? [appUrl] : [];
-  }
-
-  return envValue
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-}
-
-function isOriginAllowed(origin: string | undefined): boolean {
-  if (!origin) {
-    return true;
-  }
-
-  const explicitOrigins = resolveAllowedOrigins();
-  const isProduction = process.env.NODE_ENV === "production";
-
-  const localOrigins = [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/];
-  if (!isProduction) {
-    return localOrigins.some((pattern) => pattern.test(origin)) || explicitOrigins.includes(origin);
-  }
-
-  return explicitOrigins.includes(origin);
-}
-
 function createCorsOriginResolver(): OriginCheck {
   return (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
     try {
-      callback(null, isOriginAllowed(origin));
+      callback(null, isCorsOriginAllowed(origin, resolveAllowedOrigins()));
     } catch (error) {
       callback(error instanceof Error ? error : new Error("CORS origin check error"));
     }
   };
+}
+
+// 의존성 없는 기본 보안 응답 헤더. CORS/JSON 스토어 동작에는 영향을 주지 않는다.
+function applySecurityHeaders(_request: Request, response: Response, next: NextFunction): void {
+  response.setHeader("X-Content-Type-Options", "nosniff");
+  response.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  response.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive, noimageindex");
+  next();
 }
 
 async function bootstrap() {
@@ -52,6 +34,9 @@ async function bootstrap() {
   const port = Number(process.env.PORT ?? 3001);
   const logger = new Logger("Bootstrap");
   const allowedOriginPatterns = resolveAllowedOrigins();
+
+  app.getHttpAdapter().getInstance().disable("x-powered-by");
+  app.use(applySecurityHeaders);
 
   app.setGlobalPrefix("api");
   app.enableCors({
