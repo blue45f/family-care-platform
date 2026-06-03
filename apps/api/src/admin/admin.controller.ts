@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch } from '@nestjs/common'
 
-import type { AdminOverview, RevenuePlan, RevenuePlanDraft } from './admin.model';
-import { AdminService } from './admin.service';
+import type { AdminOverview, RevenuePlan, RevenuePlanDraft } from './admin.model'
+import { AdminService } from './admin.service'
 
 @Controller('admin')
 export class AdminController {
@@ -9,16 +9,16 @@ export class AdminController {
 
   @Get('overview')
   getOverview(): AdminOverview {
-    return this.adminService.getOverview();
+    return this.adminService.getOverview()
   }
 
   @Get('plans')
   getPlans(): RevenuePlan[] {
-    return this.adminService.getPlans();
+    return this.adminService.getPlans()
   }
 
   @Patch('plans')
   updatePlan(@Body() body: RevenuePlanDraft): RevenuePlan {
-    return this.adminService.upsertPlan(body);
+    return this.adminService.upsertPlan(body)
   }
 }

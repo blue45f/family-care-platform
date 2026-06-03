@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
 
-import { ClaimsController } from './claims.controller';
-import { ClaimsService } from './claims.service';
+import { ClaimsController } from './claims.controller'
+import { ClaimsService } from './claims.service'
 
 @Module({
   providers: [ClaimsService],

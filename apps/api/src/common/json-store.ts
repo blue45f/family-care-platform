@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 
 // proto-live(backend/src/projects/projects.store.ts)의 "atomic JSON file store" 패턴을
 // 가족 돌봄 API에 이식한 재사용 헬퍼다. DB/ORM 없이 node:fs만으로 재시작 후에도
@@ -14,18 +14,18 @@ import { dirname, join, resolve } from 'node:path';
 //   save()는 no-op이다. 각 서비스가 항상 seed에서 출발하던 기존 테스트 격리를 그대로 유지한다.
 
 export type StoredCollection<T> = {
-  items: T[];
+  items: T[]
   // 자동 증가 id를 쓰는 컬렉션만 seq를 사용한다(요금제처럼 고정 id 컬렉션은 undefined).
-  seq?: number;
-};
+  seq?: number
+}
 
 type SerializedCollection = {
-  items?: unknown;
-  seq?: unknown;
-};
+  items?: unknown
+  seq?: unknown
+}
 
 function isTestEnv(): boolean {
-  return process.env.VITEST !== undefined || process.env.NODE_ENV === 'test';
+  return process.env.VITEST !== undefined || process.env.NODE_ENV === 'test'
 }
 
 /**
@@ -35,7 +35,7 @@ function isTestEnv(): boolean {
  * 같은 경로의 쓰기 가능 여부를 검사하도록 외부에 노출한다.
  */
 export function resolveDataDir(): string {
-  return process.env.FCP_DATA_DIR?.trim() || resolve(process.cwd(), 'data');
+  return process.env.FCP_DATA_DIR?.trim() || resolve(process.cwd(), 'data')
 }
 
 /**
@@ -45,72 +45,75 @@ export function resolveDataDir(): string {
  * @param seed     파일이 없을 때 사용할 초기 상태를 만드는 팩토리(매 호출 새 인스턴스 반환)
  */
 export class JsonCollectionStore<T> {
-  private readonly filePath: string;
-  private readonly testMode: boolean;
+  private readonly filePath: string
+  private readonly testMode: boolean
   // 컬렉션이 자동 증가 id(seq)를 쓰는지 seed 모양으로 한 번 판별한다. 파일에 seq가
   // 누락돼도 이 플래그로 "seq 컬렉션인지"를 잃지 않고 maxId+1로 복원할 수 있다.
-  private readonly usesSeq: boolean;
+  private readonly usesSeq: boolean
 
   constructor(
     private readonly fileName: string,
     private readonly seed: () => StoredCollection<T>,
     dataDir: string = resolveDataDir(),
   ) {
-    this.filePath = join(dataDir, fileName);
-    this.testMode = isTestEnv();
-    this.usesSeq = seed().seq !== undefined;
+    this.filePath = join(dataDir, fileName)
+    this.testMode = isTestEnv()
+    this.usesSeq = seed().seq !== undefined
   }
 
   /** 시작 시 1회 호출. 파일이 있으면 로드, 없으면 seed로 초기화한다. */
   load(): StoredCollection<T> {
     if (this.testMode || !existsSync(this.filePath)) {
-      return this.normalize(this.seed());
+      return this.normalize(this.seed())
     }
 
-    const contents = readFileSync(this.filePath, 'utf8');
+    const contents = readFileSync(this.filePath, 'utf8')
     if (!contents.trim()) {
-      return this.normalize(this.seed());
+      return this.normalize(this.seed())
     }
 
     try {
-      const parsed = JSON.parse(contents) as SerializedCollection;
-      return this.deserialize(parsed);
+      const parsed = JSON.parse(contents) as SerializedCollection
+      return this.deserialize(parsed)
     } catch {
       // 손상된 파일은 seed로 폴백한다(개발 편의 + 깨진 상태로 부팅 방지).
-      return this.normalize(this.seed());
+      return this.normalize(this.seed())
     }
   }
 
   /** 현재 상태를 원자적으로 파일에 기록한다. 테스트 환경에서는 no-op. */
   save(state: StoredCollection<T>): void {
     if (this.testMode) {
-      return;
+      return
     }
 
-    mkdirSync(dirname(this.filePath), { recursive: true });
-    const temporaryPath = `${this.filePath}.${process.pid}.${Date.now()}.tmp`;
-    writeFileSync(temporaryPath, `${JSON.stringify(this.normalize(state), null, 2)}\n`, 'utf8');
-    renameSync(temporaryPath, this.filePath);
+    mkdirSync(dirname(this.filePath), { recursive: true })
+    const temporaryPath = `${this.filePath}.${process.pid}.${Date.now()}.tmp`
+    writeFileSync(temporaryPath, `${JSON.stringify(this.normalize(state), null, 2)}\n`, 'utf8')
+    renameSync(temporaryPath, this.filePath)
   }
 
   private deserialize(parsed: SerializedCollection): StoredCollection<T> {
-    const items = Array.isArray(parsed.items) ? (parsed.items as T[]) : [];
-    const seq = Number.isInteger(parsed.seq) ? (parsed.seq as number) : undefined;
-    return this.normalize({ items, seq });
+    const items = Array.isArray(parsed.items) ? (parsed.items as T[]) : []
+    const seq = Number.isInteger(parsed.seq) ? (parsed.seq as number) : undefined
+    return this.normalize({ items, seq })
   }
 
   // seq를 쓰는 컬렉션에서 seq가 비어 있거나 데이터보다 작으면 최대 id+1로 복원한다.
   private normalize(state: StoredCollection<T>): StoredCollection<T> {
-    const items = Array.isArray(state.items) ? state.items : [];
+    const items = Array.isArray(state.items) ? state.items : []
     if (!this.usesSeq) {
-      return { items };
+      return { items }
     }
 
     const maxId = items.reduce<number>((max, item) => {
-      const id = (item as { id?: unknown }).id;
-      return typeof id === 'number' && id > max ? id : max;
-    }, 0);
-    const seq = state.seq !== undefined && Number.isInteger(state.seq) && state.seq > maxId ? state.seq : maxId + 1;
-    return { items, seq };
+      const id = (item as { id?: unknown }).id
+      return typeof id === 'number' && id > max ? id : max
+    }, 0)
+    const seq =
+      state.seq !== undefined && Number.isInteger(state.seq) && state.seq > maxId
+        ? state.seq
+        : maxId + 1
+    return { items, seq }
   }
 }

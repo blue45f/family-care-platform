@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 type RouteFieldProps = {
-  id: string;
-  label: string;
-  children: ReactNode;
-};
+  id: string
+  label: string
+  children: ReactNode
+}
 
 const RouteField = ({ id, label, children }: RouteFieldProps) => {
   return (
@@ -12,7 +12,7 @@ const RouteField = ({ id, label, children }: RouteFieldProps) => {
       <span className="field-label">{label}</span>
       {children}
     </label>
-  );
-};
+  )
+}
 
-export { RouteField };
+export { RouteField }

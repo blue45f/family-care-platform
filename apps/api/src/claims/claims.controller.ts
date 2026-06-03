@@ -1,10 +1,10 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common'
 
-import { localYmd } from '../common/date.util';
-import { ZodValidationPipe } from '../common/zod-validation.pipe';
-import type { Claim, ClaimInput, ClaimStatusUpdate } from './claim.model';
-import { claimIdParamSchema, claimStatusUpdateSchema } from './claim.schema';
-import { ClaimsService } from './claims.service';
+import { localYmd } from '../common/date.util'
+import { ZodValidationPipe } from '../common/zod-validation.pipe'
+import type { Claim, ClaimInput, ClaimStatusUpdate } from './claim.model'
+import { claimIdParamSchema, claimStatusUpdateSchema } from './claim.schema'
+import { ClaimsService } from './claims.service'
 
 @Controller('claims')
 export class ClaimsController {
@@ -12,7 +12,7 @@ export class ClaimsController {
 
   @Get()
   getClaims(): Claim[] {
-    return this.claimsService.findAll();
+    return this.claimsService.findAll()
   }
 
   @Post()
@@ -22,7 +22,7 @@ export class ClaimsController {
       ...input,
       issueDate: input.issueDate ?? localYmd(),
       status: input.status ?? '요청',
-    });
+    })
   }
 
   @Patch(':id/status')
@@ -30,6 +30,6 @@ export class ClaimsController {
     @Param('id', new ZodValidationPipe(claimIdParamSchema)) claimId: number,
     @Body(new ZodValidationPipe(claimStatusUpdateSchema)) input: ClaimStatusUpdate,
   ): Claim {
-    return this.claimsService.updateStatus(claimId, input.status);
+    return this.claimsService.updateStatus(claimId, input.status)
   }
 }

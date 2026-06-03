@@ -6,4 +6,4 @@ export type {
   AdminMonthlyTrendDataSource,
   AdminMonthlyTrend,
   AdminOverview,
-} from '@family-care/shared';
+} from '@family-care/shared'

@@ -1,8 +1,8 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
-import type { SettlementInput } from './settlement.model';
+import type { SettlementInput } from './settlement.model'
 
-const positiveNumberMessage = 'careHours와 baseRate는 0보다 커야 합니다.';
+const positiveNumberMessage = 'careHours와 baseRate는 0보다 커야 합니다.'
 
 // 기존 서비스 검증과 동일:
 // - recipient: trim 후 비어 있으면 안 됨 ('recipient는 필수입니다.')
@@ -14,10 +14,12 @@ export const settlementInputSchema = z.object({
     .transform((value) => value.trim())
     .refine((value) => value.length > 0, { message: 'recipient는 필수입니다.' }),
   date: z.string().optional(),
-  careHours: z.number({ error: positiveNumberMessage }).positive({ message: positiveNumberMessage }),
+  careHours: z
+    .number({ error: positiveNumberMessage })
+    .positive({ message: positiveNumberMessage }),
   baseRate: z.number({ error: positiveNumberMessage }).positive({ message: positiveNumberMessage }),
   note: z
     .string()
     .optional()
     .transform((value) => (value ?? '').trim()),
-}) satisfies z.ZodType<Omit<SettlementInput, 'date' | 'note'> & { date?: string; note?: string }>;
+}) satisfies z.ZodType<Omit<SettlementInput, 'date' | 'note'> & { date?: string; note?: string }>

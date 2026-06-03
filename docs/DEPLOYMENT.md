@@ -17,10 +17,10 @@
 docker compose up --build
 ```
 
-| 서비스 | 컨테이너 포트 | 호스트 URL |
-| --- | --- | --- |
-| web | 4173 | http://localhost:4173 |
-| api | 3001 | http://localhost:3001/api |
+| 서비스 | 컨테이너 포트 | 호스트 URL                |
+| ------ | ------------- | ------------------------- |
+| web    | 4173          | http://localhost:4173     |
+| api    | 3001          | http://localhost:3001/api |
 
 중지/정리:
 
@@ -31,13 +31,13 @@ docker compose down -v       # 데이터 볼륨까지 삭제
 
 ## 환경 변수
 
-| 변수 | 대상 | 기본값(compose) | 설명 |
-| --- | --- | --- | --- |
-| `PORT` | api | `3001` | API 리슨 포트 |
-| `FCP_DATA_DIR` | api | `/data` | JSON 파일 스토어 디렉터리. named volume이 마운트됨 |
-| `CORS_ALLOWED_ORIGINS` | api | `http://localhost:4173,http://127.0.0.1:4173` | 쉼표 구분 허용 origin. 운영에서는 실제 웹 도메인으로 교체 |
-| `VITE_API_URL` | web (빌드 타임) | `http://localhost:3001/api` | 브라우저 번들에 박히는 API 주소. `--build-arg`로 주입 |
-| `PORT` / `HOST` | web | `4173` / `0.0.0.0` | preview 서버 바인딩 |
+| 변수                   | 대상            | 기본값(compose)                               | 설명                                                      |
+| ---------------------- | --------------- | --------------------------------------------- | --------------------------------------------------------- |
+| `PORT`                 | api             | `3001`                                        | API 리슨 포트                                             |
+| `FCP_DATA_DIR`         | api             | `/data`                                       | JSON 파일 스토어 디렉터리. named volume이 마운트됨        |
+| `CORS_ALLOWED_ORIGINS` | api             | `http://localhost:4173,http://127.0.0.1:4173` | 쉼표 구분 허용 origin. 운영에서는 실제 웹 도메인으로 교체 |
+| `VITE_API_URL`         | web (빌드 타임) | `http://localhost:3001/api`                   | 브라우저 번들에 박히는 API 주소. `--build-arg`로 주입     |
+| `PORT` / `HOST`        | web             | `4173` / `0.0.0.0`                            | preview 서버 바인딩                                       |
 
 `VITE_API_URL`은 **빌드 타임** 변수입니다. 값이 바뀌면 web 이미지를 다시 빌드해야 합니다.
 미지정 시 운영 빌드는 상대경로 `/api`를 사용합니다(같은 오리진에서 API를 리버스 프록시할 때).

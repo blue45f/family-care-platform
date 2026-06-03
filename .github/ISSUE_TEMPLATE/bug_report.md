@@ -1,8 +1,8 @@
 ---
 name: Bug report
 about: 버그를 빠르게 재현할 수 있도록 상세히 기록해 주세요
-title: "[Bug] "
-labels: ["bug"]
+title: '[Bug] '
+labels: ['bug']
 ---
 
 ## 재현 경로
@@ -20,4 +20,3 @@ labels: ["bug"]
 ## 실제 동작
 
 ## 관련 로그/스크린샷
-

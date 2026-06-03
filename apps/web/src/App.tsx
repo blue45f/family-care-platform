@@ -1,9 +1,9 @@
-import { useMemo } from "react";
+import { useMemo } from 'react'
 
-import { ThemeToggle } from "./components/common/ThemeToggle";
-import { AdminPage } from "./components/pages/AdminPage";
-import { HomePage } from "./components/pages/HomePage";
-import { OperationsPage } from "./components/pages/OperationsPage";
+import { ThemeToggle } from './components/common/ThemeToggle'
+import { AdminPage } from './components/pages/AdminPage'
+import { HomePage } from './components/pages/HomePage'
+import { OperationsPage } from './components/pages/OperationsPage'
 import {
   type AppRoute,
   type NonHomeRoutePath,
@@ -15,25 +15,25 @@ import {
   type OperationsRouteModule,
   routeModeDefinitions,
   type AdminRouteModule,
-} from "./routeConfig";
-import { formatRate, formatWon } from "./utils";
-import { usePlatformData } from "./state/usePlatformData";
-import { useRouteState } from "./useRouteState";
+} from './routeConfig'
+import { formatRate, formatWon } from './utils'
+import { usePlatformData } from './state/usePlatformData'
+import { useRouteState } from './useRouteState'
 
 type RouteModeMetric = {
-  label: string;
-  value: string;
-  aria: string;
-};
+  label: string
+  value: string
+  aria: string
+}
 
 type RouteShellProps = {
-  routeContext: RouteContext;
-  heroMetrics: RouteModeMetric[];
-  onNavigate: (path: AppRoute) => void;
-  onRefresh: () => void;
-  isLoading: boolean;
-  isReadOnly: boolean;
-};
+  routeContext: RouteContext
+  heroMetrics: RouteModeMetric[]
+  onNavigate: (path: AppRoute) => void
+  onRefresh: () => void
+  isLoading: boolean
+  isReadOnly: boolean
+}
 
 const RouteShell = ({
   routeContext,
@@ -43,66 +43,54 @@ const RouteShell = ({
   isLoading,
   isReadOnly,
 }: RouteShellProps) => {
-  const { route, pageBlueprint, trail, sectionFlow, globalFlow } = routeContext;
-  const topTabs = pageBlueprint.topTabs;
-  const sectionTabs = pageBlueprint.sectionTabs;
-  const sectionQuickActions = pageBlueprint.sectionQuickActions;
-  const routeQuickActions = sectionQuickActions.slice(0, 3);
-  const primaryAction = routeQuickActions[0] ?? null;
-  const secondaryActions = routeQuickActions.slice(1);
-  const hasSectionTabs = sectionTabs.length > 0;
-  const composition = getRouteCompositionState(route.path);
-  const currentActionHint =
-    route.summary ?? "현재 화면의 다음 액션을 바로 진행하세요.";
-  const isHome = route.path === "/";
+  const { route, pageBlueprint, trail, sectionFlow, globalFlow } = routeContext
+  const topTabs = pageBlueprint.topTabs
+  const sectionTabs = pageBlueprint.sectionTabs
+  const sectionQuickActions = pageBlueprint.sectionQuickActions
+  const routeQuickActions = sectionQuickActions.slice(0, 3)
+  const primaryAction = routeQuickActions[0] ?? null
+  const secondaryActions = routeQuickActions.slice(1)
+  const hasSectionTabs = sectionTabs.length > 0
+  const composition = getRouteCompositionState(route.path)
+  const currentActionHint = route.summary ?? '현재 화면의 다음 액션을 바로 진행하세요.'
+  const isHome = route.path === '/'
   const routeModeLabel = isHome
-    ? "홈"
-    : routeContext.route.mode === "operations"
-      ? "돌봄 운영"
-      : "서비스 관리";
-  const progressLabel = `${globalFlow.index + 1}/${globalFlow.total}`;
+    ? '홈'
+    : routeContext.route.mode === 'operations'
+      ? '돌봄 운영'
+      : '서비스 관리'
+  const progressLabel = `${globalFlow.index + 1}/${globalFlow.total}`
   const commandHints = isHome
-    ? [
-        "첫 번째: 돌봄 기록",
-        "두 번째: 정산 계산",
-        "세 번째: 청구 상태 점검",
-      ]
-    : [currentActionHint];
+    ? ['첫 번째: 돌봄 기록', '두 번째: 정산 계산', '세 번째: 청구 상태 점검']
+    : [currentActionHint]
   const assistantPhrase = isHome
-    ? "처음이어도 3단계만 따라가면 시작됩니다."
-    : `${route.title}에서 바로 할 일을 안내합니다.`;
-  const quickActionRows = secondaryActions.slice(0, 2);
-  const quickActionsOverflow = Math.max(
-    0,
-    secondaryActions.length - quickActionRows.length,
-  );
+    ? '처음이어도 3단계만 따라가면 시작됩니다.'
+    : `${route.title}에서 바로 할 일을 안내합니다.`
+  const quickActionRows = secondaryActions.slice(0, 2)
+  const quickActionsOverflow = Math.max(0, secondaryActions.length - quickActionRows.length)
   const commandHint = isHome
-    ? "지금은 기록 → 정산 → 보험청구 순으로 진행하세요."
-    : currentActionHint;
+    ? '지금은 기록 → 정산 → 보험청구 순으로 진행하세요.'
+    : currentActionHint
   const commandAssist = isHome
-    ? "복잡한 메뉴 탐색은 생략하고 필요한 동작만 순서대로 보여줍니다."
-    : `${route.title}의 핵심 동작만 보여줍니다.`;
-  const heroNextAction = isHome
-    ? "기록 → 정산 → 보험청구"
-    : commandHints[0] ?? currentActionHint;
+    ? '복잡한 메뉴 탐색은 생략하고 필요한 동작만 순서대로 보여줍니다.'
+    : `${route.title}의 핵심 동작만 보여줍니다.`
+  const heroNextAction = isHome ? '기록 → 정산 → 보험청구' : (commandHints[0] ?? currentActionHint)
   const quickActionCountText =
     secondaryActions.length > 0
       ? `${secondaryActions.length}개 보조 동작`
-      : "바로 가기 동작이 없습니다.";
+      : '바로 가기 동작이 없습니다.'
 
-  const showSectionFlowPanel = sectionFlow.previous !== null || sectionFlow.next !== null;
-  const routeReadout = route.title;
+  const showSectionFlowPanel = sectionFlow.previous !== null || sectionFlow.next !== null
+  const routeReadout = route.title
 
   return (
-      <header className="app-header panel app-header-v2">
+    <header className="app-header panel app-header-v2">
       <ThemeToggle />
       <div className="route-hero-grid">
         <section className="route-kicker-stack">
           <p className="kicker">{routeContext.pageBlueprint.heroText.kicker}</p>
           <h1>{routeContext.pageBlueprint.heroText.title}</h1>
-          <p className="hero-description">
-            {routeContext.pageBlueprint.heroText.description}
-          </p>
+          <p className="hero-description">{routeContext.pageBlueprint.heroText.description}</p>
           <p className="hero-intent" id="route-intent">
             <span aria-hidden="true">다음 액션</span>
             <strong>{heroNextAction}</strong>
@@ -132,12 +120,13 @@ const RouteShell = ({
               onClick={onRefresh}
               disabled={isLoading}
             >
-              {isLoading ? "새로고침 중" : "최신화"}
+              {isLoading ? '새로고침 중' : '최신화'}
             </button>
             <p className="small-note" aria-live="polite">
-              최근 업데이트: {new Date().toLocaleTimeString("ko-KR", {
-                hour: "2-digit",
-                minute: "2-digit",
+              최근 업데이트:{' '}
+              {new Date().toLocaleTimeString('ko-KR', {
+                hour: '2-digit',
+                minute: '2-digit',
               })}
             </p>
           </div>
@@ -152,29 +141,25 @@ const RouteShell = ({
 
       <nav className="top-nav route-top-nav route-main-nav" role="tablist" aria-label="주요 메뉴">
         {topTabs.map((item) => {
-          const isActive = routeContext.activeTopRoutePath === item.path;
+          const isActive = routeContext.activeTopRoutePath === item.path
           return (
             <button
               type="button"
-              className={`route-tab route-tab-main ${isActive ? "active" : ""}`}
+              className={`route-tab route-tab-main ${isActive ? 'active' : ''}`}
               key={item.path}
               onClick={() => onNavigate(item.path)}
-              aria-current={isActive ? "page" : undefined}
+              aria-current={isActive ? 'page' : undefined}
             >
               <span aria-hidden="true">{item.emoji}</span>
               <span>{item.label}</span>
             </button>
-          );
+          )
         })}
       </nav>
 
       <section className="route-command-band" aria-label="업무 탐색 가이드">
         <div className="route-command-row route-command-row-with-breadcrumb">
-          <nav
-            className="route-breadcrumb"
-            aria-label="현재 경로"
-            aria-describedby="route-intent"
-          >
+          <nav className="route-breadcrumb" aria-label="현재 경로" aria-describedby="route-intent">
             <span className="route-breadcrumb-label">현재 경로</span>
             <div className="breadcrumb" role="navigation" aria-label="현재 경로">
               {trail.map((item, index) => (
@@ -185,7 +170,7 @@ const RouteShell = ({
                     className="crumb-link"
                     onClick={() => onNavigate(item.path)}
                     disabled={item.path === route.path}
-                    aria-current={item.path === route.path ? "page" : undefined}
+                    aria-current={item.path === route.path ? 'page' : undefined}
                   >
                     {item.title}
                   </button>
@@ -197,9 +182,7 @@ const RouteShell = ({
           {hasSectionTabs ? (
             <div className="route-section-status" role="status">
               <p className="route-breadcrumb-label">섹션 상태</p>
-              <p className="small-note">
-                현재 위치: {isHome ? "홈" : routeReadout}
-              </p>
+              <p className="small-note">현재 위치: {isHome ? '홈' : routeReadout}</p>
               <p className="small-note">단계 {progressLabel}</p>
             </div>
           ) : null}
@@ -211,9 +194,9 @@ const RouteShell = ({
               <button
                 type="button"
                 key={item.path}
-                className={`route-tab ${route.path === item.path ? "active" : ""}`}
+                className={`route-tab ${route.path === item.path ? 'active' : ''}`}
                 onClick={() => onNavigate(item.path)}
-                aria-current={route.path === item.path ? "page" : undefined}
+                aria-current={route.path === item.path ? 'page' : undefined}
               >
                 <span aria-hidden="true">{item.emoji}</span>
                 <span>{item.label}</span>
@@ -226,10 +209,14 @@ const RouteShell = ({
           )}
         </nav>
 
-        <section className="route-command-surface" aria-label="빠른 동작" aria-describedby="route-intent">
+        <section
+          className="route-command-surface"
+          aria-label="빠른 동작"
+          aria-describedby="route-intent"
+        >
           <div className="route-command-copy">
             <p className="route-command-kicker">
-              {isHome ? "지금 바로 시작" : "이 화면의 다음 동작"}
+              {isHome ? '지금 바로 시작' : '이 화면의 다음 동작'}
             </p>
             <p className="route-command-title">{commandHint}</p>
             <p className="route-command-subtitle">{commandAssist}</p>
@@ -238,16 +225,16 @@ const RouteShell = ({
           <div className="route-command-grid">
             <div className="route-primary-actions">
               {primaryAction ? (
-              <button
-                type="button"
-                className="btn btn-primary route-primary-cta"
-                onClick={() => onNavigate(primaryAction.path)}
-                title={`${primaryAction.label} 화면으로 이동`}
-                aria-label={`${primaryAction.label}로 이동`}
-              >
+                <button
+                  type="button"
+                  className="btn btn-primary route-primary-cta"
+                  onClick={() => onNavigate(primaryAction.path)}
+                  title={`${primaryAction.label} 화면으로 이동`}
+                  aria-label={`${primaryAction.label}로 이동`}
+                >
                   {primaryAction.label} 시작
-              </button>
-            ) : null}
+                </button>
+              ) : null}
               {!primaryAction && isHome ? (
                 <p className="route-command-empty" role="note">
                   표시할 핵심 동작이 아직 없습니다.
@@ -257,7 +244,7 @@ const RouteShell = ({
                 <button
                   type="button"
                   className="route-tab route-tab-subtle"
-                  onClick={() => onNavigate("/operations")}
+                  onClick={() => onNavigate('/operations')}
                   aria-label="운영 화면으로 이동"
                 >
                   운영 시작하기
@@ -266,22 +253,20 @@ const RouteShell = ({
             </div>
             <div className="route-command-meta" aria-live="polite">
               <p className="route-command-kicker">바로가기</p>
-              <p className="route-command-subtitle">
-                {quickActionCountText}
-              </p>
+              <p className="route-command-subtitle">{quickActionCountText}</p>
 
               <div className="route-quick-actions" role="list" aria-label="바로 가기 작업">
                 {secondaryActions.map((action) => (
-                <button
-                  type="button"
-                  className="route-tab route-tab-subtle route-quick-action"
-                  key={action.path}
-                  onClick={() => onNavigate(action.path)}
-                  aria-label={`${action.label} 빠른 이동`}
-                >
-                  <span aria-hidden="true" className="route-quick-action-emoji">
-                    {action.emoji}
-                  </span>
+                  <button
+                    type="button"
+                    className="route-tab route-tab-subtle route-quick-action"
+                    key={action.path}
+                    onClick={() => onNavigate(action.path)}
+                    aria-label={`${action.label} 빠른 이동`}
+                  >
+                    <span aria-hidden="true" className="route-quick-action-emoji">
+                      {action.emoji}
+                    </span>
                     <span>{action.label}</span>
                   </button>
                 ))}
@@ -291,9 +276,9 @@ const RouteShell = ({
                   </p>
                 ) : null}
                 {quickActionRows.length === 0 && (
-                <p className="route-command-empty" role="note">
-                  현재 표시할 바로가기 작업이 없습니다.
-                </p>
+                  <p className="route-command-empty" role="note">
+                    현재 표시할 바로가기 작업이 없습니다.
+                  </p>
                 )}
               </div>
             </div>
@@ -333,116 +318,107 @@ const RouteShell = ({
         ))}
       </div>
     </header>
-  );
-};
+  )
+}
 
 const getQuickEntries = (context: RouteContext): RouteTopNavItem[] => {
-  return context.pageBlueprint.topTabs.filter((item) => item.path !== "/");
-};
+  return context.pageBlueprint.topTabs.filter((item) => item.path !== '/')
+}
 
 const getHeroMetrics = (
   context: RouteContext,
   data: ReturnType<typeof usePlatformData>,
 ): RouteModeMetric[] => {
-  const { route } = context;
+  const { route } = context
 
-  if (route.mode === "operations") {
+  if (route.mode === 'operations') {
     return [
       {
-        label: "돌봄 가구",
+        label: '돌봄 가구',
         value: `${data.activeHouseholds}개`,
         aria: `돌봄 가구 ${data.activeHouseholds}개`,
       },
       {
-        label: "이번 달 정산",
+        label: '이번 달 정산',
         value: formatWon(data.totalSettlement),
         aria: `이번 달 정산 ${formatWon(data.totalSettlement)}`,
       },
       {
-        label: "확인할 청구",
+        label: '확인할 청구',
         value: `${data.pendingClaims}건`,
         aria: `확인할 청구 ${data.pendingClaims}건`,
       },
-    ];
+    ]
   }
 
-  if (route.mode === "admin") {
+  if (route.mode === 'admin') {
     return [
       {
-        label: "월 관리 금액",
+        label: '월 관리 금액',
         value: formatWon(data.kpiMonthlyRevenue),
         aria: `월 관리 금액 ${formatWon(data.kpiMonthlyRevenue)}`,
       },
       {
-        label: "청구 승인률",
+        label: '청구 승인률',
         value: formatRate(data.scenarioRevenue.conversionRate),
         aria: `청구 승인률 ${formatRate(data.scenarioRevenue.conversionRate)}`,
       },
       {
-        label: "목표 진행률",
+        label: '목표 진행률',
         value: `${data.scenarioRevenue.goalRate}%`,
         aria: `목표 진행률 ${data.scenarioRevenue.goalRate}%`,
       },
-    ];
+    ]
   }
 
   return [
     {
-      label: "돌봄 가구",
+      label: '돌봄 가구',
       value: `${data.activeHouseholds}개`,
       aria: `돌봄 가구 ${data.activeHouseholds}개`,
     },
     {
-      label: "이번 달 정산",
+      label: '이번 달 정산',
       value: formatWon(data.totalSettlement),
       aria: `이번 달 정산 ${formatWon(data.totalSettlement)}`,
     },
     {
-      label: "청구 승인률",
+      label: '청구 승인률',
       value: `${data.approvalRate.toFixed(1)}%`,
       aria: `청구 승인률 ${data.approvalRate.toFixed(1)}퍼센트`,
     },
-  ];
-};
+  ]
+}
 
-const getCompositionMeta = (
-  routeContext: RouteContext,
-): RouteCompositionMeta => {
-  if (routeContext.route.mode === "operations") {
-    return routeModeDefinitions.operations.compositionMeta;
+const getCompositionMeta = (routeContext: RouteContext): RouteCompositionMeta => {
+  if (routeContext.route.mode === 'operations') {
+    return routeModeDefinitions.operations.compositionMeta
   }
-  return routeModeDefinitions.admin.compositionMeta;
-};
+  return routeModeDefinitions.admin.compositionMeta
+}
 
-const ROUTE_MAIN_ID = "route-main-content";
+const ROUTE_MAIN_ID = 'route-main-content'
 
 const App = () => {
-  const { routeContext, navigate, isFallback, mainRef } =
-    useRouteState<HTMLDivElement>();
-  const data = usePlatformData();
+  const { routeContext, navigate, isFallback, mainRef } = useRouteState<HTMLDivElement>()
+  const data = usePlatformData()
 
-  const heroMetrics = useMemo(
-    () => getHeroMetrics(routeContext, data),
-    [routeContext, data],
-  );
-  const quickEntries = useMemo(
-    () => getQuickEntries(routeContext),
-    [routeContext],
-  );
+  const heroMetrics = useMemo(() => getHeroMetrics(routeContext, data), [routeContext, data])
+  const quickEntries = useMemo(() => getQuickEntries(routeContext), [routeContext])
 
   const hasReadOnlyError =
-    data.errorMessage.includes("권한이 없어") ||
-    data.errorMessage.includes("401") ||
-    data.errorMessage.includes("403");
+    data.errorMessage.includes('권한이 없어') ||
+    data.errorMessage.includes('401') ||
+    data.errorMessage.includes('403')
 
   const renderPage = () => {
-    if (routeContext.route.mode === "home") {
+    if (routeContext.route.mode === 'home') {
       const sections =
         (
           routeContext.pageBlueprint as {
-            sections: readonly HomeLandingSectionBlueprint[];
+            sections: readonly HomeLandingSectionBlueprint[]
           }
-        ).sections ?? [];
+        ).sections ?? []
 
       return (
         <HomePage
@@ -457,10 +433,10 @@ const App = () => {
           onNavigate={(path) => navigate(path)}
           hasReadOnlyError={hasReadOnlyError}
         />
-      );
+      )
     }
 
-    if (routeContext.route.mode === "operations") {
+    if (routeContext.route.mode === 'operations') {
       return (
         <OperationsPage
           modules={routeContext.modules as readonly OperationsRouteModule[]}
@@ -470,7 +446,7 @@ const App = () => {
           activeRoutePath={routeContext.route.path as NonHomeRoutePath}
           isReadOnly={hasReadOnlyError}
         />
-      );
+      )
     }
 
     return (
@@ -482,8 +458,8 @@ const App = () => {
         activeRoutePath={routeContext.route.path as NonHomeRoutePath}
         isReadOnly={hasReadOnlyError}
       />
-    );
-  };
+    )
+  }
 
   return (
     <main className="page">
@@ -503,11 +479,7 @@ const App = () => {
       {isFallback ? (
         <p className="feedback feedback-warning" role="status" aria-live="polite">
           요청하신 주소를 찾을 수 없어 가까운 화면으로 이동했습니다.
-          <button
-            type="button"
-            className="inline-action"
-            onClick={() => navigate("/")}
-          >
+          <button type="button" className="inline-action" onClick={() => navigate('/')}>
             홈으로
           </button>
         </p>
@@ -529,11 +501,7 @@ const App = () => {
       ) : null}
 
       {data.loading ? (
-        <p
-          className="feedback feedback-loading"
-          role="status"
-          aria-live="polite"
-        >
+        <p className="feedback feedback-loading" role="status" aria-live="polite">
           최신 데이터를 불러오는 중입니다.
         </p>
       ) : null}
@@ -549,7 +517,7 @@ const App = () => {
         {renderPage()}
       </div>
     </main>
-  );
-};
+  )
+}
 
-export { App };
+export { App }

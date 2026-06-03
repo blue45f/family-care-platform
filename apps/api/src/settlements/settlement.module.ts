@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module } from '@nestjs/common'
 
-import { SettlementController } from './settlement.controller';
-import { SettlementService } from './settlement.service';
+import { SettlementController } from './settlement.controller'
+import { SettlementService } from './settlement.service'
 
 @Module({
   providers: [SettlementService],

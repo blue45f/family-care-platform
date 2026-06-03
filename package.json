@@ -26,9 +26,10 @@
     "shared:build": "pnpm --filter @family-care/shared run build",
     "postinstall": "pnpm --filter @family-care/shared run build",
     "smoke:web": "node scripts/browser-sample-smoke.mjs",
-    "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "validate:architecture": "node scripts/validate-architecture.mjs",
+    "ci": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "verify": "pnpm run validate:architecture && pnpm run ci",
     "verify:push": "pnpm run verify",
-    "ci": "pnpm run verify",
     "clean": "rm -rf node_modules apps/web/node_modules apps/api/node_modules packages/shared/node_modules packages/shared/dist",
     "prepare": "husky"
   },
