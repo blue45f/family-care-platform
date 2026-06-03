@@ -1,0 +1,30 @@
+# --- 의존성/빌드 산출물 (이미지 내부에서 재설치/재빌드) ---
+node_modules
+**/node_modules
+dist
+**/dist
+**/*.tsbuildinfo
+
+# --- 런타임 JSON 파일 스토어 데이터 (이미지에 굽지 않음, 볼륨으로 영속화) ---
+data
+**/data
+
+# --- VCS / CI / 에디터 ---
+.git
+.github
+.idea
+.vscode
+
+# --- 로컬 환경/로그/OS 잡파일 ---
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+
+# --- Docker 자체 (빌드 컨텍스트에 불필요) ---
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile.web
+Dockerfile.api
+.dockerignore
