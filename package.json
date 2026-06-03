@@ -12,18 +12,18 @@
     "dev": "pnpm -r --parallel run dev",
     "lint": "pnpm -r --if-present run lint",
     "build": "pnpm -r --if-present run build",
-    "build:web": "pnpm --dir apps/web-app run build",
-    "build:api": "pnpm --dir apps/api-server run build",
-    "dev:web": "pnpm --dir apps/web-app run dev",
-    "dev:api": "pnpm --dir apps/api-server run dev",
-    "start:web": "pnpm --dir apps/web-app run start",
-    "start:api": "pnpm --dir apps/api-server run start",
+    "build:web": "pnpm --dir apps/web run build",
+    "build:api": "pnpm --dir apps/api run build",
+    "dev:web": "pnpm --dir apps/web run dev",
+    "dev:api": "pnpm --dir apps/api run dev",
+    "start:web": "pnpm --dir apps/web run start",
+    "start:api": "pnpm --dir apps/api run start",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test": "pnpm -r --if-present run test",
     "smoke:web": "node scripts/browser-sample-smoke.mjs",
     "verify": "pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
     "ci": "pnpm run verify",
-    "clean": "rm -rf node_modules apps/web-app/node_modules apps/api-server/node_modules"
+    "clean": "rm -rf node_modules apps/web/node_modules apps/api/node_modules"
   },
   "devDependencies": {
     "typescript": "^6.0.3"

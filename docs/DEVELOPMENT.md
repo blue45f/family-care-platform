@@ -18,7 +18,7 @@
 
 예외적으로, **API 입력 검증에는 유지보수자 결정에 따라 `zod`를 도입**했습니다(sibling 저장소와 동일한 zod 4.x). API 서버의 요청 입력(돌봄 기록·정산·보험청구 생성, 청구 상태 변경, 어드민 요금제 수정)은 손으로 작성한 `if (!x) throw ...` 검증 대신 모듈별 `*.schema.ts`의 zod 스키마로 검증합니다. 검증 실패는 작은 재사용 헬퍼/파이프(`common/zod-validation.pipe.ts`)가 `BadRequestException`으로 변환해, `AllExceptionsFilter`의 `ApiErrorBody`(`error: 'BadRequest'`, `statusCode: 400`, `detail: 메시지`) 형태를 그대로 유지합니다.
 
-또한 **웹 폼에는 `react-hook-form` + `@hookform/resolvers`(zodResolver)를 도입**했습니다. 운영(`OperationsPage`)의 돌봄 기록·정산·보험청구 폼과 어드민(`AdminPage`)의 요금제 편집 폼은 각각 `useForm({ resolver: zodResolver(schema), mode: 'onChange' })`로 동작하며, 검증 스키마는 API의 `*.schema.ts`를 프론트엔드로 옮긴 `apps/web-app/src/features/<도메인>/schema.ts`에 둡니다(recipient/caregiver/note 필수+trim, type/status enum, careHours/baseRate 양수, expectedAmount 유한·양수, monthlyPrice 양수, annualDiscountRate 0~0.95). 이로써 **폼 검증이 zod 스키마 기반으로 프론트–API 간 일관**되며, 저장 버튼의 "유효해질 때까지 비활성" 게이트는 수동 `canSubmit` 대신 `formState.isValid`로, 숫자 입력은 `register(..., { valueAsNumber: true })`로 처리합니다. 폼 상태가 라이브러리로 이동하면서 기존 `usePlatformData`의 수동 draft 상태·필드별 업데이트 콜백·중복 검증은 제거하고, 훅은 데이터 로딩과 제출 부수효과(POST/PATCH 후 목록 갱신)만 담당합니다.
+또한 **웹 폼에는 `react-hook-form` + `@hookform/resolvers`(zodResolver)를 도입**했습니다. 운영(`OperationsPage`)의 돌봄 기록·정산·보험청구 폼과 어드민(`AdminPage`)의 요금제 편집 폼은 각각 `useForm({ resolver: zodResolver(schema), mode: 'onChange' })`로 동작하며, 검증 스키마는 API의 `*.schema.ts`를 프론트엔드로 옮긴 `apps/web/src/features/<도메인>/schema.ts`에 둡니다(recipient/caregiver/note 필수+trim, type/status enum, careHours/baseRate 양수, expectedAmount 유한·양수, monthlyPrice 양수, annualDiscountRate 0~0.95). 이로써 **폼 검증이 zod 스키마 기반으로 프론트–API 간 일관**되며, 저장 버튼의 "유효해질 때까지 비활성" 게이트는 수동 `canSubmit` 대신 `formState.isValid`로, 숫자 입력은 `register(..., { valueAsNumber: true })`로 처리합니다. 폼 상태가 라이브러리로 이동하면서 기존 `usePlatformData`의 수동 draft 상태·필드별 업데이트 콜백·중복 검증은 제거하고, 훅은 데이터 로딩과 제출 부수효과(POST/PATCH 후 목록 갱신)만 담당합니다.
 
 | 용도 | 라이브러리 | 비고 |
 | --- | --- | --- |
@@ -60,11 +60,11 @@
 
 ## 테마 / 다크 모드
 
-웹앱의 색·표면·텍스트·라인·그림자는 전부 `apps/web-app/src/styles.css`의 `:root` **OKLCH 디자인 토큰**으로 정의됩니다(하드코딩 색 없이 토큰 참조). 다크 모드는 토큰 값만 덮어쓰는 방식으로, 별도 라이브러리 없이 동작합니다.
+웹앱의 색·표면·텍스트·라인·그림자는 전부 `apps/web/src/styles.css`의 `:root` **OKLCH 디자인 토큰**으로 정의됩니다(하드코딩 색 없이 토큰 참조). 다크 모드는 토큰 값만 덮어쓰는 방식으로, 별도 라이브러리 없이 동작합니다.
 
 - 활성화: `:root[data-theme="dark"]`(사용자 명시 선택) **및** `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }`(시스템 기본값 — 단, 라이트로 고정한 선택은 존중). 다크 블록은 동일 토큰 이름의 명도만 반전하고 hue/chroma는 유지하며, 네이티브 컨트롤을 위해 `color-scheme`도 함께 전환합니다.
 - 깜빡임 방지(no-FOUC): `index.html` `<head>`의 작은 인라인 스크립트가 paint 전에 `localStorage`의 `theme`(없으면 `prefers-color-scheme`)를 읽어 `document.documentElement.dataset.theme`를 설정합니다.
-- 토글: `apps/web-app/src/components/common/ThemeToggle.tsx`(헤더 우상단)가 라이트/다크를 전환하고 `localStorage('theme')`에 영속화합니다(접근성 aria-label + sun/moon 글리프).
+- 토글: `apps/web/src/components/common/ThemeToggle.tsx`(헤더 우상단)가 라이트/다크를 전환하고 `localStorage('theme')`에 영속화합니다(접근성 aria-label + sun/moon 글리프).
 - 대비: 다크 토큰은 본문/표면·버튼 라벨이 모두 WCAG AA를 넘도록 잡혀 있습니다(라이브 측정 확인).
 - 토큰 값을 바꿀 때는 라이트(`:root`)와 다크(명시 선택자 + 미디어쿼리) **세 위치**를 함께 갱신해야 합니다(CSS at-rule 경계상 한 선언부 공유 불가).
 
@@ -72,12 +72,12 @@
 
 API 서버의 도메인 데이터(`care-logs`, `settlements`, `claims`, 어드민 요금제)는 **DB/ORM나 새 npm 의존성 없이** `node:fs`만으로 재시작 후에도 살아남습니다. sibling 저장소 **proto-live의 "atomic JSON file store" 패턴**(`backend/src/projects/projects.store.ts`)을 이식한 것입니다.
 
-- 구현: `apps/api-server/src/common/json-store.ts`의 재사용 헬퍼 `JsonCollectionStore<T>`. 각 서비스(`@Injectable` 싱글톤)가 컬렉션별 JSON 파일 하나를 백킹 스토어로 가집니다.
+- 구현: `apps/api/src/common/json-store.ts`의 재사용 헬퍼 `JsonCollectionStore<T>`. 각 서비스(`@Injectable` 싱글톤)가 컬렉션별 JSON 파일 하나를 백킹 스토어로 가집니다.
   - `care-logs.json`, `settlements.json`, `claims.json` — 자동 증가 id(`seq`)를 사용하는 컬렉션
   - `admin-plans.json` — 고정 id(starter/pro/enterprise) 컬렉션(`seq` 없음)
 - 원자적 쓰기: 임시 파일에 기록 후 `rename`으로 교체해 부분 기록을 방지합니다.
 - 시작 시 로드: 파일이 없으면 기존 seed(빈 배열 또는 초기 요금제 3종)로 초기화하므로 dev 경험은 그대로입니다. 파일이 있으면 관용적으로 역직렬화하며, `items` 누락/형식 오류는 빈 배열로, `seq` 누락은 데이터의 `max(id)+1`로 복원합니다(스키마 마이그레이션 내성). 손상된 파일은 seed로 폴백합니다.
-- 저장 위치: 기본 `<cwd>/data/` (api-server 실행 위치 기준). 환경 변수 `FCP_DATA_DIR`로 덮어쓸 수 있습니다. `data/`는 `.gitignore`로 제외되어 런타임 데이터는 커밋되지 않습니다.
+- 저장 위치: 기본 `<cwd>/data/` (api 실행 위치 기준). 환경 변수 `FCP_DATA_DIR`로 덮어쓸 수 있습니다. `data/`는 `.gitignore`로 제외되어 런타임 데이터는 커밋되지 않습니다.
 - 테스트 격리: vitest(`VITEST`) 또는 `NODE_ENV=test` 환경에서는 파일 I/O 없이 **인메모리로만** 동작하고 `save()`는 no-op입니다. 따라서 각 서비스 인스턴스는 항상 seed에서 시작하며, 기존 유닛 테스트의 격리(매 테스트 fresh seed)가 그대로 유지됩니다.
 
 ## 개발 플로우

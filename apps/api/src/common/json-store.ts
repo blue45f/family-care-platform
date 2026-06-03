@@ -29,7 +29,7 @@ function isTestEnv(): boolean {
 }
 
 function defaultDataDir(): string {
-  // FCP_DATA_DIR로 덮어쓸 수 있고, 기본값은 api-server 실행 위치 기준 data/ 디렉터리다.
+  // FCP_DATA_DIR로 덮어쓸 수 있고, 기본값은 api 실행 위치 기준 data/ 디렉터리다.
   return process.env.FCP_DATA_DIR?.trim() || resolve(process.cwd(), 'data');
 }
 

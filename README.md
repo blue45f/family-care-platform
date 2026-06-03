@@ -6,8 +6,8 @@
 
 ## 프로젝트 구조
 
-- `apps/web-app`: Vite + React 프론트엔드 (React Compiler 활성화)
-- `apps/api-server`: NestJS 백엔드
+- `apps/web`: Vite + React 프론트엔드 (React Compiler 활성화)
+- `apps/api`: NestJS 백엔드
 - `pnpm-workspace.yaml`: 워크스페이스 정의
 - `docs/DEVELOPMENT.md`, `docs/ARCHITECTURE.md`: 운영 가이드
 
@@ -27,7 +27,7 @@ pnpm run dev
 - `pnpm run build`: 워크스페이스 빌드
 - `pnpm run lint`: 워크스페이스 정적 타입 검사
 - `pnpm run typecheck`: 타입 검사
-- `pnpm run test`: 테스트 (`api-server`/`web-app` 유닛 테스트)
+- `pnpm run test`: 테스트 (`api`/`web` 유닛 테스트)
 - `pnpm run verify`: lint → typecheck → test → build
 - `pnpm run ci`: CI 게이트
 - `pnpm run smoke:web`: 샘플 시나리오 기반 브라우저/API 스모크 실행
@@ -35,11 +35,11 @@ pnpm run dev
 개별 앱 실행 예시:
 
 ```bash
-pnpm --dir apps/api-server install
-pnpm --dir apps/api-server dev
+pnpm --dir apps/api install
+pnpm --dir apps/api dev
 
-pnpm --dir apps/web-app install
-pnpm --dir apps/web-app dev
+pnpm --dir apps/web install
+pnpm --dir apps/web dev
 ```
 
 ## 브라우저 스모크 테스트
