@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 
+import { ThemeToggle } from "./components/common/ThemeToggle";
 import { AdminPage } from "./components/pages/AdminPage";
 import { HomePage } from "./components/pages/HomePage";
 import { OperationsPage } from "./components/pages/OperationsPage";
@@ -94,6 +95,7 @@ const RouteShell = ({
 
   return (
       <header className="app-header panel app-header-v2">
+      <ThemeToggle />
       <div className="route-hero-grid">
         <section className="route-kicker-stack">
           <p className="kicker">{routeContext.pageBlueprint.heroText.kicker}</p>
