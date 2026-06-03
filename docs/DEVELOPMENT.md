@@ -32,6 +32,16 @@
 
 위 외 추가 라이브러리가 정말 필요해지기 전까지는 표준 라이브러리/네이티브 API로 해결하는 것을 우선합니다.
 
+## 테마 / 다크 모드
+
+웹앱의 색·표면·텍스트·라인·그림자는 전부 `apps/web-app/src/styles.css`의 `:root` **OKLCH 디자인 토큰**으로 정의됩니다(하드코딩 색 없이 토큰 참조). 다크 모드는 토큰 값만 덮어쓰는 방식으로, 별도 라이브러리 없이 동작합니다.
+
+- 활성화: `:root[data-theme="dark"]`(사용자 명시 선택) **및** `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) }`(시스템 기본값 — 단, 라이트로 고정한 선택은 존중). 다크 블록은 동일 토큰 이름의 명도만 반전하고 hue/chroma는 유지하며, 네이티브 컨트롤을 위해 `color-scheme`도 함께 전환합니다.
+- 깜빡임 방지(no-FOUC): `index.html` `<head>`의 작은 인라인 스크립트가 paint 전에 `localStorage`의 `theme`(없으면 `prefers-color-scheme`)를 읽어 `document.documentElement.dataset.theme`를 설정합니다.
+- 토글: `apps/web-app/src/components/common/ThemeToggle.tsx`(헤더 우상단)가 라이트/다크를 전환하고 `localStorage('theme')`에 영속화합니다(접근성 aria-label + sun/moon 글리프).
+- 대비: 다크 토큰은 본문/표면·버튼 라벨이 모두 WCAG AA를 넘도록 잡혀 있습니다(라이브 측정 확인).
+- 토큰 값을 바꿀 때는 라이트(`:root`)와 다크(명시 선택자 + 미디어쿼리) **세 위치**를 함께 갱신해야 합니다(CSS at-rule 경계상 한 선언부 공유 불가).
+
 ## 데이터 영속화 (DB 없이 JSON 파일 스토어)
 
 API 서버의 도메인 데이터(`care-logs`, `settlements`, `claims`, 어드민 요금제)는 **DB/ORM나 새 npm 의존성 없이** `node:fs`만으로 재시작 후에도 살아남습니다. sibling 저장소 **proto-live의 "atomic JSON file store" 패턴**(`backend/src/projects/projects.store.ts`)을 이식한 것입니다.

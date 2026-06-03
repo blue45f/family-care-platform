@@ -85,6 +85,133 @@
   --warning-strong: oklch(44% 0.11 64);
   --container-width: min(1240px, 100% - 2.4rem);
   --page-padding: clamp(0.8rem, 2.6vw, 1.5rem);
+
+  /* Native form controls / scrollbars follow the page; dark selector sets dark. */
+  color-scheme: light dark;
+}
+
+/* ============================================================
+   Dark theme.
+   Activated by an explicit user choice (:root[data-theme='dark']) AND by the
+   system preference when the user has NOT pinned light
+   (@media prefers-color-scheme: dark -> :root:not([data-theme='light'])).
+   Native CSS cannot share one declaration body across an at-rule boundary, so
+   the two activation contexts hold the SAME token values; they are kept
+   adjacent and identical so they stay in lockstep.
+
+   Hues are preserved from light mode (264 brand, 38/44 warm, status hues);
+   only lightness is inverted and chroma nudged for legibility on dark.
+   ============================================================ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces: a deep cool page lifting toward "elevated" in steps. */
+  --bg: oklch(18% 0.018 264);
+  --surface: oklch(23% 0.02 264);
+  --surface-muted: oklch(25.5% 0.021 264);
+  --surface-subtle: oklch(27% 0.022 264);
+  --surface-soft: oklch(28.5% 0.028 264);
+  --surface-elevated: oklch(26% 0.022 264);
+
+  /* Text: light slate, never pure white; stepping down to disabled. */
+  --text-primary: oklch(93% 0.012 264);
+  --text-secondary: oklch(82% 0.016 264);
+  --text-muted: oklch(72% 0.018 264);
+  --text-subtle: oklch(64% 0.018 264);
+  --text-disabled: oklch(50% 0.016 264);
+  --text-on-primary: oklch(20% 0.03 264);
+
+  --line: oklch(34% 0.022 264);
+  --line-strong: oklch(44% 0.026 264);
+
+  /* Primary: lighter, more vivid iris so it reads as action on dark. */
+  --primary: oklch(70% 0.17 264);
+  --primary-hover: oklch(76% 0.16 264);
+  --primary-soft: oklch(30% 0.07 264);
+  --primary-strong: oklch(80% 0.15 264);
+
+  /* Secondary: warm amber-coral, lifted for dark. */
+  --secondary: oklch(72% 0.15 44);
+  --secondary-strong: oklch(80% 0.13 44);
+  --secondary-soft: oklch(30% 0.07 44);
+
+  --success: oklch(72% 0.14 158);
+  --warning: oklch(78% 0.15 78);
+  --danger: oklch(70% 0.17 25);
+  --success-soft: oklch(29% 0.06 158);
+  --warning-soft: oklch(30% 0.07 78);
+  --danger-soft: oklch(30% 0.07 25);
+
+  --danger-strong: oklch(80% 0.13 25);
+  --success-strong: oklch(82% 0.11 158);
+  --warning-strong: oklch(85% 0.12 78);
+
+  --surface-primary-bg: color-mix(
+    in srgb,
+    var(--primary) 18%,
+    var(--surface) 82%
+  );
+
+  /* Deeper, darker shadows so elevation still reads against a dark page. */
+  --shadow-sm: 0 6px 20px oklch(0% 0 0 / 42%);
+  --shadow-md: 0 16px 42px oklch(0% 0 0 / 52%);
+
+  --focus-ring: 0 0 0 3px oklch(70% 0.17 264 / 45%);
+}
+
+/* System-preference dark: same token set as above, unless user pinned light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: oklch(18% 0.018 264);
+    --surface: oklch(23% 0.02 264);
+    --surface-muted: oklch(25.5% 0.021 264);
+    --surface-subtle: oklch(27% 0.022 264);
+    --surface-soft: oklch(28.5% 0.028 264);
+    --surface-elevated: oklch(26% 0.022 264);
+
+    --text-primary: oklch(93% 0.012 264);
+    --text-secondary: oklch(82% 0.016 264);
+    --text-muted: oklch(72% 0.018 264);
+    --text-subtle: oklch(64% 0.018 264);
+    --text-disabled: oklch(50% 0.016 264);
+    --text-on-primary: oklch(20% 0.03 264);
+
+    --line: oklch(34% 0.022 264);
+    --line-strong: oklch(44% 0.026 264);
+
+    --primary: oklch(70% 0.17 264);
+    --primary-hover: oklch(76% 0.16 264);
+    --primary-soft: oklch(30% 0.07 264);
+    --primary-strong: oklch(80% 0.15 264);
+
+    --secondary: oklch(72% 0.15 44);
+    --secondary-strong: oklch(80% 0.13 44);
+    --secondary-soft: oklch(30% 0.07 44);
+
+    --success: oklch(72% 0.14 158);
+    --warning: oklch(78% 0.15 78);
+    --danger: oklch(70% 0.17 25);
+    --success-soft: oklch(29% 0.06 158);
+    --warning-soft: oklch(30% 0.07 78);
+    --danger-soft: oklch(30% 0.07 25);
+
+    --danger-strong: oklch(80% 0.13 25);
+    --success-strong: oklch(82% 0.11 158);
+    --warning-strong: oklch(85% 0.12 78);
+
+    --surface-primary-bg: color-mix(
+      in srgb,
+      var(--primary) 18%,
+      var(--surface) 82%
+    );
+
+    --shadow-sm: 0 6px 20px oklch(0% 0 0 / 42%);
+    --shadow-md: 0 16px 42px oklch(0% 0 0 / 52%);
+
+    --focus-ring: 0 0 0 3px oklch(70% 0.17 264 / 45%);
+  }
 }
 
 * {
@@ -202,6 +329,45 @@ a {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   margin-bottom: 0.95rem;
+}
+
+/* Theme toggle: a quiet round control anchored in the header's top-right. */
+.theme-toggle {
+  position: absolute;
+  top: clamp(0.7rem, 1.6vw, 1.1rem);
+  right: clamp(0.7rem, 1.6vw, 1.1rem);
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 86%, var(--surface-soft) 14%);
+  color: var(--text-secondary);
+  transition:
+    background var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease);
+}
+
+.theme-toggle:hover {
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--line) 50%);
+  background: color-mix(in srgb, var(--primary-soft) 60%, var(--surface) 40%);
+  color: var(--primary-hover);
+}
+
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.theme-toggle svg {
+  display: block;
 }
 
 /*
@@ -2160,6 +2326,8 @@ textarea:disabled {
   justify-content: space-between;
   gap: var(--space-2);
   flex-wrap: wrap;
+  /* Reserve the top-right corner where the absolutely-positioned theme toggle sits. */
+  padding-right: 2.75rem;
 }
 
 .route-progress-meta-wrap {
