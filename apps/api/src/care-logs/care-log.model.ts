@@ -1,12 +1,2 @@
-export type CareLogType = '방문' | '원격상담' | '투약' | '식사관리' | '기타';
-
-export type CareLog = {
-  id: number;
-  recipient: string;
-  caregiver: string;
-  type: CareLogType;
-  date: string;
-  note: string;
-};
-
-export type CareLogInput = Omit<CareLog, 'id'>;
+// 도메인 타입은 @family-care/shared가 단일 소스(web types.ts와 공유).
+export type { CareLogType, CareLog, CareLogInput } from '@family-care/shared';

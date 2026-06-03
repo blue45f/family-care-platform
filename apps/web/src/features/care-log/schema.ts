@@ -1,17 +1,14 @@
 import { z } from "zod";
 
+import { careLogTypes } from "@family-care/shared";
+
 // 프론트엔드 돌봄 기록 폼 스키마.
-// API의 care-log.schema.ts와 동일한 검증 규칙을 옮겨온 것:
-// - recipient/caregiver/note: 필수(+trim, 빈 값 금지)
+// 돌봄 활동 유형 목록(careLogTypes)은 @family-care/shared가 단일 소스다.
+// 폼 검증 규칙은 web 전용:
+// - recipient/caregiver/note: 필수(빈 값 금지, transform 없이 원본 폼 값 검증)
 // - type: 정해진 돌봄 활동 유형만 허용
 // - date: 컨트롤러가 기본값(localYmd)을 채우므로 폼에서도 단순 문자열로 둔다.
-export const careLogTypes = [
-  "방문",
-  "원격상담",
-  "투약",
-  "식사관리",
-  "기타",
-] as const;
+export { careLogTypes };
 
 const requiredText = (message: string) =>
   z
