@@ -36,10 +36,10 @@ jobs:
 
       - name: Start services for smoke test
         run: |
-          pnpm --dir apps/api-server run start:prod > /tmp/family-care-api.log 2>&1 &
+          pnpm --dir apps/api run start:prod > /tmp/family-care-api.log 2>&1 &
           echo $! > /tmp/family-care-api.pid
 
-          pnpm --dir apps/web-app run start > /tmp/family-care-web.log 2>&1 &
+          pnpm --dir apps/web run start > /tmp/family-care-web.log 2>&1 &
           echo $! > /tmp/family-care-web.pid
 
           for attempt in $(seq 1 30); do

@@ -5,23 +5,23 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@11.4.0 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY apps/web-app/package.json ./apps/web-app/package.json
-COPY apps/api-server/package.json ./apps/api-server/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY apps/api/package.json ./apps/api/package.json
 
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm --dir apps/web-app run build
+RUN pnpm --dir apps/web run build
 
 FROM node:22-alpine
 
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web-app/package.json /app/package.json
-COPY --from=deps /app/apps/web-app/dist ./apps/web-app/dist
+COPY --from=deps /app/apps/web/package.json /app/package.json
+COPY --from=deps /app/apps/web/dist ./apps/web/dist
 
-WORKDIR /app/apps/web-app
+WORKDIR /app/apps/web
 
 EXPOSE 4173
 ENV NODE_ENV=production

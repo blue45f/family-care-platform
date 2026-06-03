@@ -3,16 +3,16 @@
 ## 프로젝트 형태
 
 - pnpm monorepo(workspace) 구조
-- `apps/web-app`: React + Vite 프론트엔드
-- `apps/api-server`: NestJS 백엔드 API
+- `apps/web`: React + Vite 프론트엔드
+- `apps/api`: NestJS 백엔드 API
 
 ## 스크립트 책임 분리
 
 - 루트 `package.json`
   - 전체 워크스페이스 개발/빌드/검증 스크립트 제공
-- 웹(`apps/web-app`)
+- 웹(`apps/web`)
   - `dev`, `build`, `preview`, `typecheck`, `test`, `lint`
-- API(`apps/api-server`)
+- API(`apps/api`)
   - `dev`, `build`, `start`, `start:prod`, `typecheck`, `test`, `lint`
 - 어드민 데이터(`/admin`)
   - 수익성 지표 조회 / 요금제 운용 API 제공
@@ -32,14 +32,14 @@
 ## 클라이언트 라우터 (react-router 없이 직접 구현)
 
 - 웹앱은 표준 History API만으로 라우팅을 직접 구현합니다(의존성 최소화). 경로는 `AppRoute` 유니온으로 타입 고정되어 잘못된 경로는 컴파일 에러입니다.
-- 구성: `apps/web-app/src/routeConfig.ts`(타입 레지스트리·순수 해석기 `resolveRouteResult`/폴백·`DEFAULT_ROUTE`·`isAppRoute`), `routeNavigation.ts`(History/스크롤/포커스 순수 헬퍼), `useRouteState.ts`(상태·`popstate`·`pushState` 연동 훅).
+- 구성: `apps/web/src/routeConfig.ts`(타입 레지스트리·순수 해석기 `resolveRouteResult`/폴백·`DEFAULT_ROUTE`·`isAppRoute`), `routeNavigation.ts`(History/스크롤/포커스 순수 헬퍼), `useRouteState.ts`(상태·`popstate`·`pushState` 연동 훅).
 - 딥링크/북마크/공유 URL이 동작하며, 마운트·`popstate` 시 미등록/비정규 URL을 `replaceState`로 정규화합니다. 라우트 변경 시 스크롤 복원 + 메인 포커스 이동(a11y), `isFallback`로 not-found 안내를 제공합니다.
 - 자세한 설계/라우트 추가법은 `docs/DEVELOPMENT.md`의 "라우터" 절을 참고하세요.
 
 ## 데이터 레이어 (DB 없는 JSON 파일 영속화)
 
 - DB/ORM 없이 `node:fs`만으로 데이터를 영속화합니다. proto-live의 "atomic JSON file store" 패턴을 이식했습니다.
-- 재사용 헬퍼 `apps/api-server/src/common/json-store.ts`(`JsonCollectionStore<T>`)가 컬렉션별 JSON 파일(`data/*.json`)을 백킹합니다: 원자적 temp-write+rename, 시작 시 seed 로드, 관용적 역직렬화(누락 필드 기본값/`seq` 복원).
+- 재사용 헬퍼 `apps/api/src/common/json-store.ts`(`JsonCollectionStore<T>`)가 컬렉션별 JSON 파일(`data/*.json`)을 백킹합니다: 원자적 temp-write+rename, 시작 시 seed 로드, 관용적 역직렬화(누락 필드 기본값/`seq` 복원).
 - 서비스 싱글톤은 시작 시 파일에서 상태를 로드하고, 생성/수정 시 즉시 파일을 갱신합니다.
 - 테스트 환경(`VITEST`/`NODE_ENV=test`)에서는 인메모리로만 동작(파일 I/O 없음)해 기존 테스트 격리를 유지합니다.
 - 자세한 동작/저장 위치/환경 변수는 `docs/DEVELOPMENT.md`의 "데이터 영속화" 절을 참고하세요.
