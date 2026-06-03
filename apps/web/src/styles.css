@@ -2241,6 +2241,21 @@ textarea:disabled {
   box-shadow: var(--shadow-md), var(--focus-ring);
 }
 
+/* 최상위 에러 바운더리 폴백 — 빈 화면 대신 복구 동작(다시 시도/홈)을 제공한다. */
+.app-error-boundary {
+  max-width: 40rem;
+  margin: 4rem auto;
+  text-align: center;
+}
+
+.app-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.25rem;
+}
+
 /* 라우트 본문 영역: 라우트 변경 시 포커스를 받지만(tabindex=-1) 포커스 링은
    스킵 링크/키보드 탐색을 방해하지 않도록 표시하지 않는다. */
 .route-main {

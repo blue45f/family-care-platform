@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { ThemeToggle } from './components/common/ThemeToggle'
 import { AdminPage } from './components/pages/AdminPage'
@@ -406,6 +406,20 @@ const App = () => {
   const heroMetrics = useMemo(() => getHeroMetrics(routeContext, data), [routeContext, data])
   const quickEntries = useMemo(() => getQuickEntries(routeContext), [routeContext])
 
+  // 라우트별 문서 타이틀 + 라우트 변경 시 보조기술 안내(aria-live). 포커스/스크롤 이동은
+  // useRouteState 가 이미 처리하므로 여기서는 타이틀과 announce 만 담당한다.
+  const routeTitle = routeContext.route.title
+  const [routeAnnouncement, setRouteAnnouncement] = useState('')
+  const hasAnnouncedRef = useRef(false)
+  useEffect(() => {
+    document.title = `${routeTitle} · 가족 돌봄 운영`
+    if (!hasAnnouncedRef.current) {
+      hasAnnouncedRef.current = true
+      return
+    }
+    setRouteAnnouncement(`${routeTitle} 페이지로 이동했습니다`)
+  }, [routeTitle])
+
   const hasReadOnlyError =
     data.errorMessage.includes('권한이 없어') ||
     data.errorMessage.includes('401') ||
@@ -466,6 +480,10 @@ const App = () => {
       <a className="skip-link" href={`#${ROUTE_MAIN_ID}`}>
         본문 바로가기
       </a>
+
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {routeAnnouncement}
+      </p>
 
       <RouteShell
         routeContext={routeContext}
