@@ -3,10 +3,10 @@
 // yyyy-MM-dd / yyyy-MM가 하루(한 달) 밀린다. getFullYear/getMonth/getDate는 로컬
 // 시간을 반환하므로 getRecentMonthKeys와 일관되게 로컬 기준 키를 만든다.
 export const localYmd = (d: Date = new Date()): string => {
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
-export const localMonthKey = (d: Date = new Date()): string => localYmd(d).slice(0, 7);
+export const localMonthKey = (d: Date = new Date()): string => localYmd(d).slice(0, 7)

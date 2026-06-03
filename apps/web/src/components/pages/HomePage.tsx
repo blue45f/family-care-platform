@@ -1,124 +1,115 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react'
 
-import type {
-  AppRoute,
-  HomeLandingSectionBlueprint,
-  RouteTopNavItem,
-} from "../../routeConfig";
-import { formatWon } from "../../utils";
+import type { AppRoute, HomeLandingSectionBlueprint, RouteTopNavItem } from '../../routeConfig'
+import { formatWon } from '../../utils'
 
 type HomeScenarioValues = {
-  activeHouseholds: number;
-  totalSettlement: number;
-  claimsLength: number;
-  conversionRate: number;
-};
+  activeHouseholds: number
+  totalSettlement: number
+  claimsLength: number
+  conversionRate: number
+}
 
 type HomePageProps = {
-  sections: readonly HomeLandingSectionBlueprint[];
-  topCards: readonly RouteTopNavItem[];
-  scenario: HomeScenarioValues;
-  onNavigate: (path: AppRoute) => void;
-  hasReadOnlyError?: boolean;
-};
+  sections: readonly HomeLandingSectionBlueprint[]
+  topCards: readonly RouteTopNavItem[]
+  scenario: HomeScenarioValues
+  onNavigate: (path: AppRoute) => void
+  hasReadOnlyError?: boolean
+}
 
 const prefersReducedMotion = () =>
-  typeof window !== "undefined" &&
-  typeof window.matchMedia === "function" &&
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 // Eases a value from 0 to its target once the cluster scrolls into view.
 // Reduced-motion users (and non-IO environments) get the final value at once.
 const useCountUp = (target: number, durationMs = 900) => {
-  const [value, setValue] = useState(() =>
-    prefersReducedMotion() ? target : 0,
-  );
-  const nodeRef = useRef<HTMLDivElement | null>(null);
-  const hasRunRef = useRef(false);
+  const [value, setValue] = useState(() => (prefersReducedMotion() ? target : 0))
+  const nodeRef = useRef<HTMLDivElement | null>(null)
+  const hasRunRef = useRef(false)
 
   useEffect(() => {
-    const node = nodeRef.current;
+    const node = nodeRef.current
 
     if (prefersReducedMotion()) {
-      setValue(target);
-      return;
+      setValue(target)
+      return
     }
 
     if (
       !node ||
-      typeof IntersectionObserver !== "function" ||
-      typeof requestAnimationFrame !== "function"
+      typeof IntersectionObserver !== 'function' ||
+      typeof requestAnimationFrame !== 'function'
     ) {
-      setValue(target);
-      return;
+      setValue(target)
+      return
     }
 
-    let frame = 0;
-    let startedAt = 0;
+    let frame = 0
+    let startedAt = 0
     // ease-out-quint: confident deceleration, no overshoot.
-    const ease = (t: number) => 1 - Math.pow(1 - t, 5);
+    const ease = (t: number) => 1 - Math.pow(1 - t, 5)
 
     const tick = (now: number) => {
       if (startedAt === 0) {
-        startedAt = now;
+        startedAt = now
       }
-      const progress = Math.min(1, (now - startedAt) / durationMs);
-      setValue(target * ease(progress));
+      const progress = Math.min(1, (now - startedAt) / durationMs)
+      setValue(target * ease(progress))
       if (progress < 1) {
-        frame = requestAnimationFrame(tick);
+        frame = requestAnimationFrame(tick)
       } else {
-        setValue(target);
+        setValue(target)
       }
-    };
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const [entry] = entries;
+        const [entry] = entries
         if (entry?.isIntersecting && !hasRunRef.current) {
-          hasRunRef.current = true;
-          frame = requestAnimationFrame(tick);
-          observer.disconnect();
+          hasRunRef.current = true
+          frame = requestAnimationFrame(tick)
+          observer.disconnect()
         }
       },
       { threshold: 0.4 },
-    );
+    )
 
-    observer.observe(node);
+    observer.observe(node)
 
     return () => {
-      observer.disconnect();
+      observer.disconnect()
       if (frame) {
-        cancelAnimationFrame(frame);
+        cancelAnimationFrame(frame)
       }
-    };
-  }, [target, durationMs]);
+    }
+  }, [target, durationMs])
 
-  return { value, nodeRef };
-};
+  return { value, nodeRef }
+}
 
 type HeroFigure = {
-  label: string;
-  target: number;
-  format: (value: number) => string;
-  foot: string;
-  lead?: boolean;
-};
+  label: string
+  target: number
+  format: (value: number) => string
+  foot: string
+  lead?: boolean
+}
 
 const HeroFigureCard = ({ figure }: { figure: HeroFigure }) => {
-  const { value, nodeRef } = useCountUp(figure.target);
+  const { value, nodeRef } = useCountUp(figure.target)
   return (
-    <div
-      ref={nodeRef}
-      className={`home-kpi${figure.lead ? " home-kpi-lead" : ""}`}
-    >
+    <div ref={nodeRef} className={`home-kpi${figure.lead ? ' home-kpi-lead' : ''}`}>
       <p className="home-kpi-label">{figure.label}</p>
       <strong className="home-kpi-value" aria-label={figure.format(figure.target)}>
         <span aria-hidden="true">{figure.format(value)}</span>
       </strong>
       <p className="home-kpi-foot">{figure.foot}</p>
     </div>
-  );
-};
+  )
+}
 
 const HomePage = ({
   sections,
@@ -129,84 +120,80 @@ const HomePage = ({
 }: HomePageProps) => {
   const heroFigures: HeroFigure[] = [
     {
-      label: "이번 달 정산 합계",
+      label: '이번 달 정산 합계',
       target: scenario.totalSettlement,
       format: (value) => formatWon(value),
-      foot: "기록된 돌봄비를 실시간으로 합산",
+      foot: '기록된 돌봄비를 실시간으로 합산',
       lead: true,
     },
     {
-      label: "돌봄 가구",
+      label: '돌봄 가구',
       target: scenario.activeHouseholds,
       format: (value) => `${Math.round(value)}개`,
-      foot: "운영 중인 케어 대상",
+      foot: '운영 중인 케어 대상',
     },
     {
-      label: "보험청구",
+      label: '보험청구',
       target: scenario.claimsLength,
       format: (value) => `${Math.round(value)}건`,
-      foot: "요청·검토·승인 전체",
+      foot: '요청·검토·승인 전체',
     },
     {
-      label: "청구 승인률",
+      label: '청구 승인률',
       target: scenario.conversionRate,
       format: (value) => `${value.toFixed(1)}%`,
-      foot: "승인 완료 비율",
+      foot: '승인 완료 비율',
     },
-  ];
+  ]
 
   const onboardingFlow = [
     {
       step: 1,
-      title: "돌봄 기록",
-      description: "보호자와 대상, 돌봄 내용을 입력해요.",
+      title: '돌봄 기록',
+      description: '보호자와 대상, 돌봄 내용을 입력해요.',
     },
     {
       step: 2,
-      title: "돌봄비 정산",
-      description: "돌봄 시간·금액을 넣으면 합계가 즉시 계산돼요.",
+      title: '돌봄비 정산',
+      description: '돌봄 시간·금액을 넣으면 합계가 즉시 계산돼요.',
     },
     {
       step: 3,
-      title: "보험청구",
-      description: "기관·금액·상태를 남겨 승인 흐름을 점검해요.",
+      title: '보험청구',
+      description: '기관·금액·상태를 남겨 승인 흐름을 점검해요.',
     },
-  ];
+  ]
 
-  const quickActions = topCards
-    .filter((item) => item.path !== "/")
-    .slice(0, 4);
+  const quickActions = topCards.filter((item) => item.path !== '/').slice(0, 4)
 
-  const primaryAction = quickActions[0] ?? null;
-  const secondaryActions = quickActions.slice(1);
-  const quickActionOverflow = Math.max(0, quickActions.length - 3);
+  const primaryAction = quickActions[0] ?? null
+  const secondaryActions = quickActions.slice(1)
+  const quickActionOverflow = Math.max(0, quickActions.length - 3)
 
   const isDataReady =
-    scenario.activeHouseholds > 0 ||
-    scenario.totalSettlement > 0 ||
-    scenario.claimsLength > 0;
-  const quickActionSummary = quickActions.length > 0 ? `${quickActions.length}개` : "0개";
+    scenario.activeHouseholds > 0 || scenario.totalSettlement > 0 || scenario.claimsLength > 0
+  const quickActionSummary = quickActions.length > 0 ? `${quickActions.length}개` : '0개'
 
   const homeTasks = [
     {
-      title: "돌봄 기록 남기기",
-      summary: "보호자·돌봄 받는 분·내용을 한 번에 입력",
-      path: "/operations/care" as const,
-      primaryButton: "기록 입력으로 이동",
+      title: '돌봄 기록 남기기',
+      summary: '보호자·돌봄 받는 분·내용을 한 번에 입력',
+      path: '/operations/care' as const,
+      primaryButton: '기록 입력으로 이동',
     },
     {
-      title: "돌봄비 정산",
-      summary: "돌봄 시간·단가로 정산액을 계산",
-      path: "/operations/settlement" as const,
-      primaryButton: "정산 화면으로 이동",
+      title: '돌봄비 정산',
+      summary: '돌봄 시간·단가로 정산액을 계산',
+      path: '/operations/settlement' as const,
+      primaryButton: '정산 화면으로 이동',
     },
     {
-      title: "보험청구 점검",
-      summary: "요청/검토/승인 상태를 빠르게 점검",
-      path: "/operations/claims" as const,
-      primaryButton: "청구 화면으로 이동",
+      title: '보험청구 점검',
+      summary: '요청/검토/승인 상태를 빠르게 점검',
+      path: '/operations/claims' as const,
+      primaryButton: '청구 화면으로 이동',
     },
-  ];
+  ]
 
   return (
     <section className="view-stack home-view-stack">
@@ -215,12 +202,11 @@ const HomePage = ({
         <div className="home-hero-lede">
           <p className="home-hero-eyebrow">가족 돌봄 운영</p>
           <h2 id="home-hero-title" className="home-hero-title">
-            돌봄 기록부터 정산, 보험청구까지{" "}
-            <span className="home-hero-accent">한 흐름으로</span>
+            돌봄 기록부터 정산, 보험청구까지 <span className="home-hero-accent">한 흐름으로</span>
           </h2>
           <p className="home-hero-sub">
-            흩어진 돌봄 업무를 기록 → 정산 → 보험청구 세 단계로 묶었습니다. 처음
-            여는 화면에서 다음 할 일이 바로 보입니다.
+            흩어진 돌봄 업무를 기록 → 정산 → 보험청구 세 단계로 묶었습니다. 처음 여는 화면에서 다음
+            할 일이 바로 보입니다.
           </p>
           <div className="home-hero-cta">
             {primaryAction ? (
@@ -236,7 +222,7 @@ const HomePage = ({
             <button
               type="button"
               className="btn home-hero-ghost"
-              onClick={() => onNavigate("/operations/care")}
+              onClick={() => onNavigate('/operations/care')}
               aria-label="돌봄 기록 화면으로 이동"
             >
               돌봄 기록 바로가기
@@ -244,11 +230,7 @@ const HomePage = ({
           </div>
         </div>
 
-        <div
-          className="home-hero-figures"
-          role="group"
-          aria-label="현재 핵심 지표"
-        >
+        <div className="home-hero-figures" role="group" aria-label="현재 핵심 지표">
           {heroFigures.map((figure) => (
             <HeroFigureCard key={figure.label} figure={figure} />
           ))}
@@ -396,7 +378,7 @@ const HomePage = ({
         <div className="panel-head">
           <div>
             <h2>전체 메뉴</h2>
-          <p className="subtle">운영·관리를 빠르게 찾아 필요한 작업으로 바로 이동하세요.</p>
+            <p className="subtle">운영·관리를 빠르게 찾아 필요한 작업으로 바로 이동하세요.</p>
           </div>
           {hasReadOnlyError ? (
             <p className="feedback feedback-warning" role="note">
@@ -449,7 +431,7 @@ const HomePage = ({
         </div>
       </section>
     </section>
-  );
-};
+  )
+}
 
-export { HomePage };
+export { HomePage }

@@ -1,43 +1,34 @@
-import { type ReactNode } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { type ReactNode } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-import { claimStatusClass, formatRate, formatWon } from "../../utils";
-import { claimStatusOptions, type PlatformData } from "../../state/usePlatformData";
+import { claimStatusClass, formatRate, formatWon } from '../../utils'
+import { claimStatusOptions, type PlatformData } from '../../state/usePlatformData'
 import {
   careLogFormSchema,
   careLogTypes,
   type CareLogFormValues,
-} from "../../features/care-log/schema";
-import {
-  settlementFormSchema,
-  type SettlementFormValues,
-} from "../../features/settlement/schema";
-import {
-  claimFormSchema,
-  type ClaimFormValues,
-} from "../../features/claim/schema";
+} from '../../features/care-log/schema'
+import { settlementFormSchema, type SettlementFormValues } from '../../features/settlement/schema'
+import { claimFormSchema, type ClaimFormValues } from '../../features/claim/schema'
 import {
   operationsModuleMeta,
   operationsModuleSequence,
   operationsModuleRoute,
   type RouteCompositionMeta,
-} from "../../routeConfig";
-import type {
-  OperationsRouteModule,
-  NonHomeRoutePath,
-} from "../../routeConfig";
-import type { ClaimStatus } from "../../types";
-import { RouteField } from "../common/RouteField";
+} from '../../routeConfig'
+import type { OperationsRouteModule, NonHomeRoutePath } from '../../routeConfig'
+import type { ClaimStatus } from '../../types'
+import { RouteField } from '../common/RouteField'
 
 type OperationsPageProps = {
-  modules: readonly OperationsRouteModule[];
-  compositionMeta: RouteCompositionMeta;
-  data: PlatformData;
-  onNavigate: (path: NonHomeRoutePath) => void;
-  activeRoutePath: NonHomeRoutePath;
-  isReadOnly: boolean;
-};
+  modules: readonly OperationsRouteModule[]
+  compositionMeta: RouteCompositionMeta
+  data: PlatformData
+  onNavigate: (path: NonHomeRoutePath) => void
+  activeRoutePath: NonHomeRoutePath
+  isReadOnly: boolean
+}
 
 const renderOverview = ({
   activeHouseholds,
@@ -50,44 +41,44 @@ const renderOverview = ({
   isReadOnly,
   nextRoutePath,
 }: {
-  activeHouseholds: number;
-  pendingClaims: number;
-  totalSettlement: number;
-  approvalRate: number;
-  claims: PlatformData["claims"];
-  totalClaimExpected: number;
-  onNavigate: (path: NonHomeRoutePath) => void;
-  isReadOnly: boolean;
-  nextRoutePath: NonHomeRoutePath | null;
+  activeHouseholds: number
+  pendingClaims: number
+  totalSettlement: number
+  approvalRate: number
+  claims: PlatformData['claims']
+  totalClaimExpected: number
+  onNavigate: (path: NonHomeRoutePath) => void
+  isReadOnly: boolean
+  nextRoutePath: NonHomeRoutePath | null
 }): ReactNode => {
   const pendingNotice =
     pendingClaims > 0
       ? `미처리 청구가 ${pendingClaims}건 있습니다. 먼저 상태를 점검하면 마감이 빨라집니다.`
-      : "미처리 청구가 없습니다. 먼저 돌봄 기록을 입력하면 정산과 청구가 바로 이어집니다.";
+      : '미처리 청구가 없습니다. 먼저 돌봄 기록을 입력하면 정산과 청구가 바로 이어집니다.'
 
   const nextActions = [
-      {
-        title: "돌봄 기록",
-        value: `${claims.length}건`,
-        path: "/operations/care" as const,
-        action: "새로 입력",
-        helper: "돌봄 내용이 있어야 정산과 청구 흐름이 정확해집니다.",
-      },
-      {
-        title: "확인할 청구",
-        value: `${pendingClaims}건`,
-        path: "/operations/claims" as const,
-        action: "상태 확인",
-        helper: "요청·검토·승인 흐름을 먼저 점검하세요.",
-      },
-      {
-        title: "예상 정산액",
-        value: formatWon(totalClaimExpected),
-        path: "/operations/settlement" as const,
-        action: "정산 계산",
-        helper: "시간·금액 기준 합계를 점검해 마감 속도를 높이세요.",
-      },
-    ];
+    {
+      title: '돌봄 기록',
+      value: `${claims.length}건`,
+      path: '/operations/care' as const,
+      action: '새로 입력',
+      helper: '돌봄 내용이 있어야 정산과 청구 흐름이 정확해집니다.',
+    },
+    {
+      title: '확인할 청구',
+      value: `${pendingClaims}건`,
+      path: '/operations/claims' as const,
+      action: '상태 확인',
+      helper: '요청·검토·승인 흐름을 먼저 점검하세요.',
+    },
+    {
+      title: '예상 정산액',
+      value: formatWon(totalClaimExpected),
+      path: '/operations/settlement' as const,
+      action: '정산 계산',
+      helper: '시간·금액 기준 합계를 점검해 마감 속도를 높이세요.',
+    },
+  ]
 
   return (
     <section className="panel panel-ops panel-overview">
@@ -128,18 +119,18 @@ const renderOverview = ({
             </div>
             <button
               type="button"
-              className={`route-tab route-tab-subtle ${index === 0 ? "operation-overview-action-primary" : ""}`}
+              className={`route-tab route-tab-subtle ${index === 0 ? 'operation-overview-action-primary' : ''}`}
               disabled={isReadOnly}
               title={
                 isReadOnly
-                  ? "조회 전용 모드에서는 이동만 가능합니다."
+                  ? '조회 전용 모드에서는 이동만 가능합니다.'
                   : `${item.action} 화면으로 이동`
               }
               onClick={() => {
                 if (isReadOnly) {
-                  return;
+                  return
                 }
-                onNavigate(item.path);
+                onNavigate(item.path)
               }}
             >
               {item.action}
@@ -165,24 +156,19 @@ const renderOverview = ({
         </button>
       ) : null}
     </section>
-  );
-};
+  )
+}
 
 type CareLogFormProps = {
-  module: "care";
-  data: PlatformData;
-  isSubmitting: boolean;
-  isReadOnly: boolean;
-};
+  module: 'care'
+  data: PlatformData
+  isSubmitting: boolean
+  isReadOnly: boolean
+}
 
-const CareLogForm = ({
-  module,
-  data,
-  isSubmitting,
-  isReadOnly,
-}: CareLogFormProps): ReactNode => {
-  const moduleMeta = operationsModuleMeta[module];
-  const isBusy = isReadOnly || isSubmitting;
+const CareLogForm = ({ module, data, isSubmitting, isReadOnly }: CareLogFormProps): ReactNode => {
+  const moduleMeta = operationsModuleMeta[module]
+  const isBusy = isReadOnly || isSubmitting
 
   const {
     register,
@@ -192,18 +178,18 @@ const CareLogForm = ({
   } = useForm<CareLogFormValues>({
     resolver: zodResolver(careLogFormSchema),
     defaultValues: data.defaultCareLogValues,
-    mode: "onChange",
-  });
+    mode: 'onChange',
+  })
 
-  const canSubmit = isValid;
+  const canSubmit = isValid
 
   const onValid = handleSubmit(async (values) => {
     if (isBusy) {
-      return;
+      return
     }
-    await data.submitCareLog(values);
-    reset(data.defaultCareLogValues);
-  });
+    await data.submitCareLog(values)
+    reset(data.defaultCareLogValues)
+  })
 
   return (
     <section key={module} className={`panel panel-ops ${moduleMeta.panelClass}`}>
@@ -224,7 +210,7 @@ const CareLogForm = ({
             placeholder="예: 김영희"
             required
             disabled={isBusy}
-            {...register("recipient")}
+            {...register('recipient')}
           />
         </RouteField>
 
@@ -235,12 +221,12 @@ const CareLogForm = ({
             placeholder="예: 박돌봄"
             required
             disabled={isBusy}
-            {...register("caregiver")}
+            {...register('caregiver')}
           />
         </RouteField>
 
         <RouteField id={`care-type-${module}`} label="돌봄 종류">
-          <select id={`care-type-${module}`} disabled={isBusy} {...register("type")}>
+          <select id={`care-type-${module}`} disabled={isBusy} {...register('type')}>
             {careLogTypes.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -250,12 +236,7 @@ const CareLogForm = ({
         </RouteField>
 
         <RouteField id={`care-date-${module}`} label="돌봄 날짜">
-          <input
-            id={`care-date-${module}`}
-            type="date"
-            disabled={isBusy}
-            {...register("date")}
-          />
+          <input id={`care-date-${module}`} type="date" disabled={isBusy} {...register('date')} />
         </RouteField>
 
         <RouteField id={`care-note-${module}`} label="돌봄 내용">
@@ -265,16 +246,12 @@ const CareLogForm = ({
             required
             rows={3}
             disabled={isBusy}
-            {...register("note")}
+            {...register('note')}
           />
         </RouteField>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isBusy || !canSubmit}
-        >
-          {isSubmitting ? "저장 중..." : "기록 저장"}
+        <button type="submit" className="btn btn-primary" disabled={isBusy || !canSubmit}>
+          {isSubmitting ? '저장 중...' : '기록 저장'}
         </button>
       </form>
 
@@ -300,20 +277,18 @@ const CareLogForm = ({
           ))}
         </ul>
       ) : (
-        <p className="empty">
-          아직 돌봄 기록이 없습니다. 오늘은 기록부터 시작해 주세요.
-        </p>
+        <p className="empty">아직 돌봄 기록이 없습니다. 오늘은 기록부터 시작해 주세요.</p>
       )}
     </section>
-  );
-};
+  )
+}
 
 type SettlementFormProps = {
-  module: "settlement";
-  data: PlatformData;
-  isSubmitting: boolean;
-  isReadOnly: boolean;
-};
+  module: 'settlement'
+  data: PlatformData
+  isSubmitting: boolean
+  isReadOnly: boolean
+}
 
 const SettlementForm = ({
   module,
@@ -321,8 +296,8 @@ const SettlementForm = ({
   isSubmitting,
   isReadOnly,
 }: SettlementFormProps): ReactNode => {
-  const moduleMeta = operationsModuleMeta[module];
-  const isBusy = isReadOnly || isSubmitting;
+  const moduleMeta = operationsModuleMeta[module]
+  const isBusy = isReadOnly || isSubmitting
 
   const {
     register,
@@ -331,24 +306,21 @@ const SettlementForm = ({
   } = useForm<SettlementFormValues>({
     resolver: zodResolver(settlementFormSchema),
     defaultValues: data.defaultSettlementValues,
-    mode: "onChange",
-  });
+    mode: 'onChange',
+  })
 
-  const canSubmit = isValid;
+  const canSubmit = isValid
 
   const onValid = handleSubmit(async (values) => {
     if (isBusy) {
-      return;
+      return
     }
     // 정산 폼은 제출 후에도 입력값을 유지한다(기존 동작과 동일하게 reset 없음).
-    await data.submitSettlement(values);
-  });
+    await data.submitSettlement(values)
+  })
 
   return (
-    <section
-      key={module}
-      className={`panel panel-ops ${moduleMeta.panelClass}`}
-    >
+    <section key={module} className={`panel panel-ops ${moduleMeta.panelClass}`}>
       <div className="panel-head">
         <span className="panel-chip">{moduleMeta.panelChip}</span>
         <h2>{moduleMeta.panelTitle}</h2>
@@ -366,7 +338,7 @@ const SettlementForm = ({
             placeholder="예: 김영희"
             required
             disabled={isBusy}
-            {...register("recipient")}
+            {...register('recipient')}
           />
         </RouteField>
 
@@ -375,7 +347,7 @@ const SettlementForm = ({
             id={`settlement-date-${module}`}
             type="date"
             disabled={isBusy}
-            {...register("date")}
+            {...register('date')}
           />
         </RouteField>
 
@@ -385,7 +357,7 @@ const SettlementForm = ({
             type="number"
             min={1}
             disabled={isBusy}
-            {...register("careHours", { valueAsNumber: true })}
+            {...register('careHours', { valueAsNumber: true })}
           />
         </RouteField>
 
@@ -395,7 +367,7 @@ const SettlementForm = ({
             type="number"
             min={1}
             disabled={isBusy}
-            {...register("baseRate", { valueAsNumber: true })}
+            {...register('baseRate', { valueAsNumber: true })}
           />
         </RouteField>
 
@@ -404,16 +376,12 @@ const SettlementForm = ({
             id={`settlement-note-${module}`}
             placeholder="예: 야간 돌봄 포함"
             disabled={isBusy}
-            {...register("note")}
+            {...register('note')}
           />
         </RouteField>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isBusy || !canSubmit}
-        >
-          {isSubmitting ? "저장 중..." : "정산 저장"}
+        <button type="submit" className="btn btn-primary" disabled={isBusy || !canSubmit}>
+          {isSubmitting ? '저장 중...' : '정산 저장'}
         </button>
       </form>
 
@@ -432,10 +400,8 @@ const SettlementForm = ({
                 <span>{settlement.date}</span>
               </div>
               <p>
-                {settlement.careHours}h × {formatWon(settlement.baseRate)} ={" "}
-                <strong
-                  aria-label={`정산 합계 ${formatWon(settlement.totalAmount)}`}
-                >
+                {settlement.careHours}h × {formatWon(settlement.baseRate)} ={' '}
+                <strong aria-label={`정산 합계 ${formatWon(settlement.totalAmount)}`}>
                   {formatWon(settlement.totalAmount)}
                 </strong>
               </p>
@@ -444,29 +410,22 @@ const SettlementForm = ({
           ))}
         </ul>
       ) : (
-        <p className="empty">
-          아직 정산 내역이 없습니다. 돌봄 기록을 입력하면 정산값이 쌓입니다.
-        </p>
+        <p className="empty">아직 정산 내역이 없습니다. 돌봄 기록을 입력하면 정산값이 쌓입니다.</p>
       )}
     </section>
-  );
-};
+  )
+}
 
 type ClaimsFormProps = {
-  module: "claims";
-  data: PlatformData;
-  isSubmitting: boolean;
-  isReadOnly: boolean;
-};
+  module: 'claims'
+  data: PlatformData
+  isSubmitting: boolean
+  isReadOnly: boolean
+}
 
-const ClaimsForm = ({
-  module,
-  data,
-  isSubmitting,
-  isReadOnly,
-}: ClaimsFormProps): ReactNode => {
-  const moduleMeta = operationsModuleMeta[module];
-  const isBusy = isReadOnly || isSubmitting;
+const ClaimsForm = ({ module, data, isSubmitting, isReadOnly }: ClaimsFormProps): ReactNode => {
+  const moduleMeta = operationsModuleMeta[module]
+  const isBusy = isReadOnly || isSubmitting
 
   const {
     register,
@@ -477,24 +436,21 @@ const ClaimsForm = ({
     resolver: zodResolver(claimFormSchema),
     // claimType은 UI에 노출하지 않지만 API 검증을 위해 기본값으로 유지한다.
     defaultValues: data.defaultClaimValues,
-    mode: "onChange",
-  });
+    mode: 'onChange',
+  })
 
-  const canSubmit = isValid;
+  const canSubmit = isValid
 
   const onValid = handleSubmit(async (values) => {
     if (isBusy) {
-      return;
+      return
     }
-    await data.submitClaim(values);
-    reset(data.defaultClaimValues);
-  });
+    await data.submitClaim(values)
+    reset(data.defaultClaimValues)
+  })
 
   return (
-    <section
-      key={module}
-      className={`panel panel-ops ${moduleMeta.panelClass}`}
-    >
+    <section key={module} className={`panel panel-ops ${moduleMeta.panelClass}`}>
       <div className="panel-head">
         <span className="panel-chip">{moduleMeta.panelChip}</span>
         <h2>{moduleMeta.panelTitle}</h2>
@@ -512,7 +468,7 @@ const ClaimsForm = ({
             placeholder="예: 김영희"
             required
             disabled={isBusy}
-            {...register("recipient")}
+            {...register('recipient')}
           />
         </RouteField>
 
@@ -523,7 +479,7 @@ const ClaimsForm = ({
             placeholder="예: 희망요양병원"
             required
             disabled={isBusy}
-            {...register("hospitalName")}
+            {...register('hospitalName')}
           />
         </RouteField>
 
@@ -534,7 +490,7 @@ const ClaimsForm = ({
             min={1}
             required
             disabled={isBusy}
-            {...register("expectedAmount", { valueAsNumber: true })}
+            {...register('expectedAmount', { valueAsNumber: true })}
           />
         </RouteField>
 
@@ -543,12 +499,12 @@ const ClaimsForm = ({
             id={`claim-date-${module}`}
             type="date"
             disabled={isBusy}
-            {...register("issueDate")}
+            {...register('issueDate')}
           />
         </RouteField>
 
         <RouteField id={`claim-status-${module}`} label="현재 상태">
-          <select id={`claim-status-${module}`} disabled={isBusy} {...register("status")}>
+          <select id={`claim-status-${module}`} disabled={isBusy} {...register('status')}>
             {claimStatusOptions.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -563,16 +519,12 @@ const ClaimsForm = ({
             type="text"
             placeholder="예: 영수증 확인 필요"
             disabled={isBusy}
-            {...register("note")}
+            {...register('note')}
           />
         </RouteField>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isBusy || !canSubmit}
-        >
-          {isSubmitting ? "저장 중..." : "청구 저장"}
+        <button type="submit" className="btn btn-primary" disabled={isBusy || !canSubmit}>
+          {isSubmitting ? '저장 중...' : '청구 저장'}
         </button>
       </form>
 
@@ -590,9 +542,7 @@ const ClaimsForm = ({
                 <div>
                   <strong>{claim.recipient}</strong> · {claim.hospitalName}
                 </div>
-                <span
-                  className={`status-pill ${claimStatusClass(claim.status)}`}
-                >
+                <span className={`status-pill ${claimStatusClass(claim.status)}`}>
                   {claim.status}
                 </span>
               </div>
@@ -608,14 +558,9 @@ const ClaimsForm = ({
                   value={claim.status}
                   className={`status-select ${claimStatusClass(claim.status)}`}
                   onChange={(event) =>
-                    void data.updateClaimStatus(
-                      claim.id,
-                      event.target.value as ClaimStatus,
-                    )
+                    void data.updateClaimStatus(claim.id, event.target.value as ClaimStatus)
                   }
-                  disabled={
-                    isReadOnly || data.updatingClaimId === claim.id
-                  }
+                  disabled={isReadOnly || data.updatingClaimId === claim.id}
                   aria-label={`${claim.recipient} 청구 상태 변경`}
                 >
                   {claimStatusOptions.map((status) => (
@@ -634,8 +579,8 @@ const ClaimsForm = ({
         </p>
       )}
     </section>
-  );
-};
+  )
+}
 
 const renderSectionGuide = ({
   approvalRate,
@@ -643,10 +588,10 @@ const renderSectionGuide = ({
   nextRoutePath,
   onNavigate,
 }: {
-  approvalRate: number;
-  nextAction: string;
-  nextRoutePath: NonHomeRoutePath | null;
-  onNavigate: (path: NonHomeRoutePath) => void;
+  approvalRate: number
+  nextAction: string
+  nextRoutePath: NonHomeRoutePath | null
+  onNavigate: (path: NonHomeRoutePath) => void
 }): ReactNode => (
   <section className="panel panel-summary">
     <div className="panel-head">
@@ -657,9 +602,7 @@ const renderSectionGuide = ({
       <article className="kpi-ribbon">
         <p>추천</p>
         <strong>{nextAction}</strong>
-        <span className="small-note">
-          이 순서를 따라가면 승인 보류·누락을 줄일 수 있습니다.
-        </span>
+        <span className="small-note">이 순서를 따라가면 승인 보류·누락을 줄일 수 있습니다.</span>
       </article>
       <article className="kpi-ribbon">
         <p>현재</p>
@@ -681,86 +624,86 @@ const renderSectionGuide = ({
       ) : null}
     </div>
   </section>
-);
+)
 
 const getOperationsNextRoutePath = (
   modules: readonly OperationsRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): NonHomeRoutePath | null => {
-  if (activeRoutePath === "/operations") {
-    return "/operations/care";
+  if (activeRoutePath === '/operations') {
+    return '/operations/care'
   }
 
-  const ordered = modules.length > 0 ? modules : operationsModuleSequence;
-  const activeModule = getOperationsActiveModule(ordered, activeRoutePath);
-  const activeIndex = ordered.indexOf(activeModule);
-  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+  const ordered = modules.length > 0 ? modules : operationsModuleSequence
+  const activeModule = getOperationsActiveModule(ordered, activeRoutePath)
+  const activeIndex = ordered.indexOf(activeModule)
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined
 
   if (!next) {
-    return null;
+    return null
   }
 
-  return operationsModuleRoute[next];
-};
+  return operationsModuleRoute[next]
+}
 
 const getOperationsActiveModule = (
   modules: readonly OperationsRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): OperationsRouteModule => {
-  if (activeRoutePath === "/operations") {
-    return "overview";
+  if (activeRoutePath === '/operations') {
+    return 'overview'
   }
 
   return (
     modules.find((moduleName) => operationsModuleRoute[moduleName] === activeRoutePath) ??
-    "overview"
-  );
-};
+    'overview'
+  )
+}
 
 const getOperationsFocusModules = (
   modules: readonly OperationsRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): OperationsRouteModule[] => {
-  const ordered = modules.length > 0 ? modules : operationsModuleSequence;
+  const ordered = modules.length > 0 ? modules : operationsModuleSequence
 
-  if (activeRoutePath === "/operations") {
-    return ordered.includes("care") ? ["overview", "care"] : ["overview"];
+  if (activeRoutePath === '/operations') {
+    return ordered.includes('care') ? ['overview', 'care'] : ['overview']
   }
 
-  const activeModule = getOperationsActiveModule(ordered, activeRoutePath);
-  const activeIndex = ordered.indexOf(activeModule);
+  const activeModule = getOperationsActiveModule(ordered, activeRoutePath)
+  const activeIndex = ordered.indexOf(activeModule)
 
   if (activeIndex < 0) {
-    return ["overview", "care", "settlement"];
+    return ['overview', 'care', 'settlement']
   }
 
-  const previous = ordered[activeIndex - 1];
-  const next = ordered[activeIndex + 1];
+  const previous = ordered[activeIndex - 1]
+  const next = ordered[activeIndex + 1]
 
   return Array.from(
     new Set([previous, activeModule, next].filter(Boolean) as OperationsRouteModule[]),
-  );
-};
+  )
+}
 
 const getOperationsNextAction = (
   modules: readonly OperationsRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): string => {
-  if (activeRoutePath === "/operations") {
-    return "돌봄 기록 입력";
+  if (activeRoutePath === '/operations') {
+    return '돌봄 기록 입력'
   }
 
-  const ordered = modules.length > 0 ? modules : operationsModuleSequence;
-  const activeModule = getOperationsActiveModule(ordered, activeRoutePath);
-  const activeIndex = ordered.indexOf(activeModule);
-  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+  const ordered = modules.length > 0 ? modules : operationsModuleSequence
+  const activeModule = getOperationsActiveModule(ordered, activeRoutePath)
+  const activeIndex = ordered.indexOf(activeModule)
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined
 
   if (!next) {
-    return "목록에서 미처리 항목을 점검";
+    return '목록에서 미처리 항목을 점검'
   }
 
-  return `${operationsModuleMeta[next].title}로 이동`;
-};
+  return `${operationsModuleMeta[next].title}로 이동`
+}
 
 const OperationsPage = ({
   modules,
@@ -807,17 +750,15 @@ const OperationsPage = ({
         isReadOnly={isReadOnly}
       />
     ),
-  };
+  }
 
-  const visibleModules = getOperationsFocusModules(modules, activeRoutePath);
-  const nextAction = getOperationsNextAction(modules, activeRoutePath);
-  const nextRoutePath = getOperationsNextRoutePath(modules, activeRoutePath);
+  const visibleModules = getOperationsFocusModules(modules, activeRoutePath)
+  const nextAction = getOperationsNextAction(modules, activeRoutePath)
+  const nextRoutePath = getOperationsNextRoutePath(modules, activeRoutePath)
 
   return (
     <section className="view-stack">
-      <section
-        className={`panel panel-overview ${compositionMeta.compositionPanelClass}`}
-      >
+      <section className={`panel panel-overview ${compositionMeta.compositionPanelClass}`}>
         <div className="panel-head">
           <div className="panel-title-wrap">
             <span className="panel-chip">{compositionMeta.compositionChip}</span>
@@ -826,25 +767,21 @@ const OperationsPage = ({
           <p className="subtle">{compositionMeta.compositionDescription}</p>
         </div>
 
-        <div
-          className="module-composition"
-          role="list"
-          aria-label="현재 페이지 구성요소"
-        >
+        <div className="module-composition" role="list" aria-label="현재 페이지 구성요소">
           {modules.map((moduleName) => {
-            const config = operationsModuleMeta[moduleName];
-            const path = operationsModuleRoute[moduleName];
-            const isActiveModule = path === activeRoutePath;
-            const index = modules.indexOf(moduleName) + 1;
+            const config = operationsModuleMeta[moduleName]
+            const path = operationsModuleRoute[moduleName]
+            const isActiveModule = path === activeRoutePath
+            const index = modules.indexOf(moduleName) + 1
             return (
               <button
                 type="button"
                 role="listitem"
                 key={moduleName}
-                className={`module-composition-item ${isActiveModule ? "module-composition-item-current" : ""}`}
+                className={`module-composition-item ${isActiveModule ? 'module-composition-item-current' : ''}`}
                 onClick={() => onNavigate(path)}
-                aria-label={`${config.title}로 ${isActiveModule ? "현재 보기" : "이동"}`}
-                aria-current={isActiveModule ? "page" : undefined}
+                aria-label={`${config.title}로 ${isActiveModule ? '현재 보기' : '이동'}`}
+                aria-current={isActiveModule ? 'page' : undefined}
                 title={config.note}
               >
                 <p className="small-note" aria-hidden="true">
@@ -853,21 +790,21 @@ const OperationsPage = ({
                 <strong>{config.title}</strong>
                 <p>{config.note}</p>
               </button>
-            );
+            )
           })}
         </div>
       </section>
 
       {modules.map((moduleName) => {
         if (!visibleModules.includes(moduleName)) {
-          return null;
+          return null
         }
 
         return (
           <div className="panel-stack-item" key={moduleName}>
             {moduleRenderers[moduleName]()}
           </div>
-        );
+        )
       })}
 
       {renderSectionGuide({
@@ -877,7 +814,7 @@ const OperationsPage = ({
         onNavigate,
       })}
     </section>
-  );
-};
+  )
+}
 
-export { OperationsPage };
+export { OperationsPage }

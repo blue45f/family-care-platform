@@ -12,14 +12,14 @@ services:
       dockerfile: Dockerfile.api
     environment:
       NODE_ENV: production
-      PORT: "3001"
+      PORT: '3001'
       # 컨테이너 내부 JSON 스토어 경로. 아래 named volume이 여기에 마운트된다.
       FCP_DATA_DIR: /data
       # 브라우저(웹 컨테이너가 서빙)는 호스트의 localhost:4173에서 로드되므로
       # 그 origin을 허용해야 한다.
       CORS_ALLOWED_ORIGINS: http://localhost:4173,http://127.0.0.1:4173
     ports:
-      - "3001:3001"
+      - '3001:3001'
     volumes:
       - api-data:/data
     restart: unless-stopped
@@ -34,9 +34,9 @@ services:
     environment:
       NODE_ENV: production
       HOST: 0.0.0.0
-      PORT: "4173"
+      PORT: '4173'
     ports:
-      - "4173:4173"
+      - '4173:4173'
     depends_on:
       - api
     restart: unless-stopped

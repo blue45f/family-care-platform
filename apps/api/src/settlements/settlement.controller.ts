@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common'
 
-import { localYmd } from '../common/date.util';
-import type { Settlement, SettlementInput } from './settlement.model';
-import { SettlementService } from './settlement.service';
+import { localYmd } from '../common/date.util'
+import type { Settlement, SettlementInput } from './settlement.model'
+import { SettlementService } from './settlement.service'
 
 @Controller('settlements')
 export class SettlementController {
@@ -10,7 +10,7 @@ export class SettlementController {
 
   @Get()
   getSettlements(): Settlement[] {
-    return this.settlementService.findAll();
+    return this.settlementService.findAll()
   }
 
   @Post()
@@ -19,6 +19,6 @@ export class SettlementController {
     return this.settlementService.create({
       ...input,
       date: input.date ?? localYmd(),
-    });
+    })
   }
 }

@@ -1,6 +1,6 @@
-import { type ReactNode, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { type ReactNode, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
   adminModuleMeta,
@@ -9,7 +9,7 @@ import {
   type AdminRouteModule,
   type NonHomeRoutePath,
   type RouteCompositionMeta,
-} from "../../routeConfig";
+} from '../../routeConfig'
 import {
   formatRate,
   formatSignedRate,
@@ -18,49 +18,38 @@ import {
   formatWon,
   formatMonthLabel,
   trendDirectionLabel,
-} from "../../utils";
-import { type PlatformData } from "../../state/usePlatformData";
+} from '../../utils'
+import { type PlatformData } from '../../state/usePlatformData'
 import {
   revenuePlanFormSchema,
   type RevenuePlanFormValues,
-} from "../../features/revenue-plan/schema";
-import type { RevenuePlan } from "../../types";
+} from '../../features/revenue-plan/schema'
+import type { RevenuePlan } from '../../types'
 
 type AdminPageProps = {
-  modules: readonly AdminRouteModule[];
-  compositionMeta: RouteCompositionMeta;
-  data: PlatformData;
-  onNavigate: (path: NonHomeRoutePath) => void;
-  activeRoutePath: NonHomeRoutePath;
-  isReadOnly: boolean;
-};
+  modules: readonly AdminRouteModule[]
+  compositionMeta: RouteCompositionMeta
+  data: PlatformData
+  onNavigate: (path: NonHomeRoutePath) => void
+  activeRoutePath: NonHomeRoutePath
+  isReadOnly: boolean
+}
 
 const renderKpiTable = ({
   adminOverview,
   data,
 }: {
-  adminOverview: PlatformData["adminOverview"];
-  data: PlatformData;
+  adminOverview: PlatformData['adminOverview']
+  data: PlatformData
 }): ReactNode => {
-  const approvedClaims = data.claims.filter(
-    (item) => item.status === "승인",
-  ).length;
-  const approvalRate =
-    data.claims.length > 0 ? (approvedClaims / data.claims.length) * 100 : 0;
+  const approvedClaims = data.claims.filter((item) => item.status === '승인').length
+  const approvalRate = data.claims.length > 0 ? (approvedClaims / data.claims.length) * 100 : 0
 
-  const totalHouseholds =
-    adminOverview.activeHouseholds || data.activeHouseholds;
-  const totalSettlement =
-    adminOverview.thisMonthSettlement || data.totalSettlement;
-  const claimRate = adminOverview.totalClaims
-    ? adminOverview.conversionRate
-    : approvalRate;
-  const claimCount = adminOverview.totalClaims
-    ? adminOverview.totalClaims
-    : data.claims.length;
-  const approvedCount = adminOverview.totalClaims
-    ? adminOverview.approvedClaims
-    : approvedClaims;
+  const totalHouseholds = adminOverview.activeHouseholds || data.activeHouseholds
+  const totalSettlement = adminOverview.thisMonthSettlement || data.totalSettlement
+  const claimRate = adminOverview.totalClaims ? adminOverview.conversionRate : approvalRate
+  const claimCount = adminOverview.totalClaims ? adminOverview.totalClaims : data.claims.length
+  const approvedCount = adminOverview.totalClaims ? adminOverview.approvedClaims : approvedClaims
 
   return (
     <section className="panel panel-admin panel-overview">
@@ -86,14 +75,14 @@ const renderKpiTable = ({
         <article className="kpi-ribbon">
           <p>보험청구 승인률</p>
           <strong>{formatRate(claimRate)}</strong>
-          <span className="small-note">{approvedCount}/{claimCount}건</span>
+          <span className="small-note">
+            {approvedCount}/{claimCount}건
+          </span>
         </article>
         <article className="kpi-ribbon">
           <p>월 관리 금액</p>
           <strong>
-            {formatWon(
-              adminOverview.monthlyRecurringRevenue || data.kpiMonthlyRevenue,
-            )}
+            {formatWon(adminOverview.monthlyRecurringRevenue || data.kpiMonthlyRevenue)}
           </strong>
           <span className="small-note">요금제 기반 수익 기준</span>
         </article>
@@ -128,12 +117,10 @@ const renderKpiTable = ({
               <th scope="row">요금제 이용률</th>
               <td>
                 <strong>
-                  {formatRate(
-                    adminOverview.planTakeRate || data.scenarioRevenue.conversionRate,
-                  )}
+                  {formatRate(adminOverview.planTakeRate || data.scenarioRevenue.conversionRate)}
                 </strong>
               </td>
-            <td>요금제 이용 비율</td>
+              <td>요금제 이용 비율</td>
             </tr>
             <tr>
               <th scope="row">예상 연 금액</th>
@@ -146,17 +133,17 @@ const renderKpiTable = ({
         </table>
       </div>
     </section>
-  );
-};
+  )
+}
 
 const renderTrends = ({
   monthlyTrendWithDelta,
   isUsingServerTrend,
   trendSourceMeta,
 }: {
-  monthlyTrendWithDelta: PlatformData["monthlyTrendWithDelta"];
-  isUsingServerTrend: boolean;
-  trendSourceMeta: PlatformData["trendSourceMeta"];
+  monthlyTrendWithDelta: PlatformData['monthlyTrendWithDelta']
+  isUsingServerTrend: boolean
+  trendSourceMeta: PlatformData['trendSourceMeta']
 }): ReactNode => (
   <section className="panel panel-admin panel-trend">
     <div className="panel-head">
@@ -185,9 +172,7 @@ const renderTrends = ({
         monthlyTrendWithDelta.map((entry) => (
           <article key={entry.month} className="trend-card">
             <p>{formatMonthLabel(entry.month)}</p>
-            <strong
-              aria-label={`월별 정산 합계 ${formatWon(entry.settlementTotal)}`}
-            >
+            <strong aria-label={`월별 정산 합계 ${formatWon(entry.settlementTotal)}`}>
               {formatWon(entry.settlementTotal)}
             </strong>
 
@@ -196,12 +181,13 @@ const renderTrends = ({
               aria-label={`전월 대비 정산액 증감 ${
                 entry.hasPreviousMonth
                   ? `${trendDirectionLabel(entry.settlementDeltaDirection)} ${formatSignedWon(entry.settlementDelta)} ${formatSignedRate(entry.settlementDeltaRate)}`
-                  : "전월 비교 데이터 없음"
+                  : '전월 비교 데이터 없음'
               }`}
             >
-              정산액 {entry.hasPreviousMonth
+              정산액{' '}
+              {entry.hasPreviousMonth
                 ? `${formatSignedWon(entry.settlementDelta)} (${formatSignedRate(entry.settlementDeltaRate)})`
-                : "비교 데이터 없음"}
+                : '비교 데이터 없음'}
             </p>
 
             <p
@@ -209,26 +195,28 @@ const renderTrends = ({
               aria-label={`전월 대비 청구건수 증감 ${
                 entry.hasPreviousMonth
                   ? `${trendDirectionLabel(entry.claimCountDeltaDirection)} ${formatSignedRatePoint(entry.claimCountDelta)} ${formatSignedRate(entry.claimCountDeltaRate)}`
-                  : "전월 비교 데이터 없음"
+                  : '전월 비교 데이터 없음'
               }`}
             >
-              청구 건수 {entry.hasPreviousMonth
+              청구 건수{' '}
+              {entry.hasPreviousMonth
                 ? `${entry.claimCountDelta} (${formatSignedRate(entry.claimCountDeltaRate)})`
-                : "비교 데이터 없음"}
+                : '비교 데이터 없음'}
             </p>
             <p
               className={`trend-delta trend-delta-${entry.approvalRateDeltaDirection}`}
               aria-label={`전월 대비 승인률 증감 ${
                 entry.hasPreviousMonth
                   ? `${trendDirectionLabel(entry.approvalRateDeltaDirection)} ${formatSignedRatePoint(entry.approvalRateDelta)} ${formatSignedRate(entry.approvalRateDeltaRate)}`
-                  : "전월 비교 데이터 없음"
+                  : '전월 비교 데이터 없음'
               }`}
             >
-              승인률 {entry.hasPreviousMonth
+              승인률{' '}
+              {entry.hasPreviousMonth
                 ? `${formatSignedRatePoint(entry.approvalRateDelta)} (${formatSignedRate(entry.approvalRateDeltaRate)})`
-                : "비교 데이터 없음"}
+                : '비교 데이터 없음'}
             </p>
-          <p className="small-note">
+            <p className="small-note">
               현재 값: 청구 {entry.claimCount}건, 승인 {entry.approvedClaimCount}건
             </p>
           </article>
@@ -240,21 +228,16 @@ const renderTrends = ({
       )}
     </div>
   </section>
-);
+)
 
 type PlanCardProps = {
-  plan: RevenuePlan;
-  submitPlan: PlatformData["submitPlan"];
-  isSaving: boolean;
-  isReadOnly: boolean;
-};
+  plan: RevenuePlan
+  submitPlan: PlatformData['submitPlan']
+  isSaving: boolean
+  isReadOnly: boolean
+}
 
-const PlanCard = ({
-  plan,
-  submitPlan,
-  isSaving,
-  isReadOnly,
-}: PlanCardProps): ReactNode => {
+const PlanCard = ({ plan, submitPlan, isSaving, isReadOnly }: PlanCardProps): ReactNode => {
   const {
     register,
     handleSubmit,
@@ -264,36 +247,33 @@ const PlanCard = ({
   } = useForm<RevenuePlanFormValues>({
     resolver: zodResolver(revenuePlanFormSchema),
     defaultValues: plan,
-    mode: "onChange",
-  });
+    mode: 'onChange',
+  })
 
   // 서버 상태(plan)가 바뀌면(저장 성공·재로딩) 카드 입력을 최신 값으로 동기화한다.
   // 기존 planDrafts 재구성과 동일하게, 진행 중인 사용자 편집은 갱신 시점에 덮어쓴다.
   useEffect(() => {
-    reset(plan);
-  }, [plan, reset]);
+    reset(plan)
+  }, [plan, reset])
 
-  const isBusy = isReadOnly || isSaving;
-  const name = watch("name");
-  const monthlyPrice = watch("monthlyPrice");
-  const annualDiscountRate = watch("annualDiscountRate");
-  const activeClients = watch("activeClients");
+  const isBusy = isReadOnly || isSaving
+  const name = watch('name')
+  const monthlyPrice = watch('monthlyPrice')
+  const annualDiscountRate = watch('annualDiscountRate')
+  const activeClients = watch('activeClients')
 
-  const safeMonthly = Number.isFinite(monthlyPrice) ? monthlyPrice : 0;
-  const safeClients = Number.isFinite(activeClients) ? activeClients : 0;
-  const safeDiscount = Number.isFinite(annualDiscountRate)
-    ? annualDiscountRate
-    : 0;
-  const planContribution = safeMonthly * safeClients;
-  const annualContribution =
-    safeMonthly * 12 * (1 - safeDiscount) * safeClients;
+  const safeMonthly = Number.isFinite(monthlyPrice) ? monthlyPrice : 0
+  const safeClients = Number.isFinite(activeClients) ? activeClients : 0
+  const safeDiscount = Number.isFinite(annualDiscountRate) ? annualDiscountRate : 0
+  const planContribution = safeMonthly * safeClients
+  const annualContribution = safeMonthly * 12 * (1 - safeDiscount) * safeClients
 
   const onValid = handleSubmit(async (values) => {
     if (isBusy) {
-      return;
+      return
     }
-    await submitPlan(values);
-  });
+    await submitPlan(values)
+  })
 
   return (
     <article className="plan-card">
@@ -303,7 +283,7 @@ const PlanCard = ({
             className="plan-title"
             aria-label={`${plan.id} 요금제명 입력`}
             disabled={isBusy}
-            {...register("name")}
+            {...register('name')}
           />
           <span className="tag">이용 가구 {safeClients}개</span>
         </div>
@@ -314,7 +294,7 @@ const PlanCard = ({
             type="number"
             min={0}
             disabled={isBusy}
-            {...register("monthlyPrice", { valueAsNumber: true })}
+            {...register('monthlyPrice', { valueAsNumber: true })}
           />
         </label>
         <label>
@@ -325,7 +305,7 @@ const PlanCard = ({
             max={0.99}
             step={0.01}
             disabled={isBusy}
-            {...register("annualDiscountRate", { valueAsNumber: true })}
+            {...register('annualDiscountRate', { valueAsNumber: true })}
           />
         </label>
         <label>
@@ -334,19 +314,15 @@ const PlanCard = ({
             type="number"
             min={0}
             disabled={isBusy}
-            {...register("activeClients", { valueAsNumber: true })}
+            {...register('activeClients', { valueAsNumber: true })}
           />
         </label>
         <label>
           메모
-          <input
-            aria-label={`${name} 메모 입력`}
-            disabled={isBusy}
-            {...register("description")}
-          />
+          <input aria-label={`${name} 메모 입력`} disabled={isBusy} {...register('description')} />
         </label>
 
-        <div className="plan-feature">{plan.featureFlags.join(" · ")}</div>
+        <div className="plan-feature">{plan.featureFlags.join(' · ')}</div>
         <p className="small-note" role="note">
           요금/할인율/이용 가구 수가 함께 월 수익에 반영됩니다.
         </p>
@@ -359,18 +335,14 @@ const PlanCard = ({
               월 {formatWon(planContribution)} · 연 {formatWon(Math.round(annualContribution))}
             </span>
           </p>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={isBusy || !isValid}
-          >
-            {isSaving ? "저장 중..." : "요금 반영"}
+          <button type="submit" className="btn btn-primary" disabled={isBusy || !isValid}>
+            {isSaving ? '저장 중...' : '요금 반영'}
           </button>
         </div>
       </form>
     </article>
-  );
-};
+  )
+}
 
 const renderPlans = ({
   plans,
@@ -378,10 +350,10 @@ const renderPlans = ({
   savingPlanId,
   isReadOnly,
 }: {
-  plans: PlatformData["plans"];
-  submitPlan: PlatformData["submitPlan"];
-  savingPlanId: string | null;
-  isReadOnly: boolean;
+  plans: PlatformData['plans']
+  submitPlan: PlatformData['submitPlan']
+  savingPlanId: string | null
+  isReadOnly: boolean
 }): ReactNode => (
   <section className="panel panel-admin panel-plans">
     <div className="panel-head">
@@ -402,7 +374,7 @@ const renderPlans = ({
       ))}
     </div>
   </section>
-);
+)
 
 const renderSimulator = ({
   scenarioRevenue,
@@ -413,13 +385,13 @@ const renderSimulator = ({
   growthRecommendations,
   isReadOnly,
 }: {
-  scenarioRevenue: PlatformData["scenarioRevenue"];
-  onPriceLiftInput: PlatformData["onPriceLiftInput"];
-  onUpgradePushInput: PlatformData["onUpgradePushInput"];
-  priceLiftPercent: number;
-  upgradePushPercent: number;
-  growthRecommendations: string[];
-  isReadOnly: boolean;
+  scenarioRevenue: PlatformData['scenarioRevenue']
+  onPriceLiftInput: PlatformData['onPriceLiftInput']
+  onUpgradePushInput: PlatformData['onUpgradePushInput']
+  priceLiftPercent: number
+  upgradePushPercent: number
+  growthRecommendations: string[]
+  isReadOnly: boolean
 }): ReactNode => (
   <section className="panel panel-admin panel-simulator">
     <div className="panel-head">
@@ -428,9 +400,9 @@ const renderSimulator = ({
       <p className="subtle">{adminModuleMeta.simulator.panelDescription}</p>
     </div>
 
-      <div className="sim-grid">
-        <label className="control-card">
-          요금 변화
+    <div className="sim-grid">
+      <label className="control-card">
+        요금 변화
         <input
           type="range"
           min={0}
@@ -460,23 +432,18 @@ const renderSimulator = ({
     <div className="outcome-grid">
       <article>
         <p>예상 월 금액</p>
-        <strong
-          aria-label={`예상 월 금액 ${formatWon(scenarioRevenue.scenarioMRR)}`}
-        >
+        <strong aria-label={`예상 월 금액 ${formatWon(scenarioRevenue.scenarioMRR)}`}>
           {formatWon(scenarioRevenue.scenarioMRR)}
         </strong>
         <span className="small-note">
-          현재 월 금액 대비 {scenarioRevenue.upliftFromCurrent >= 0 ? "+" : ""}
+          현재 월 금액 대비 {scenarioRevenue.upliftFromCurrent >= 0 ? '+' : ''}
           {formatWon(scenarioRevenue.upliftFromCurrent)}
         </span>
       </article>
       <article>
         <p>목표 진행률</p>
         <div className="goal-bar" aria-hidden="true">
-          <div
-            className="goal-fill"
-            style={{ width: `${scenarioRevenue.goalRate}%` }}
-          />
+          <div className="goal-fill" style={{ width: `${scenarioRevenue.goalRate}%` }} />
         </div>
         <strong aria-label={`목표 진행률 ${scenarioRevenue.goalRate}%`}>
           {scenarioRevenue.goalRate}%
@@ -491,9 +458,7 @@ const renderSimulator = ({
       </article>
       <article>
         <p>예상 연 금액</p>
-        <strong
-          aria-label={`예상 연 금액 ${formatWon(scenarioRevenue.scenarioAnnualMRR)}`}
-        >
+        <strong aria-label={`예상 연 금액 ${formatWon(scenarioRevenue.scenarioAnnualMRR)}`}>
           {formatWon(scenarioRevenue.scenarioAnnualMRR)}
         </strong>
       </article>
@@ -504,13 +469,11 @@ const renderSimulator = ({
         >
           {formatWon(scenarioRevenue.expectedMonthlyAfterConversion)}
         </strong>
-        <span className="small-note">
-          승인율 {formatRate(scenarioRevenue.conversionRate)} 적용
-        </span>
+        <span className="small-note">승인율 {formatRate(scenarioRevenue.conversionRate)} 적용</span>
       </article>
     </div>
 
-        <div className="recommend-box">
+    <div className="recommend-box">
       <h3>확인 가이드</h3>
       <ul>
         {growthRecommendations.map((item) => (
@@ -519,7 +482,7 @@ const renderSimulator = ({
       </ul>
     </div>
   </section>
-);
+)
 
 const renderSummary = ({
   kpiMonthlyRevenue,
@@ -528,18 +491,18 @@ const renderSummary = ({
   nextRoutePath,
   nextActionText,
 }: {
-  kpiMonthlyRevenue: number;
-  planPotentialAnnual: number;
-  onNavigate: (path: NonHomeRoutePath) => void;
-  nextRoutePath: NonHomeRoutePath | null;
-  nextActionText: string;
+  kpiMonthlyRevenue: number
+  planPotentialAnnual: number
+  onNavigate: (path: NonHomeRoutePath) => void
+  nextRoutePath: NonHomeRoutePath | null
+  nextActionText: string
 }): ReactNode => (
   <section className="panel panel-admin panel-summary">
-      <div className="panel-head">
-        <span className="panel-chip">{adminModuleMeta.summary.panelChip}</span>
-        <h2>{adminModuleMeta.summary.panelTitle}</h2>
-        <p className="subtle">핵심 수치를 바탕으로 다음 점검 포인트를 바로 확인하세요.</p>
-      </div>
+    <div className="panel-head">
+      <span className="panel-chip">{adminModuleMeta.summary.panelChip}</span>
+      <h2>{adminModuleMeta.summary.panelTitle}</h2>
+      <p className="subtle">핵심 수치를 바탕으로 다음 점검 포인트를 바로 확인하세요.</p>
+    </div>
     <div className="growth-summary">
       <p>
         <strong>현재 월 관리 금액:</strong> {formatWon(kpiMonthlyRevenue)}
@@ -551,17 +514,13 @@ const renderSummary = ({
         요금, 이용 가구 수, 보험청구 승인률을 함께 보면 다음 관리 우선순위를 정하기 쉽습니다.
       </p>
       {nextRoutePath ? (
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => onNavigate(nextRoutePath)}
-        >
+        <button type="button" className="btn btn-primary" onClick={() => onNavigate(nextRoutePath)}>
           {nextActionText}
         </button>
       ) : null}
     </div>
   </section>
-);
+)
 
 const AdminPage = ({
   modules,
@@ -604,26 +563,24 @@ const AdminPage = ({
         nextRoutePath: getAdminNextRoutePath(modules, activeRoutePath),
         nextActionText: getAdminNextAction(modules, activeRoutePath),
       }),
-  };
+  }
 
   const resolveActiveModule = (moduleName: AdminRouteModule) => {
-    if (moduleName === "summary") {
-      return false;
+    if (moduleName === 'summary') {
+      return false
     }
-    if (activeRoutePath === "/admin") {
-      return moduleName === "kpi";
+    if (activeRoutePath === '/admin') {
+      return moduleName === 'kpi'
     }
-    return adminModuleRoute[moduleName] === activeRoutePath;
-  };
+    return adminModuleRoute[moduleName] === activeRoutePath
+  }
 
-  const visibleModules = getAdminFocusModules(modules, activeRoutePath);
-  const nextAction = getAdminNextAction(modules, activeRoutePath);
+  const visibleModules = getAdminFocusModules(modules, activeRoutePath)
+  const nextAction = getAdminNextAction(modules, activeRoutePath)
 
   return (
     <section className="view-stack">
-      <section
-        className={`panel panel-overview ${compositionMeta.compositionPanelClass}`}
-      >
+      <section className={`panel panel-overview ${compositionMeta.compositionPanelClass}`}>
         <div className="panel-head">
           <div className="panel-title-wrap">
             <span className="panel-chip">{compositionMeta.compositionChip}</span>
@@ -631,25 +588,21 @@ const AdminPage = ({
           </div>
           <p className="subtle">{compositionMeta.compositionDescription}</p>
         </div>
-        <div
-          className="module-composition"
-          role="list"
-          aria-label="현재 페이지 구성요소"
-        >
+        <div className="module-composition" role="list" aria-label="현재 페이지 구성요소">
           {modules.map((moduleName) => {
-            const config = adminModuleMeta[moduleName];
-            const modulePath = adminModuleRoute[moduleName];
-            const isActiveModule = resolveActiveModule(moduleName);
+            const config = adminModuleMeta[moduleName]
+            const modulePath = adminModuleRoute[moduleName]
+            const isActiveModule = resolveActiveModule(moduleName)
 
             return (
               <button
                 key={moduleName}
                 type="button"
-                className={`module-composition-item ${isActiveModule ? "module-composition-item-current" : ""}`}
+                className={`module-composition-item ${isActiveModule ? 'module-composition-item-current' : ''}`}
                 role="listitem"
                 onClick={() => onNavigate(modulePath)}
-                aria-label={`${config.title}로 ${isActiveModule ? "현재 보기" : "이동"}`}
-                aria-current={isActiveModule ? "page" : undefined}
+                aria-label={`${config.title}로 ${isActiveModule ? '현재 보기' : '이동'}`}
+                aria-current={isActiveModule ? 'page' : undefined}
                 title={config.note}
               >
                 <p className="small-note" aria-hidden="true">
@@ -658,7 +611,7 @@ const AdminPage = ({
                 <strong>{config.title}</strong>
                 <p>{config.note}</p>
               </button>
-            );
+            )
           })}
         </div>
       </section>
@@ -687,89 +640,84 @@ const AdminPage = ({
         </div>
       </section>
     </section>
-  );
-};
+  )
+}
 
 const getAdminActiveModule = (
   modules: readonly AdminRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): AdminRouteModule => {
-  if (activeRoutePath === "/admin") {
-    return "kpi";
+  if (activeRoutePath === '/admin') {
+    return 'kpi'
   }
 
-  return (
-    modules.find((moduleName) => adminModuleRoute[moduleName] === activeRoutePath) ??
-    "kpi"
-  );
-};
+  return modules.find((moduleName) => adminModuleRoute[moduleName] === activeRoutePath) ?? 'kpi'
+}
 
 const getAdminFocusModules = (
   modules: readonly AdminRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): AdminRouteModule[] => {
-  const ordered = modules.length > 0 ? modules : adminModuleSequence;
-  const activeModule = getAdminActiveModule(ordered, activeRoutePath);
-  const activeIndex = ordered.indexOf(activeModule);
+  const ordered = modules.length > 0 ? modules : adminModuleSequence
+  const activeModule = getAdminActiveModule(ordered, activeRoutePath)
+  const activeIndex = ordered.indexOf(activeModule)
 
   if (activeIndex < 0) {
-    return ["kpi", "trends", "plans"];
+    return ['kpi', 'trends', 'plans']
   }
 
-  if (activeRoutePath === "/admin") {
-    return ["kpi", "trends", "plans"];
+  if (activeRoutePath === '/admin') {
+    return ['kpi', 'trends', 'plans']
   }
 
-  const previous = ordered[activeIndex - 1];
-  const next = ordered[activeIndex + 1];
+  const previous = ordered[activeIndex - 1]
+  const next = ordered[activeIndex + 1]
 
   return Array.from(
     new Set(
-      [previous, activeModule, next].filter(
-        (item): item is AdminRouteModule => Boolean(item),
-      ),
+      [previous, activeModule, next].filter((item): item is AdminRouteModule => Boolean(item)),
     ),
-  );
-};
+  )
+}
 
 const getAdminNextAction = (
   modules: readonly AdminRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): string => {
-  if (activeRoutePath === "/admin") {
-    return "전체 현황 → 월별 변화 → 요금 구성";
+  if (activeRoutePath === '/admin') {
+    return '전체 현황 → 월별 변화 → 요금 구성'
   }
 
-  const ordered = modules.length > 0 ? modules : adminModuleSequence;
-  const activeModule = getAdminActiveModule(ordered, activeRoutePath);
-  const activeIndex = ordered.indexOf(activeModule);
-  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+  const ordered = modules.length > 0 ? modules : adminModuleSequence
+  const activeModule = getAdminActiveModule(ordered, activeRoutePath)
+  const activeIndex = ordered.indexOf(activeModule)
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined
 
   if (!next) {
-    return "요약 화면에서 위험 신호를 점검하고 저장";
+    return '요약 화면에서 위험 신호를 점검하고 저장'
   }
 
-  return `${adminModuleMeta[next].title}로 이동`;
-};
+  return `${adminModuleMeta[next].title}로 이동`
+}
 
 const getAdminNextRoutePath = (
   modules: readonly AdminRouteModule[],
   activeRoutePath: NonHomeRoutePath,
 ): NonHomeRoutePath | null => {
-  if (activeRoutePath === "/admin") {
-    return "/admin/overview";
+  if (activeRoutePath === '/admin') {
+    return '/admin/overview'
   }
 
-  const ordered = modules.length > 0 ? modules : adminModuleSequence;
-  const activeModule = getAdminActiveModule(ordered, activeRoutePath);
-  const activeIndex = ordered.indexOf(activeModule);
-  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined;
+  const ordered = modules.length > 0 ? modules : adminModuleSequence
+  const activeModule = getAdminActiveModule(ordered, activeRoutePath)
+  const activeIndex = ordered.indexOf(activeModule)
+  const next = activeIndex >= 0 ? ordered[activeIndex + 1] : undefined
 
   if (!next) {
-    return null;
+    return null
   }
 
-  return adminModuleRoute[next];
-};
+  return adminModuleRoute[next]
+}
 
-export { AdminPage };
+export { AdminPage }
