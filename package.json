@@ -10,7 +10,9 @@
   },
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
-    "lint": "pnpm -r --if-present run lint",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,yml,yaml}\"",
     "build": "pnpm -r --if-present run build",
     "build:web": "pnpm --dir apps/web run build",
     "build:api": "pnpm --dir apps/api run build",
@@ -26,6 +28,13 @@
     "clean": "rm -rf node_modules apps/web/node_modules apps/api/node_modules"
   },
   "devDependencies": {
-    "typescript": "^6.0.3"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0"
   }
 }
