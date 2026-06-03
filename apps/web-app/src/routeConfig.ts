@@ -1176,26 +1176,70 @@ export const getRouteQuickActions = (
   route: RouteNavItem,
 ): readonly RouteQuickAction[] => route.quickActions ?? [];
 
-export const resolveRoute = (path: string): AppRoute => {
+/**
+ * 알 수 없는 경로(딥링크 오류·삭제된 화면 등)일 때 떨어질 기본 라우트.
+ * `resolveRoute`/`resolveRouteResult`의 폴백 대상이며, 타입상으로도 `AppRoute`다.
+ */
+export const DEFAULT_ROUTE: AppRoute = "/";
+
+const knownRoutePaths = new Set<AppRoute>(routeMap.map((route) => route.path));
+
+/**
+ * 임의 문자열이 등록된 정규 `AppRoute`인지 좁히는 타입 가드.
+ * (역직렬화된 값·외부 입력을 라우트로 다룰 때 컴파일 타임 안전성을 확보)
+ */
+export const isAppRoute = (value: string): value is AppRoute =>
+  knownRoutePaths.has(value as AppRoute);
+
+export type ResolveRouteResult = {
+  /** 실제로 렌더링할 정규 라우트. 항상 등록된 `AppRoute`임이 보장된다. */
+  route: AppRoute;
+  /** 입력이 정규 라우트와 정확히 일치하지 않아 폴백/상향 매핑되었는지 여부. */
+  isFallback: boolean;
+  /** 입력이 등록된 라우트와 한 글자도 다르지 않은(정규) 경로였는지 여부. */
+  isCanonical: boolean;
+};
+
+/**
+ * 원시 경로 문자열(주로 `location.pathname`)을 정규 라우트로 해석하면서,
+ * 폴백 여부와 정규 여부까지 함께 보고한다. URL 정규화(`replaceState`)와
+ * not-found UX 판단의 단일 소스로 사용한다.
+ *
+ * 매핑 규칙:
+ *  - 정확히 일치하는 등록 라우트 → 그대로(정규).
+ *  - `/operations/...`(미등록 하위) → `/operations`로 상향(폴백).
+ *  - `/admin/...`(미등록 하위) → `/admin`으로 상향(폴백).
+ *  - 그 외 전부 → `DEFAULT_ROUTE`(폴백).
+ */
+export const resolveRouteResult = (path: string): ResolveRouteResult => {
   const basePath = path.split("#")[0]?.split("?")[0] ?? "/";
   const normalized = basePath.replace(/\/+$/, "") || "/";
 
   const directRoute = routeIndex.get(normalized as AppRoute);
   if (directRoute) {
-    return directRoute.path;
+    // 트레일링 슬래시 등으로 입력이 정규형과 달랐다면 정규화가 필요하다.
+    const isCanonical = normalized === path;
+    return { route: directRoute.path, isFallback: false, isCanonical };
   }
 
   const segments = normalized.split("/").filter(Boolean);
   if (segments[0] === "operations") {
-    return "/operations";
+    return { route: "/operations", isFallback: true, isCanonical: false };
   }
 
   if (segments[0] === "admin") {
-    return "/admin";
+    return { route: "/admin", isFallback: true, isCanonical: false };
   }
 
-  return "/";
+  return { route: DEFAULT_ROUTE, isFallback: true, isCanonical: false };
 };
+
+/**
+ * 원시 경로를 정규 라우트로 해석한다(기존 시그니처 유지: 폴백/정규 정보 없이 라우트만 반환).
+ * 새 코드는 정규화/not-found 판단이 필요하면 `resolveRouteResult`를 쓴다.
+ */
+export const resolveRoute = (path: string): AppRoute =>
+  resolveRouteResult(path).route;
 
 export const getRouteSectionFlow = (path: AppRoute): RouteSectionFlow => {
   if (path === "/") {

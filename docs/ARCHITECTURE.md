@@ -29,6 +29,13 @@
 - 보험청구: `claims`
 - 수익 관리: `admin`
 
+## 클라이언트 라우터 (react-router 없이 직접 구현)
+
+- 웹앱은 표준 History API만으로 라우팅을 직접 구현합니다(의존성 최소화). 경로는 `AppRoute` 유니온으로 타입 고정되어 잘못된 경로는 컴파일 에러입니다.
+- 구성: `apps/web-app/src/routeConfig.ts`(타입 레지스트리·순수 해석기 `resolveRouteResult`/폴백·`DEFAULT_ROUTE`·`isAppRoute`), `routeNavigation.ts`(History/스크롤/포커스 순수 헬퍼), `useRouteState.ts`(상태·`popstate`·`pushState` 연동 훅).
+- 딥링크/북마크/공유 URL이 동작하며, 마운트·`popstate` 시 미등록/비정규 URL을 `replaceState`로 정규화합니다. 라우트 변경 시 스크롤 복원 + 메인 포커스 이동(a11y), `isFallback`로 not-found 안내를 제공합니다.
+- 자세한 설계/라우트 추가법은 `docs/DEVELOPMENT.md`의 "라우터" 절을 참고하세요.
+
 ## 데이터 레이어 (DB 없는 JSON 파일 영속화)
 
 - DB/ORM 없이 `node:fs`만으로 데이터를 영속화합니다. proto-live의 "atomic JSON file store" 패턴을 이식했습니다.
