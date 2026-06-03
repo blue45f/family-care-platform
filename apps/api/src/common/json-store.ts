@@ -28,8 +28,13 @@ function isTestEnv(): boolean {
   return process.env.VITEST !== undefined || process.env.NODE_ENV === 'test';
 }
 
-function defaultDataDir(): string {
-  // FCP_DATA_DIR로 덮어쓸 수 있고, 기본값은 api 실행 위치 기준 data/ 디렉터리다.
+/**
+ * JSON 스토어가 실제로 사용하는 데이터 디렉터리 경로를 계산한다.
+ * FCP_DATA_DIR로 덮어쓸 수 있고, 기본값은 api 실행 위치 기준 data/ 디렉터리다.
+ * 모든 컬렉션이 이 한 곳을 백킹 디렉터리로 공유하므로, 헬스 체크(readiness)도
+ * 같은 경로의 쓰기 가능 여부를 검사하도록 외부에 노출한다.
+ */
+export function resolveDataDir(): string {
   return process.env.FCP_DATA_DIR?.trim() || resolve(process.cwd(), 'data');
 }
 
@@ -49,7 +54,7 @@ export class JsonCollectionStore<T> {
   constructor(
     private readonly fileName: string,
     private readonly seed: () => StoredCollection<T>,
-    dataDir: string = defaultDataDir(),
+    dataDir: string = resolveDataDir(),
   ) {
     this.filePath = join(dataDir, fileName);
     this.testMode = isTestEnv();
