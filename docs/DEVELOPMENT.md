@@ -32,6 +32,32 @@
 
 위 외 추가 라이브러리가 정말 필요해지기 전까지는 표준 라이브러리/네이티브 API로 해결하는 것을 우선합니다.
 
+## 라우터 (직접 구현, react-router 없음)
+
+이 앱은 **react-router를 도입하지 않고** 표준 History API만으로 클라이언트 라우팅을 직접 구현합니다(의존성 최소화 원칙). 라우터는 세 모듈로 나뉩니다.
+
+- **`src/routeConfig.ts` — 타입 레지스트리 / 순수 해석기.** 모든 화면 경로는 `AppRoute` 유니온(`"/" | "/operations" | ... | "/admin/simulator"`)으로 고정되어, 등록되지 않은 경로는 컴파일 에러가 됩니다. 네비게이션 그룹·블루프린트·브레드크럼·섹션/전역 플로우 등 라우트 파생 데이터를 한곳에서 만듭니다.
+  - `resolveRouteResult(path)`: 원시 경로 문자열(주로 `location.pathname`)을 정규 `AppRoute`로 해석하고 `{ route, isFallback, isCanonical }`을 반환합니다. URL 정규화와 not-found 판단의 **단일 소스**입니다.
+  - 폴백 규칙: 정확 일치 → 그대로 / `/operations/<미등록>` → `/operations` / `/admin/<미등록>` → `/admin` / 그 외 전부 → `DEFAULT_ROUTE`(`"/"`). 트레일링 슬래시·쿼리·해시는 경로 해석에서 무시하되 URL에는 보존합니다.
+  - `resolveRoute(path)`(라우트만 반환, 기존 시그니처 유지), `isAppRoute(value)`(타입 가드), `DEFAULT_ROUTE`(타입상 `AppRoute`인 폴백)도 제공합니다.
+- **`src/routeNavigation.ts` — 부수효과(History·스크롤·포커스) 순수 헬퍼.** DOM 전역에 직접 의존하지 않고 주입 가능한 어댑터(`HistoryLike`, `window`, 메인 엘리먼트)를 받으므로 jsdom 없이 node 환경에서 단위 테스트됩니다.
+  - `canonicalizeLocation(location)`: 주소창과 정규형이 다른지 계산(`shouldReplace`, 쿼리/해시 보존한 `nextUrl`).
+  - `reconcileLocationToRoute(history, location)`: 미등록/비정규 URL을 `replaceState`로 보정(잘못된 URL이 뒤로가기 히스토리에 남지 않도록 `pushState`가 아닌 `replaceState` 사용).
+  - `applyRouteEntrySideEffects(mainEl, win)`: 라우트 변경 시 스크롤을 맨 위로 되돌리고 메인 영역으로 포커스를 이동(a11y).
+- **`src/useRouteState.ts` — React 훅(상태·History 연동).** `location.pathname` 기준으로 초기화하고 `popstate`(뒤로/앞으로)를 구독하며, `navigate(path: AppRoute)`는 `pushState`로 URL을 바꿉니다. 마운트 시 1회 + popstate마다 `reconcileLocationToRoute`로 주소창을 정규화하므로 **딥링크/북마크/공유 URL이 동작**합니다. 반환하는 `mainRef`를 본문 영역에 붙이면 라우트 변경 시 스크롤·포커스가 자동 처리되고, `isFallback`으로 not-found 안내를 띄울 수 있습니다.
+
+`src/App.tsx`는 `useRouteState`의 `routeContext.route.mode`(`home`/`operations`/`admin`)에 따라 페이지를 렌더링하고, 스킵 링크(`본문 바로가기`)와 `tabIndex=-1` 본문 영역(`#route-main-content`, `mainRef` 부착)으로 키보드/스크린리더 동선을 제공합니다.
+
+### 라우트 추가 방법
+
+1. **`src/routeConfig.ts`의 `AppRoute` 유니온에 경로 리터럴을 추가**합니다(예: `"/operations/visits"`). 이 순간부터 해당 경로는 타입상 유효해지고, 누락 시 아래 단계에서 컴파일 에러로 안내됩니다.
+2. 해당 섹션(`routeNavGroups`의 `operations` 또는 `admin`) `routes` 배열에 **라우트 객체**를 추가합니다(`path`, `title`, `section`, `modules`, `quickActions`, `hero`, `emoji`, `summary`, `mode`, `stackMode`, `focus`). 모듈 메타가 필요하면 `operationsModuleMeta`/`adminModuleMeta`와 시퀀스(`*ModuleSequence`)에 키를 추가합니다.
+3. 새 화면 콘텐츠는 기존 `OperationsPage`/`AdminPage`의 모듈 렌더링에 포함되거나, 완전히 새로운 모드라면 `RouteContext`/`renderPage()` 분기를 확장합니다.
+4. 네비게이션은 어디서든 `navigate("/operations/visits")`로 호출합니다(인자는 `AppRoute`로 제한되어 오타는 컴파일 에러).
+5. `src/routeConfig.spec.ts`에 해석/폴백 케이스를 추가하고 `pnpm run verify`로 검증합니다. 새 경로는 `routeMap`을 순회하는 테스트가 자동으로 정규 해석을 확인합니다.
+
+> 미등록 하위 경로를 의도적으로 특정 라우트로 보내고 싶다면 `resolveRouteResult`의 폴백 분기를 수정하고, 해당 동작을 `routeConfig.spec.ts`로 못 박습니다.
+
 ## 테마 / 다크 모드
 
 웹앱의 색·표면·텍스트·라인·그림자는 전부 `apps/web-app/src/styles.css`의 `:root` **OKLCH 디자인 토큰**으로 정의됩니다(하드코딩 색 없이 토큰 참조). 다크 모드는 토큰 값만 덮어쓰는 방식으로, 별도 라이브러리 없이 동작합니다.

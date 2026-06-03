@@ -414,8 +414,11 @@ const getCompositionMeta = (
   return routeModeDefinitions.admin.compositionMeta;
 };
 
+const ROUTE_MAIN_ID = "route-main-content";
+
 const App = () => {
-  const { routeContext, navigate } = useRouteState();
+  const { routeContext, navigate, isFallback, mainRef } =
+    useRouteState<HTMLDivElement>();
   const data = usePlatformData();
 
   const heroMetrics = useMemo(
@@ -484,6 +487,10 @@ const App = () => {
 
   return (
     <main className="page">
+      <a className="skip-link" href={`#${ROUTE_MAIN_ID}`}>
+        본문 바로가기
+      </a>
+
       <RouteShell
         routeContext={routeContext}
         heroMetrics={heroMetrics}
@@ -492,6 +499,19 @@ const App = () => {
         isLoading={data.loading}
         isReadOnly={hasReadOnlyError}
       />
+
+      {isFallback ? (
+        <p className="feedback feedback-warning" role="status" aria-live="polite">
+          요청하신 주소를 찾을 수 없어 가까운 화면으로 이동했습니다.
+          <button
+            type="button"
+            className="inline-action"
+            onClick={() => navigate("/")}
+          >
+            홈으로
+          </button>
+        </p>
+      ) : null}
 
       {hasReadOnlyError ? (
         <p className="feedback feedback-warning" role="status" aria-live="polite">
@@ -518,7 +538,16 @@ const App = () => {
         </p>
       ) : null}
 
-      {renderPage()}
+      <div
+        id={ROUTE_MAIN_ID}
+        ref={mainRef}
+        tabIndex={-1}
+        role="region"
+        aria-label="현재 화면 본문"
+        className="route-main"
+      >
+        {renderPage()}
+      </div>
     </main>
   );
 };
