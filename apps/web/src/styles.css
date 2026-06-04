@@ -434,6 +434,10 @@ a {
   margin-top: 0.28rem;
   color: var(--text-subtle);
   font-size: 0.9rem;
+  /* Descriptive prose, not a label: hold a comfortable measure and leading so
+     long Korean sentences do not run the full width of a wide panel. */
+  line-height: 1.5;
+  max-width: 66ch;
 }
 
 .muted {
@@ -1881,13 +1885,48 @@ textarea:disabled {
   overflow-wrap: anywhere;
 }
 
+/*
+ * Empty state: a quiet nudge that teaches the next step, not a "nothing here"
+ * void. A leading dot (the same affordance the command tips use) and a tinted
+ * surface mark it as deliberate guidance; the headline carries the weight, the
+ * line below carries the instruction.
+ */
 .empty {
+  display: grid;
+  gap: 0.28rem;
   margin: 0;
-  border: 1px dashed var(--line);
+  border: 1px dashed color-mix(in oklab, var(--line) 72%, var(--primary) 28%);
   border-radius: var(--radius-md);
-  color: var(--text-subtle);
-  background: var(--surface-muted);
-  padding: 0.7rem;
+  color: var(--text-secondary);
+  background: color-mix(in oklab, var(--primary-soft) 22%, var(--surface-muted) 78%);
+  padding: 0.85rem 0.9rem 0.85rem 1.5rem;
+  line-height: 1.5;
+  max-width: 68ch;
+  position: relative;
+  animation: empty-settle 360ms var(--ease-out-expo) both;
+}
+
+.empty::before {
+  content: '';
+  position: absolute;
+  left: 0.92rem;
+  top: 1.08rem;
+  width: 0.34rem;
+  height: 0.34rem;
+  border-radius: 999px;
+  background: var(--primary);
+}
+
+.empty strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 0.96rem;
+  line-height: 1.3;
+}
+
+.empty span {
+  color: var(--text-secondary);
+  font-size: 0.86rem;
 }
 
 .status-pill {
@@ -1922,6 +1961,51 @@ textarea:disabled {
 
 .status-select {
   max-width: 260px;
+  font-weight: 600;
+}
+
+/*
+ * The status select carries the status hue as its own fill. Soften each one to
+ * a tint of the matching soft token so the option text stays legible (the
+ * saturated pill beside it remains the loud signal) and pair it with a hue
+ * border so the control still reads as "this status".
+ */
+.status-select.status-request {
+  color: var(--text-primary);
+  background: color-mix(in oklab, var(--secondary-soft) 70%, var(--surface) 30%);
+  border-color: color-mix(in oklab, var(--secondary) 34%, var(--line) 66%);
+}
+
+.status-select.status-review {
+  color: var(--text-primary);
+  background: color-mix(in oklab, var(--warning-soft) 70%, var(--surface) 30%);
+  border-color: color-mix(in oklab, var(--warning) 34%, var(--line) 66%);
+}
+
+.status-select.status-approved {
+  color: var(--text-primary);
+  background: color-mix(in oklab, var(--success-soft) 70%, var(--surface) 30%);
+  border-color: color-mix(in oklab, var(--success) 34%, var(--line) 66%);
+}
+
+.status-select.status-rejected {
+  color: var(--text-primary);
+  background: color-mix(in oklab, var(--danger-soft) 70%, var(--surface) 30%);
+  border-color: color-mix(in oklab, var(--danger) 34%, var(--line) 66%);
+}
+
+.status-select:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--primary) 42%, var(--line) 58%);
+}
+
+/* On a saturated status fill the single brand ring can blend; pair it with an
+   inner light hairline so focus reads on any status color. */
+.status-select:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--line) 40%);
+  box-shadow:
+    0 0 0 2px var(--surface),
+    var(--focus-ring);
 }
 
 .kpi-table-wrap {
@@ -2909,6 +2993,19 @@ pre {
   from {
     opacity: 0;
     transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Empty states fade up gently when they appear; reduced-motion neutralizes it. */
+@keyframes empty-settle {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
 
   to {

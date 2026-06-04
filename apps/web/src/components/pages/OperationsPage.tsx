@@ -277,7 +277,10 @@ const CareLogForm = ({ module, data, isSubmitting, isReadOnly }: CareLogFormProp
           ))}
         </ul>
       ) : (
-        <p className="empty">아직 돌봄 기록이 없습니다. 오늘은 기록부터 시작해 주세요.</p>
+        <p className="empty" role="note">
+          <strong>첫 돌봄 기록을 남겨보세요</strong>
+          <span>대상자·담당자·내용을 입력하면 정산과 보험청구 흐름이 자동으로 이어집니다.</span>
+        </p>
       )}
     </section>
   )
@@ -410,7 +413,10 @@ const SettlementForm = ({
           ))}
         </ul>
       ) : (
-        <p className="empty">아직 정산 내역이 없습니다. 돌봄 기록을 입력하면 정산값이 쌓입니다.</p>
+        <p className="empty" role="note">
+          <strong>정산 내역이 쌓이기 전입니다</strong>
+          <span>돌봄 시간과 시간당 금액을 입력하면 합계가 바로 계산되어 여기에 모입니다.</span>
+        </p>
       )}
     </section>
   )
@@ -574,8 +580,9 @@ const ClaimsForm = ({ module, data, isSubmitting, isReadOnly }: ClaimsFormProps)
           ))}
         </ul>
       ) : (
-        <p className="empty">
-          아직 보험청구가 없습니다. 기관/병원과 금액을 입력해 청구를 시작하세요.
+        <p className="empty" role="note">
+          <strong>보험청구를 시작할 수 있어요</strong>
+          <span>기관·병원과 청구 금액을 입력하면 요청부터 승인까지 상태를 한눈에 추적합니다.</span>
         </p>
       )}
     </section>

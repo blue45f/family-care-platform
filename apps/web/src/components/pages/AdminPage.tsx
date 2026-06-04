@@ -222,8 +222,9 @@ const renderTrends = ({
           </article>
         ))
       ) : (
-        <p className="empty">
-          월별 데이터가 아직 충분하지 않습니다. 정산/청구를 입력하면 추이가 채워집니다.
+        <p className="empty" role="note">
+          <strong>추이를 그리려면 데이터가 더 필요해요</strong>
+          <span>정산과 청구를 입력할수록 월별 변화가 또렷한 그래프로 채워집니다.</span>
         </p>
       )}
     </div>
