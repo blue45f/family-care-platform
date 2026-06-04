@@ -1809,6 +1809,19 @@ textarea:disabled {
   box-shadow: var(--focus-ring);
 }
 
+/* 필드 수준 검증 에러 — aria-invalid 와 함께 시각·스크린리더 양쪽에 전달. */
+.field-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.field input[aria-invalid='true'],
+.field select[aria-invalid='true'],
+.field textarea[aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
 .field textarea {
   min-height: 86px;
   resize: vertical;

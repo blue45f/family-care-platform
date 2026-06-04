@@ -174,7 +174,7 @@ const CareLogForm = ({ module, data, isSubmitting, isReadOnly }: CareLogFormProp
     register,
     handleSubmit,
     reset,
-    formState: { isValid },
+    formState: { isValid, errors },
   } = useForm<CareLogFormValues>({
     resolver: zodResolver(careLogFormSchema),
     defaultValues: data.defaultCareLogValues,
@@ -203,24 +203,36 @@ const CareLogForm = ({ module, data, isSubmitting, isReadOnly }: CareLogFormProp
       </div>
 
       <form className="row" onSubmit={onValid}>
-        <RouteField id={`care-recipient-${module}`} label="돌봄 받는 분">
+        <RouteField
+          id={`care-recipient-${module}`}
+          label="돌봄 받는 분"
+          error={errors.recipient?.message}
+        >
           <input
             id={`care-recipient-${module}`}
             type="text"
             placeholder="예: 김영희"
             required
             disabled={isBusy}
+            aria-invalid={errors.recipient ? true : undefined}
+            aria-describedby={errors.recipient ? `care-recipient-${module}-error` : undefined}
             {...register('recipient')}
           />
         </RouteField>
 
-        <RouteField id={`caregiver-${module}`} label="돌봄 담당자">
+        <RouteField
+          id={`caregiver-${module}`}
+          label="돌봄 담당자"
+          error={errors.caregiver?.message}
+        >
           <input
             id={`caregiver-${module}`}
             type="text"
             placeholder="예: 박돌봄"
             required
             disabled={isBusy}
+            aria-invalid={errors.caregiver ? true : undefined}
+            aria-describedby={errors.caregiver ? `caregiver-${module}-error` : undefined}
             {...register('caregiver')}
           />
         </RouteField>
@@ -239,13 +251,15 @@ const CareLogForm = ({ module, data, isSubmitting, isReadOnly }: CareLogFormProp
           <input id={`care-date-${module}`} type="date" disabled={isBusy} {...register('date')} />
         </RouteField>
 
-        <RouteField id={`care-note-${module}`} label="돌봄 내용">
+        <RouteField id={`care-note-${module}`} label="돌봄 내용" error={errors.note?.message}>
           <textarea
             id={`care-note-${module}`}
             placeholder="예: 점심 식사 도움, 약 복용 확인"
             required
             rows={3}
             disabled={isBusy}
+            aria-invalid={errors.note ? true : undefined}
+            aria-describedby={errors.note ? `care-note-${module}-error` : undefined}
             {...register('note')}
           />
         </RouteField>
