@@ -11,8 +11,15 @@
       name="description"
       content="돌봄 기록·돌봄비 정산·보험청구를 한 곳에서 간편하게 관리하는 가족 돌봄 운영 플랫폼입니다."
     />
-    <meta name="theme-color" content="#4a3fbf" />
+    <meta name="theme-color" content="#5a8a6b" />
     <link rel="canonical" href="https://family-care-platform.vercel.app/" />
+
+    <!-- Pretendard (한글 최적화 가변 폰트). 미로드 시 system-ui로 폴백한다. -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+    />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
@@ -39,23 +46,6 @@
     />
     <meta name="twitter:image" content="https://family-care-platform.vercel.app/og.png" />
     <meta name="twitter:image:alt" content="가족 돌봄 운영 플랫폼 - 돌봄 기록·정산·보험청구" />
-    <script>
-      // No-FOUC: 앱 로드 전에 저장된 테마(또는 시스템 선호)를 즉시 적용한다.
-      (function () {
-        try {
-          var stored = localStorage.getItem("theme");
-          var theme =
-            stored === "light" || stored === "dark"
-              ? stored
-              : window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
-          document.documentElement.dataset.theme = theme;
-        } catch (e) {
-          /* localStorage/matchMedia 사용 불가 환경은 기본 라이트로 둔다. */
-        }
-      })();
-    </script>
   </head>
   <body>
     <div id="root"></div>

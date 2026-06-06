@@ -1,23 +1,18 @@
 import { type RefObject, useEffect, useRef, useState } from 'react'
 
-import {
-  type AppRoute,
-  getRouteContext,
-  resolveRouteResult,
-  type RouteContext,
-} from './routeConfig'
+import { type AppRoute, getRouteDef, type RouteDef, resolveRouteResult } from './routeConfig'
 import { applyRouteEntrySideEffects, reconcileLocationToRoute } from './routeNavigation'
 
 type UseRouteStateResult<TMain extends HTMLElement = HTMLElement> = {
-  /** 현재 활성 라우트(항상 등록된 정규 `AppRoute`). */
+  /** 현재 활성 라우트(항상 등록된 정규 AppRoute). */
   activeRoute: AppRoute
-  /** 활성 라우트의 파생 컨텍스트(네비/브레드크럼/플로우 등). */
-  routeContext: RouteContext
-  /** 타입 안전한 네비게이션. 인자는 `AppRoute`로 제한되어 잘못된 경로는 컴파일 에러다. */
+  /** 활성 라우트의 정의(타이틀·아이콘·설명 등). */
+  routeDef: RouteDef
+  /** 타입 안전한 네비게이션. 인자는 AppRoute로 제한되어 잘못된 경로는 컴파일 에러다. */
   navigate: (path: AppRoute) => void
   /** 현재 URL이 알 수 없어 폴백 라우트로 떨어졌는지 여부(not-found 안내용). */
   isFallback: boolean
-  /** 라우트 변경 시 포커스를 받을 메인 콘텐츠 영역 ref(부착할 요소 타입에 맞춰 추론). */
+  /** 라우트 변경 시 포커스를 받을 메인 콘텐츠 영역 ref. */
   mainRef: RefObject<TMain | null>
 }
 
@@ -36,7 +31,7 @@ const useRouteState = <TMain extends HTMLElement = HTMLElement>(): UseRouteState
     }
     return resolveRouteResult(window.location.pathname).isFallback
   })
-  const routeContext = getRouteContext(activeRoute)
+  const routeDef = getRouteDef(activeRoute)
   const mainRef = useRef<TMain | null>(null)
   // 첫 렌더(초기 진입)에는 스크롤/포커스 부수효과를 건너뛰기 위한 가드.
   const hasEnteredRef = useRef(false)
@@ -92,7 +87,7 @@ const useRouteState = <TMain extends HTMLElement = HTMLElement>(): UseRouteState
 
   return {
     activeRoute,
-    routeContext,
+    routeDef,
     navigate,
     isFallback,
     mainRef,
