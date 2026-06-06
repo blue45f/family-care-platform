@@ -10,6 +10,7 @@ import type {
   Settlement,
   SettlementDraft,
 } from './types'
+import { authHeader } from './auth/useAuth'
 
 const DEFAULT_API_URL = import.meta.env.DEV ? 'http://127.0.0.1:3001/api' : '/api'
 const BASE_URL = import.meta.env.VITE_API_URL ?? DEFAULT_API_URL
@@ -24,11 +25,12 @@ async function request<T>(input: string, init?: RequestInit): Promise<T> {
   for (let attempt = 0; attempt <= NETWORK_RETRY_COUNT; attempt += 1) {
     try {
       response = await fetch(`${BASE_URL}${input}`, {
+        ...init,
         headers: {
           'Content-Type': 'application/json',
+          ...authHeader(),
           ...init?.headers,
         },
-        ...init,
       })
       break
     } catch (error) {

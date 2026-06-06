@@ -63,7 +63,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'care',
     section: 'main',
     inNav: true,
-    placeholder: true,
+    placeholder: false,
   },
   '/settlements': {
     path: '/settlements',
@@ -73,7 +73,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'settlement',
     section: 'main',
     inNav: true,
-    placeholder: true,
+    placeholder: false,
   },
   '/claims': {
     path: '/claims',
@@ -83,7 +83,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'claims',
     section: 'main',
     inNav: true,
-    placeholder: true,
+    placeholder: false,
   },
   '/analytics': {
     path: '/analytics',
@@ -93,7 +93,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'analytics',
     section: 'manage',
     inNav: true,
-    placeholder: true,
+    placeholder: false,
   },
   '/plans': {
     path: '/plans',
@@ -103,7 +103,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'plans',
     section: 'manage',
     inNav: true,
-    placeholder: true,
+    placeholder: false,
   },
   '/login': {
     path: '/login',
@@ -113,7 +113,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'home',
     section: 'account',
     inNav: false,
-    placeholder: true,
+    placeholder: false,
   },
   '/register': {
     path: '/register',
@@ -123,7 +123,7 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     icon: 'home',
     section: 'account',
     inNav: false,
-    placeholder: true,
+    placeholder: false,
   },
 }
 

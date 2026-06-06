@@ -21,6 +21,7 @@ export type IconName =
   | 'clock'
   | 'inbox'
   | 'heart'
+  | 'logout'
 
 type IconProps = SVGProps<SVGSVGElement> & {
   name: IconName
@@ -118,6 +119,13 @@ const PATHS: Record<IconName, ReactElement> = {
   ),
   heart: (
     <path d="M19 14c1.5-1.5 3-3.2 3-5.5A3.5 3.5 0 0 0 12 6 3.5 3.5 0 0 0 2 8.5C2 10.8 3.5 12.5 5 14l7 7Z" />
+  ),
+  logout: (
+    <>
+      <path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </>
   ),
 }
 

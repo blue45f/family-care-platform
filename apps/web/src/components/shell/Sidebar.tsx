@@ -9,13 +9,22 @@ type SidebarProps = {
   onNavigate: (path: AppRoute) => void
   badges?: NavBadges
   isOnline: boolean
+  userName?: string
+  onLogout?: () => void
 }
 
 /**
  * 사이드바 내비게이션. 데스크톱에서는 고정, 모바일에서는 AppShell이 드로어로 감싼다.
  * 자체적으로 nav 랜드마크를 제공한다.
  */
-export const Sidebar = ({ activeRoute, onNavigate, badges = {}, isOnline }: SidebarProps) => (
+export const Sidebar = ({
+  activeRoute,
+  onNavigate,
+  badges = {},
+  isOnline,
+  userName,
+  onLogout,
+}: SidebarProps) => (
   <>
     <div className="brand">
       <span className="brand-mark" aria-hidden="true">
@@ -57,6 +66,23 @@ export const Sidebar = ({ activeRoute, onNavigate, badges = {}, isOnline }: Side
         </div>
       ))}
     </nav>
+
+    {userName ? (
+      <div className="sidebar-user">
+        <span className="sidebar-user-meta">
+          <span className="sidebar-user-avatar" aria-hidden="true">
+            {userName.trim().charAt(0) || '?'}
+          </span>
+          <span className="sidebar-user-name">{userName}</span>
+        </span>
+        {onLogout ? (
+          <button type="button" className="sidebar-logout" onClick={onLogout}>
+            <Icon name="logout" size={16} />
+            <span>로그아웃</span>
+          </button>
+        ) : null}
+      </div>
+    ) : null}
 
     <div className="sidebar-foot">
       <span className="conn-dot" data-state={isOnline ? 'online' : 'offline'}>

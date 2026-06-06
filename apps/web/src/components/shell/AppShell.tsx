@@ -15,6 +15,10 @@ type AppShellProps = {
   mainRef: React.RefObject<HTMLDivElement | null>
   mainId: string
   children: ReactNode
+  /** 로그인 사용자 표시명(사이드바 푸터). */
+  userName?: string
+  /** 로그아웃 핸들러(사이드바 푸터). */
+  onLogout?: () => void
 }
 
 const DESKTOP_QUERY = '(min-width: 64rem)'
@@ -32,6 +36,8 @@ export const AppShell = ({
   mainRef,
   mainId,
   children,
+  userName,
+  onLogout,
 }: AppShellProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement | null>(null)
@@ -106,6 +112,8 @@ export const AppShell = ({
           onNavigate={handleNavigate}
           badges={badges}
           isOnline={isOnline}
+          userName={userName}
+          onLogout={onLogout}
         />
       </aside>
 

@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { AppShell } from './components/shell/AppShell'
+import { useAuth } from './auth/useAuth'
+import { AnalyticsPage } from './components/pages/AnalyticsPage'
+import { CarePage } from './components/pages/CarePage'
+import { ClaimsPage } from './components/pages/ClaimsPage'
 import { DashboardPage } from './components/pages/DashboardPage'
+import { LoginPage } from './components/pages/LoginPage'
 import { PlaceholderPage } from './components/pages/PlaceholderPage'
+import { PlansPage } from './components/pages/PlansPage'
+import { RegisterPage } from './components/pages/RegisterPage'
+import { SettlementsPage } from './components/pages/SettlementsPage'
+import { AppShell } from './components/shell/AppShell'
 import type { AppRoute } from './routeConfig'
 import { usePlatformData } from './state/usePlatformData'
 import { useRouteMeta } from './useRouteMeta'
@@ -10,15 +18,25 @@ import { useRouteState } from './useRouteState'
 
 const ROUTE_MAIN_ID = 'route-main-content'
 
-const App = () => {
-  const { activeRoute, routeDef, navigate, isFallback, mainRef } = useRouteState<HTMLDivElement>()
+type RouteState = ReturnType<typeof useRouteState<HTMLDivElement>>
+
+/**
+ * 인증된 운영 화면. usePlatformData가 여기서 마운트되므로(=로그인 이후에만)
+ * 토큰이 실린 상태에서 데이터를 가져온다. 셸 + 라우트별 페이지를 렌더한다.
+ */
+const AuthedApp = ({ route }: { route: RouteState }) => {
+  const { activeRoute, routeDef, navigate, isFallback, mainRef } = route
+  const auth = useAuth()
   const data = usePlatformData()
 
-  // 라우트별 문서 타이틀 + OG/Twitter/canonical 메타 동기화(네이티브 훅).
-  useRouteMeta(activeRoute, routeDef.title)
+  // 로그인 상태에서 인증 전용 경로(/login·/register)로 들어오면 대시보드로 보낸다.
+  useEffect(() => {
+    if (activeRoute === '/login' || activeRoute === '/register') {
+      navigate('/')
+    }
+  }, [activeRoute, navigate])
 
-  // 라우트 변경 시 보조기술 안내(aria-live). 포커스/스크롤 이동은 useRouteState가
-  // 이미 처리하므로 여기서는 announce만 담당한다.
+  // 라우트 변경 시 보조기술 안내(aria-live).
   const [routeAnnouncement, setRouteAnnouncement] = useState('')
   const hasAnnouncedRef = useRef(false)
   useEffect(() => {
@@ -42,10 +60,22 @@ const App = () => {
   )
 
   const renderPage = () => {
-    if (activeRoute === '/') {
-      return <DashboardPage data={data} onNavigate={navigate} />
+    switch (activeRoute) {
+      case '/':
+        return <DashboardPage data={data} onNavigate={navigate} />
+      case '/care':
+        return <CarePage data={data} onNavigate={navigate} />
+      case '/settlements':
+        return <SettlementsPage data={data} onNavigate={navigate} />
+      case '/claims':
+        return <ClaimsPage data={data} onNavigate={navigate} />
+      case '/analytics':
+        return <AnalyticsPage data={data} onNavigate={navigate} />
+      case '/plans':
+        return <PlansPage data={data} />
+      default:
+        return <PlaceholderPage def={routeDef} onNavigate={navigate} />
     }
-    return <PlaceholderPage def={routeDef} onNavigate={navigate} />
   }
 
   return (
@@ -62,6 +92,8 @@ const App = () => {
         isOnline={isOnline}
         mainRef={mainRef}
         mainId={ROUTE_MAIN_ID}
+        userName={auth.user?.name}
+        onLogout={auth.logout}
       >
         {isFallback ? (
           <p className="feedback feedback-warning" role="status" aria-live="polite">
@@ -97,6 +129,36 @@ const App = () => {
       </AppShell>
     </>
   )
+}
+
+/**
+ * 최상위 게이트: 저장된 토큰 확인(isResolving) → 미인증이면 로그인/회원가입(풀스크린,
+ * 셸 밖) → 인증되면 AuthedApp. 라우터는 한 번만 구독해 자식에 전달한다.
+ */
+const App = () => {
+  const route = useRouteState<HTMLDivElement>()
+  const auth = useAuth()
+
+  useRouteMeta(route.activeRoute, route.routeDef.title)
+
+  if (auth.isResolving) {
+    return (
+      <div className="auth-splash" role="status" aria-live="polite">
+        <span className="auth-splash-dot" aria-hidden="true" />
+        <p>불러오는 중…</p>
+      </div>
+    )
+  }
+
+  if (!auth.isAuthenticated) {
+    return route.activeRoute === '/register' ? (
+      <RegisterPage onNavigate={route.navigate} />
+    ) : (
+      <LoginPage onNavigate={route.navigate} />
+    )
+  }
+
+  return <AuthedApp route={route} />
 }
 
 export { App }
