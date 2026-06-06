@@ -1,0 +1,72 @@
+<svg width="1200" height="630" viewBox="0 0 1200 1200" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="'Inter','Noto Sans KR','Apple SD Gothic Neo',sans-serif">
+  <!--
+    Authored at a 1200x1200 viewBox with all artwork centered in the middle 630px band
+    (y: 285..915). qlmanage thumbnails an SVG into a square canvas, so this layout
+    survives a center-crop to 1200x630. Brand: iris-indigo (OKLCH ~52% .196 264) with
+    a warm amber-coral accent (OKLCH ~63% .155 38), matching apps/web/src/styles.css.
+  -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="285" x2="1200" y2="915" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3a2f9c" />
+      <stop offset="0.55" stop-color="#4a3fbf" />
+      <stop offset="1" stop-color="#5b4fd6" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4a35e" />
+      <stop offset="1" stop-color="#ea7d56" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.05" r="0.7">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Full square painted so any crop band is on-brand -->
+  <rect width="1200" height="1200" fill="#4a3fbf" />
+  <rect x="0" y="285" width="1200" height="630" fill="url(#bg)" />
+  <rect x="0" y="285" width="1200" height="630" fill="url(#glow)" />
+
+  <g transform="translate(0 285)">
+    <!-- Decorative care "node" lattice, faint -->
+    <g opacity="0.14" stroke="#ffffff" stroke-width="2">
+      <circle cx="980" cy="120" r="56" />
+      <circle cx="1090" cy="240" r="34" />
+      <circle cx="900" cy="240" r="22" />
+      <line x1="980" y1="120" x2="1090" y2="240" />
+      <line x1="980" y1="120" x2="900" y2="240" />
+    </g>
+
+    <!-- Brand mark: rounded square with a heart glyph -->
+    <g transform="translate(96 92)">
+      <rect width="96" height="96" rx="24" fill="#ffffff" fill-opacity="0.12" stroke="#ffffff" stroke-opacity="0.45" stroke-width="2" />
+      <path d="M48 70 C 30 56, 22 46, 22 36 C 22 27, 29 22, 36 22 C 41 22, 45 25, 48 29 C 51 25, 55 22, 60 22 C 67 22, 74 27, 74 36 C 74 46, 66 56, 48 70 Z" fill="url(#accent)" />
+    </g>
+
+    <!-- Kicker -->
+    <text x="216" y="128" font-size="30" font-weight="700" letter-spacing="2" fill="#ffffff" fill-opacity="0.82">가족 돌봄 운영 플랫폼</text>
+    <text x="216" y="166" font-size="22" font-weight="500" letter-spacing="3" fill="#f4a35e" fill-opacity="0.95">FAMILY CARE OPERATIONS</text>
+
+    <!-- Headline -->
+    <text x="96" y="316" font-size="76" font-weight="800" fill="#ffffff">돌봄 기록·정산·청구를</text>
+    <text x="96" y="404" font-size="76" font-weight="800" fill="#ffffff">한 곳에서 간편하게</text>
+
+    <!-- Subhead -->
+    <text x="96" y="470" font-size="32" font-weight="500" fill="#ffffff" fill-opacity="0.86">방문 기록, 돌봄비 정산, 보험청구 진행까지 한 흐름으로</text>
+
+    <!-- Feature chips -->
+    <g font-size="26" font-weight="700">
+      <g transform="translate(96 516)">
+        <rect width="186" height="62" rx="31" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.3" />
+        <text x="93" y="40" text-anchor="middle" fill="#ffffff">🩺 돌봄 기록</text>
+      </g>
+      <g transform="translate(298 516)">
+        <rect width="186" height="62" rx="31" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.3" />
+        <text x="93" y="40" text-anchor="middle" fill="#ffffff">🧮 정산 계산</text>
+      </g>
+      <g transform="translate(500 516)">
+        <rect width="186" height="62" rx="31" fill="#ffffff" fill-opacity="0.14" stroke="#ffffff" stroke-opacity="0.3" />
+        <text x="93" y="40" text-anchor="middle" fill="#ffffff">📄 보험청구</text>
+      </g>
+    </g>
+  </g>
+</svg>

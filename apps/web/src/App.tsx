@@ -18,6 +18,7 @@ import {
 } from './routeConfig'
 import { formatRate, formatWon } from './utils'
 import { usePlatformData } from './state/usePlatformData'
+import { useRouteMeta } from './useRouteMeta'
 import { useRouteState } from './useRouteState'
 
 type RouteModeMetric = {
@@ -406,13 +407,15 @@ const App = () => {
   const heroMetrics = useMemo(() => getHeroMetrics(routeContext, data), [routeContext, data])
   const quickEntries = useMemo(() => getQuickEntries(routeContext), [routeContext])
 
-  // 라우트별 문서 타이틀 + 라우트 변경 시 보조기술 안내(aria-live). 포커스/스크롤 이동은
-  // useRouteState 가 이미 처리하므로 여기서는 타이틀과 announce 만 담당한다.
+  // 라우트별 문서 타이틀 + OG/Twitter/canonical 메타 동기화(네이티브 훅).
   const routeTitle = routeContext.route.title
+  useRouteMeta(routeContext.route.path, routeTitle)
+
+  // 라우트 변경 시 보조기술 안내(aria-live). 포커스/스크롤 이동은 useRouteState 가
+  // 이미 처리하므로 여기서는 announce 만 담당한다.
   const [routeAnnouncement, setRouteAnnouncement] = useState('')
   const hasAnnouncedRef = useRef(false)
   useEffect(() => {
-    document.title = `${routeTitle} · 가족 돌봄 운영`
     if (!hasAnnouncedRef.current) {
       hasAnnouncedRef.current = true
       return
