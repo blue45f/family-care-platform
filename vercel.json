@@ -12,7 +12,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://CHANGEME-family-care-api.example/api/:path*"
+      "destination": "https://familycare.3.107.235.143.nip.io/api/:path*"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
