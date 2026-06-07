@@ -10,6 +10,7 @@ import {
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import type { PlatformData } from '../../state/usePlatformData'
 import type { CareLog, CareLogType } from '../../types'
+import { isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,
   type BadgeTone,
@@ -43,13 +44,9 @@ const TYPE_TONE: Record<CareLogType, BadgeTone> = {
   기타: 'neutral',
 }
 
-// 권한 오류 신호로 조회 전용 여부를 추정한다(App의 hasReadOnlyError와 동일한 기준).
-const isReadOnlyError = (message: string) =>
-  message.includes('권한이 없어') || message.includes('401') || message.includes('403')
-
 export const CarePage = ({ data, onNavigate }: CarePageProps) => {
   const routeDef = routeDefs['/care']
-  const isReadOnly = isReadOnlyError(data.errorMessage)
+  const isReadOnly = isReadOnlyErrorMessage(data.errorMessage)
   const isSubmitting = data.isSubmittingCareLog
   const isBusy = isReadOnly || isSubmitting
 
