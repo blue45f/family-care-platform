@@ -18,4 +18,15 @@ describe('PublicHomePage', () => {
     expect(markup).toContain('시작 가이드')
     expect(markup).toContain('요금제')
   })
+
+  it('상세 사용 가이드 페이지로 바로갈 수 있는 요소를 노출한다', () => {
+    const markup = renderToStaticMarkup(
+      createElement(PublicHomePage, { onNavigate: () => undefined }),
+    )
+
+    expect(markup).toContain('FAQ 검색')
+    expect(markup).toContain('질문 또는 답변 내용으로 검색')
+    expect(markup).toContain('데모 상담 신청')
+    expect(markup).toContain('입력 내용 비우기')
+  })
 })

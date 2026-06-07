@@ -1898,6 +1898,20 @@ svg {
   color: var(--fg-strong);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.public-lead-form label small {
+  color: var(--fg-muted);
+  font-size: var(--text-xxs, 0.74rem);
+  font-weight: var(--weight-regular);
+}
+.public-lead-form p {
+  margin: 0;
+  color: var(--error);
+  font-size: var(--text-xs);
 }
 .public-lead-form input {
   height: 2.75rem;
@@ -1909,6 +1923,10 @@ svg {
 }
 .public-lead-form input::placeholder {
   color: var(--fg-subtle);
+}
+.public-lead-form input[aria-invalid='true'] {
+  border-color: var(--error);
+  box-shadow: 0 0 0 0.15rem color-mix(in oklch, var(--error) 25%, transparent);
 }
 .public-lead-success {
   max-width: var(--content-max);
@@ -1926,6 +1944,23 @@ svg {
 }
 .public-faq {
   background: var(--bg-surface);
+}
+.public-faq-search {
+  display: block;
+  width: min(100%, var(--content-max));
+  margin: 0 auto var(--space-4);
+  height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  color: var(--fg-default);
+}
+.public-faq-empty {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
 }
 .public-faq-list {
   display: grid;

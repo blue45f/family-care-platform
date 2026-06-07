@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
 
 import type { AppRoute } from '../../routeConfig'
 import type { PublicNavigateState } from '../../routeConfig'
@@ -106,42 +106,201 @@ type DemoLead = {
   phone: string
 }
 
+type DemoLeadValidationError = {
+  centerName?: string
+  name?: string
+  email?: string
+  phone?: string
+}
+
 const productPreviewRows = [
   ['09:00', '이은정', '방문 예정', '예정'],
   ['11:30', '김민수', '복약 확인', '진행중'],
   ['14:00', '최성수', '정산 확인', '완료'],
 ]
 
+const DEMO_LEAD_DRAFT_KEY = 'public-home-demo-lead-draft-v1'
+
+const DEMO_LEAD_FALLBACK: DemoLead = {
+  centerName: '',
+  name: '',
+  email: '',
+  phone: '',
+}
+
+const EMAIL_REGEX = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+const PHONE_REGEX = /^[0-9+\-()\s]{9,20}$/
+
+const readDemoLeadDraft = () => {
+  if (typeof window === 'undefined') {
+    return DEMO_LEAD_FALLBACK
+  }
+
+  try {
+    const raw = window.localStorage.getItem(DEMO_LEAD_DRAFT_KEY)
+    if (!raw) {
+      return DEMO_LEAD_FALLBACK
+    }
+
+    const parsed = JSON.parse(raw)
+    if (
+      typeof parsed?.centerName === 'string' &&
+      typeof parsed?.name === 'string' &&
+      typeof parsed?.email === 'string' &&
+      typeof parsed?.phone === 'string'
+    ) {
+      return {
+        centerName: parsed.centerName,
+        name: parsed.name,
+        email: parsed.email,
+        phone: parsed.phone,
+      }
+    }
+  } catch {
+    // ignore malformed draft and fall back to clean state
+  }
+
+  return DEMO_LEAD_FALLBACK
+}
+
+const validateDemoLead = (value: DemoLead): DemoLeadValidationError => {
+  const errors: DemoLeadValidationError = {}
+
+  if (!value.centerName.trim()) {
+    errors.centerName = '센터명을 입력해 주세요.'
+  }
+
+  if (!value.name.trim()) {
+    errors.name = '담당자 이름을 입력해 주세요.'
+  }
+
+  if (!value.email.trim()) {
+    errors.email = '이메일을 입력해 주세요.'
+  } else if (!EMAIL_REGEX.test(value.email.trim())) {
+    errors.email = '올바른 이메일 주소 형식을 입력해 주세요.'
+  }
+
+  if (!value.phone.trim()) {
+    errors.phone = '연락처를 입력해 주세요.'
+  } else if (!PHONE_REGEX.test(value.phone.trim())) {
+    errors.phone = '연락 가능한 번호 형식으로 입력해 주세요.'
+  }
+
+  return errors
+}
+
+const hasDemoLeadValidationError = (errors: DemoLeadValidationError) =>
+  Object.values(errors).some(Boolean)
+
 export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
-  const [activeFaqIndex, setActiveFaqIndex] = useState(0)
-  const [demoLead, setDemoLead] = useState<DemoLead>({
-    centerName: '',
-    name: '',
-    email: '',
-    phone: '',
-  })
+  const leadFormId = useId()
+  const [faqSearch, setFaqSearch] = useState('')
+  const [activeFaqQuestion, setActiveFaqQuestion] = useState('')
+  const [demoLead, setDemoLead] = useState<DemoLead>(readDemoLeadDraft)
+  const [leadErrors, setLeadErrors] = useState<DemoLeadValidationError>({})
   const [leadSubmitted, setLeadSubmitted] = useState(false)
 
-  const submitDemoLead = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const trimmedEmail = demoLead.email.trim()
-    const trimmedCenter = demoLead.centerName.trim()
-    const trimmedName = demoLead.name.trim()
-    const trimmedPhone = demoLead.phone.trim()
+  const leadCenterErrorId = `${leadFormId}-center-error`
+  const leadNameErrorId = `${leadFormId}-name-error`
+  const leadEmailErrorId = `${leadFormId}-email-error`
+  const leadPhoneErrorId = `${leadFormId}-phone-error`
 
-    if (!trimmedCenter || !trimmedName || !trimmedEmail || !trimmedPhone) {
+  const hasAnyLeadError = hasDemoLeadValidationError(leadErrors)
+  const draftStateAvailable = typeof window !== 'undefined'
+
+  useEffect(() => {
+    if (leadSubmitted || typeof window === 'undefined') {
       return
     }
 
-    if (!trimmedEmail.includes('@')) {
+    try {
+      window.localStorage.setItem(DEMO_LEAD_DRAFT_KEY, JSON.stringify(demoLead))
+    } catch {
+      // storage unavailable: ignore persistence gracefully
+    }
+  }, [demoLead, leadSubmitted])
+
+  const visibleFaqs = useMemo(() => {
+    const term = faqSearch.trim().toLowerCase()
+    if (!term) {
+      return publicFaqs
+    }
+
+    return publicFaqs.filter(
+      ({ question, answer }) =>
+        question.toLowerCase().includes(term) || answer.toLowerCase().includes(term),
+    )
+  }, [faqSearch])
+
+  useEffect(() => {
+    if (!visibleFaqs.length) {
+      setActiveFaqQuestion('')
       return
+    }
+
+    if (!activeFaqQuestion || !visibleFaqs.some((faq) => faq.question === activeFaqQuestion)) {
+      setActiveFaqQuestion(visibleFaqs[0].question)
+    }
+  }, [activeFaqQuestion, visibleFaqs])
+
+  const resetLeadDraft = () => {
+    setLeadSubmitted(false)
+    setDemoLead(DEMO_LEAD_FALLBACK)
+    setLeadErrors({})
+    if (draftStateAvailable) {
+      try {
+        window.localStorage.removeItem(DEMO_LEAD_DRAFT_KEY)
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const clearLeadError = (field: keyof DemoLeadValidationError) => {
+    setLeadErrors((current) => {
+      if (!current[field]) {
+        return current
+      }
+
+      const next = { ...current }
+      delete next[field]
+      return next
+    })
+  }
+
+  const updateDemoLead = (field: keyof DemoLead, value: string) => {
+    setDemoLead((current) => ({ ...current, [field]: value }))
+    clearLeadError(field)
+  }
+
+  const submitDemoLead = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const trimmed = {
+      centerName: demoLead.centerName.trim(),
+      name: demoLead.name.trim(),
+      email: demoLead.email.trim(),
+      phone: demoLead.phone.trim(),
+    }
+
+    const errors = validateDemoLead(trimmed)
+
+    if (hasDemoLeadValidationError(errors)) {
+      setLeadErrors(errors)
+      return
+    }
+
+    setDemoLead(trimmed)
+    setLeadErrors({})
+    if (draftStateAvailable) {
+      try {
+        window.localStorage.removeItem(DEMO_LEAD_DRAFT_KEY)
+      } catch {
+        // ignore
+      }
     }
 
     setLeadSubmitted(true)
   }
-
-  const updateDemoLead = (field: keyof DemoLead, value: string) =>
-    setDemoLead((current) => ({ ...current, [field]: value }))
 
   return (
     <main className="public-page" aria-labelledby="public-home-title">
@@ -400,44 +559,82 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         {leadSubmitted ? (
           <article className="public-lead-success" role="status">
             <p>접수 완료했습니다. 영업팀에서 1일 내로 연락드리겠습니다.</p>
+            <div className="public-hero-actions">
+              <Button type="button" onClick={resetLeadDraft}>
+                새로운 문의 작성
+              </Button>
+            </div>
           </article>
         ) : (
-          <form className="public-lead-form" onSubmit={submitDemoLead}>
-            <label htmlFor="lead-center">센터명</label>
+          <form className="public-lead-form" onSubmit={submitDemoLead} noValidate>
+            <label htmlFor="lead-center">
+              센터명
+              <small>필수 입력</small>
+            </label>
             <input
               id="lead-center"
+              name="centerName"
               value={demoLead.centerName}
               onChange={(e) => updateDemoLead('centerName', e.target.value)}
               placeholder="예) 행복돌봄센터"
-              required
+              aria-invalid={Boolean(leadErrors.centerName) || undefined}
+              aria-describedby={leadErrors.centerName ? leadCenterErrorId : undefined}
             />
-            <label htmlFor="lead-name">담당자 이름</label>
+            {leadErrors.centerName ? <p id={leadCenterErrorId}>{leadErrors.centerName}</p> : null}
+
+            <label htmlFor="lead-name">
+              담당자 이름
+              <small>필수 입력</small>
+            </label>
             <input
               id="lead-name"
+              name="name"
               value={demoLead.name}
               onChange={(e) => updateDemoLead('name', e.target.value)}
               placeholder="예) 김현지"
-              required
+              aria-invalid={Boolean(leadErrors.name) || undefined}
+              aria-describedby={leadErrors.name ? leadNameErrorId : undefined}
             />
-            <label htmlFor="lead-email">이메일</label>
+            {leadErrors.name ? <p id={leadNameErrorId}>{leadErrors.name}</p> : null}
+
+            <label htmlFor="lead-email">
+              이메일
+              <small>필수 입력</small>
+            </label>
             <input
               id="lead-email"
+              name="email"
               type="email"
               value={demoLead.email}
               onChange={(e) => updateDemoLead('email', e.target.value)}
               placeholder="name@care.co.kr"
-              required
+              aria-invalid={Boolean(leadErrors.email) || undefined}
+              aria-describedby={leadErrors.email ? leadEmailErrorId : undefined}
             />
-            <label htmlFor="lead-phone">연락처</label>
+            {leadErrors.email ? <p id={leadEmailErrorId}>{leadErrors.email}</p> : null}
+
+            <label htmlFor="lead-phone">
+              연락처
+              <small>필수 입력</small>
+            </label>
             <input
               id="lead-phone"
+              name="phone"
               value={demoLead.phone}
               onChange={(e) => updateDemoLead('phone', e.target.value)}
               placeholder="010-0000-0000"
-              required
+              aria-invalid={Boolean(leadErrors.phone) || undefined}
+              aria-describedby={leadErrors.phone ? leadPhoneErrorId : undefined}
             />
+            {leadErrors.phone ? <p id={leadPhoneErrorId}>{leadErrors.phone}</p> : null}
+
             <div className="public-hero-actions">
-              <Button type="submit">데모 상담 신청</Button>
+              <Button type="submit" disabled={hasAnyLeadError}>
+                데모 상담 신청
+              </Button>
+              <Button type="button" variant="secondary" onClick={resetLeadDraft}>
+                입력 내용 비우기
+              </Button>
             </div>
           </form>
         )}
@@ -447,35 +644,58 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         <div className="public-section-head">
           <p className="page-eyebrow">도입 가이드</p>
           <h2 id="public-faq-title">실제 운영 전 더 잘 이해할 수 있게 정리했습니다</h2>
+          <p>
+            궁금한 항목을 입력하면 해당 질문만 빠르게 찾아볼 수 있습니다.
+            <span className="sr-only">
+              FAQ는 중복 답변을 줄여서 같은 문구를 반복적으로 확인할 수 있습니다.
+            </span>
+          </p>
         </div>
-        <div className="public-faq-list">
-          {publicFaqs.map((faq, index) => {
-            const isOpen = activeFaqIndex === index
+        <input
+          className="public-faq-search"
+          type="search"
+          placeholder="질문 또는 답변 내용으로 검색"
+          value={faqSearch}
+          onChange={(e) => setFaqSearch(e.target.value)}
+          aria-label="FAQ 검색"
+        />
+        {visibleFaqs.length === 0 ? (
+          <p className="public-faq-empty" role="status">
+            검색어와 일치하는 FAQ가 없습니다. 검색어를 조금 줄여보세요.
+          </p>
+        ) : (
+          <div className="public-faq-list">
+            {visibleFaqs.map((faq) => {
+              const isOpen = activeFaqQuestion === faq.question
 
-            return (
-              <article className="public-faq-item" key={faq.question}>
-                <button
-                  type="button"
-                  className="public-faq-question"
-                  onClick={() => setActiveFaqIndex(isOpen ? -1 : index)}
-                  aria-expanded={isOpen}
-                  aria-controls={`public-faq-answer-${index}`}
-                >
-                  <span>{faq.question}</span>
-                  <span className={`public-faq-sign ${isOpen ? 'is-open' : ''}`} aria-hidden="true">
-                    {isOpen ? '−' : '+'}
-                  </span>
-                </button>
-                <div
-                  id={`public-faq-answer-${index}`}
-                  className={`public-faq-answer ${isOpen ? 'is-open' : ''}`}
-                >
-                  <p>{faq.answer}</p>
-                </div>
-              </article>
-            )
-          })}
-        </div>
+              return (
+                <article className="public-faq-item" key={faq.question}>
+                  <button
+                    type="button"
+                    className="public-faq-question"
+                    onClick={() => setActiveFaqQuestion(isOpen ? '' : faq.question)}
+                    aria-expanded={isOpen}
+                    aria-controls={`public-faq-answer-${faq.question.replaceAll(' ', '-')}`}
+                  >
+                    <span>{faq.question}</span>
+                    <span
+                      className={`public-faq-sign ${isOpen ? 'is-open' : ''}`}
+                      aria-hidden="true"
+                    >
+                      {isOpen ? '−' : '+'}
+                    </span>
+                  </button>
+                  <div
+                    id={`public-faq-answer-${faq.question.replaceAll(' ', '-')}`}
+                    className={`public-faq-answer ${isOpen ? 'is-open' : ''}`}
+                  >
+                    <p>{faq.answer}</p>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        )}
       </section>
 
       <section className="public-cta" aria-labelledby="public-cta-title">
