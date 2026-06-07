@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 
 import type { AppRoute } from '../../routeConfig'
 import { Button, Icon } from '../ui'
@@ -98,6 +98,13 @@ const publicFaqs = [
   },
 ] as const
 
+type DemoLead = {
+  centerName: string
+  name: string
+  email: string
+  phone: string
+}
+
 const productPreviewRows = [
   ['09:00', '이은정', '방문 예정', '예정'],
   ['11:30', '김민수', '복약 확인', '진행중'],
@@ -106,6 +113,34 @@ const productPreviewRows = [
 
 export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
   const [activeFaqIndex, setActiveFaqIndex] = useState(0)
+  const [demoLead, setDemoLead] = useState<DemoLead>({
+    centerName: '',
+    name: '',
+    email: '',
+    phone: '',
+  })
+  const [leadSubmitted, setLeadSubmitted] = useState(false)
+
+  const submitDemoLead = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const trimmedEmail = demoLead.email.trim()
+    const trimmedCenter = demoLead.centerName.trim()
+    const trimmedName = demoLead.name.trim()
+    const trimmedPhone = demoLead.phone.trim()
+
+    if (!trimmedCenter || !trimmedName || !trimmedEmail || !trimmedPhone) {
+      return
+    }
+
+    if (!trimmedEmail.includes('@')) {
+      return
+    }
+
+    setLeadSubmitted(true)
+  }
+
+  const updateDemoLead = (field: keyof DemoLead, value: string) =>
+    setDemoLead((current) => ({ ...current, [field]: value }))
 
   return (
     <main className="public-page" aria-labelledby="public-home-title">
@@ -128,6 +163,9 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           </a>
           <a className="public-anchor-link" href="#plans">
             요금제
+          </a>
+          <a className="public-anchor-link" href="#contact">
+            데모 문의
           </a>
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
@@ -303,6 +341,61 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             </article>
           ))}
         </div>
+      </section>
+
+      <section className="public-band public-lead" id="contact" aria-labelledby="public-lead-title">
+        <div className="public-section-head">
+          <p className="page-eyebrow">상담 신청</p>
+          <h2 id="public-lead-title">실제 운영 전 확인사항이 있으면 바로 보내주세요</h2>
+          <p>
+            센터 규모, 이용자 수, 보험 처리 방식 같은 핵심 정보를 남기면 맞춤 데모 시나리오를 먼저
+            제안합니다.
+          </p>
+        </div>
+        {leadSubmitted ? (
+          <article className="public-lead-success" role="status">
+            <p>접수 완료했습니다. 영업팀에서 1일 내로 연락드리겠습니다.</p>
+          </article>
+        ) : (
+          <form className="public-lead-form" onSubmit={submitDemoLead}>
+            <label htmlFor="lead-center">센터명</label>
+            <input
+              id="lead-center"
+              value={demoLead.centerName}
+              onChange={(e) => updateDemoLead('centerName', e.target.value)}
+              placeholder="예) 행복돌봄센터"
+              required
+            />
+            <label htmlFor="lead-name">담당자 이름</label>
+            <input
+              id="lead-name"
+              value={demoLead.name}
+              onChange={(e) => updateDemoLead('name', e.target.value)}
+              placeholder="예) 김현지"
+              required
+            />
+            <label htmlFor="lead-email">이메일</label>
+            <input
+              id="lead-email"
+              type="email"
+              value={demoLead.email}
+              onChange={(e) => updateDemoLead('email', e.target.value)}
+              placeholder="name@care.co.kr"
+              required
+            />
+            <label htmlFor="lead-phone">연락처</label>
+            <input
+              id="lead-phone"
+              value={demoLead.phone}
+              onChange={(e) => updateDemoLead('phone', e.target.value)}
+              placeholder="010-0000-0000"
+              required
+            />
+            <div className="public-hero-actions">
+              <Button type="submit">데모 상담 신청</Button>
+            </div>
+          </form>
+        )}
       </section>
 
       <section className="public-band public-faq" id="faq" aria-labelledby="public-faq-title">

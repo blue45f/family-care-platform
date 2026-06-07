@@ -1775,6 +1775,45 @@ svg {
   flex: none;
   margin-top: 0.16rem;
 }
+.public-lead {
+  background: var(--bg-surface);
+}
+.public-lead-form {
+  display: grid;
+  max-width: var(--content-max);
+  gap: var(--space-3);
+  margin: 0 auto;
+}
+.public-lead-form label {
+  color: var(--fg-strong);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+.public-lead-form input {
+  height: 2.75rem;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  color: var(--fg-default);
+}
+.public-lead-form input::placeholder {
+  color: var(--fg-subtle);
+}
+.public-lead-success {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-4);
+  border: 1px solid color-mix(in oklch, var(--accent) 45%, var(--border-subtle));
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklch, var(--accent-soft) 30%, var(--bg-surface-raised));
+}
+.public-lead-success p {
+  margin: 0;
+  color: var(--fg-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
 .public-faq {
   background: var(--bg-surface);
 }
