@@ -25,6 +25,15 @@ type TutorialGoal = {
   action: string
 }
 
+type TutorialPersona = {
+  role: string
+  summary: string
+  startAt: string
+  route: AppRoute
+  action: string
+  icon: 'care' | 'analytics' | 'claims' | 'schedule'
+}
+
 type TutorialFaq = {
   q: string
   a: string
@@ -90,6 +99,33 @@ const quickGoals: TutorialGoal[] = [
   },
 ]
 
+const tutorialPersonas: TutorialPersona[] = [
+  {
+    role: '운영팀장',
+    summary: '중요한 건은 오늘 상태가 한 번에 보이고, 예외 처리 규칙이 문서화되어야 합니다.',
+    startAt: '대시보드 → 일정 → 기록',
+    route: '/',
+    action: '운영자 시작점 보기',
+    icon: 'analytics',
+  },
+  {
+    role: '관리자',
+    summary: '정산·청구 흐름을 월 기준으로 점검하고 승인 대기 건을 미리 알 수 있어야 합니다.',
+    startAt: '정산 → 청구 → 분석',
+    route: '/analytics',
+    action: '관리 시작점 보기',
+    icon: 'claims',
+  },
+  {
+    role: '신규 담당자',
+    summary: '4개 핵심 작업을 분기 없이 따라가면 오차를 크게 줄일 수 있습니다.',
+    startAt: '일정 → 기록 → 정산',
+    route: '/schedule',
+    action: '실무자 시작점 보기',
+    icon: 'care',
+  },
+]
+
 const tutorialFaq: TutorialFaq[] = [
   {
     q: '튜토리얼에서 무엇을 먼저 보면 좋나요?',
@@ -111,6 +147,12 @@ const tutorialFaq: TutorialFaq[] = [
 
 const TUTORIAL_PROGRESS_KEY = 'tutorial-progress-v1'
 
+const isValidStepIndex = (value: number) =>
+  Number.isInteger(value) && value >= 0 && value < tutorialSteps.length
+
+const normalizeTutorialSteps = (values: number[]) =>
+  [...new Set(values)].filter(isValidStepIndex).sort((left, right) => left - right)
+
 const parseProgress = () => {
   if (typeof window === 'undefined') {
     return [] as number[]
@@ -123,7 +165,9 @@ const parseProgress = () => {
     }
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed)
-      ? parsed.filter((value): value is number => Number.isInteger(value))
+      ? normalizeTutorialSteps(
+          parsed.filter((value: unknown): value is number => Number.isInteger(value as number)),
+        )
       : []
   } catch {
     return []
@@ -143,7 +187,7 @@ const useTutorialProgress = () => {
 
   const toggleStep = (stepIndex: number, checked: boolean) => {
     setCheckedSteps((current) => {
-      if (Number.isNaN(stepIndex) || stepIndex < 0 || stepIndex >= tutorialSteps.length) {
+      if (!isValidStepIndex(stepIndex)) {
         return current
       }
 
@@ -154,7 +198,7 @@ const useTutorialProgress = () => {
       if (current.includes(stepIndex)) {
         return current
       }
-      return [...current, stepIndex]
+      return normalizeTutorialSteps([...current, stepIndex])
     })
   }
 
@@ -165,6 +209,12 @@ const useTutorialProgress = () => {
     () => Math.round((checkedCount / tutorialSteps.length) * 100),
     [checkedCount],
   )
+  const nextUnfinishedStep = useMemo(
+    () => tutorialSteps.findIndex((_, index) => !checkedSteps.includes(index)),
+    [checkedSteps],
+  )
+  const nextStep = nextUnfinishedStep >= 0 ? tutorialSteps[nextUnfinishedStep] : tutorialSteps[0]
+  const allChecked = checkedSteps.length === tutorialSteps.length
 
   return {
     checkedSteps,
@@ -174,6 +224,8 @@ const useTutorialProgress = () => {
     reset,
     openFaqIndex,
     setOpenFaqIndex,
+    nextStep,
+    allChecked,
   }
 }
 
@@ -187,9 +239,12 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
     reset,
     openFaqIndex,
     setOpenFaqIndex,
+    nextStep,
+    allChecked,
   } = useTutorialProgress()
-
-  const allChecked = checkedCount === tutorialSteps.length
+  const progressLabel = allChecked
+    ? '모든 단계 완료'
+    : `${checkedCount} / ${tutorialSteps.length} 단계`
 
   return (
     <div className="stack">
@@ -211,6 +266,17 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               데모 로그인으로 시작
             </Button>
             <Button
+              variant={allChecked ? 'primary' : 'secondary'}
+              onClick={() =>
+                onNavigate(nextStep.route, {
+                  source: 'hero',
+                  fromLanding: true,
+                })
+              }
+            >
+              {allChecked ? '전체 흐름 점검으로 이동' : `${nextStep.step}단계 바로가기`}
+            </Button>
+            <Button
               variant="secondary"
               onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
             >
@@ -224,7 +290,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               key={item.route}
               type="button"
               className="guide-mini-step"
-              onClick={() => onNavigate(item.route)}
+              onClick={() => onNavigate(item.route, { source: 'hero', fromLanding: true })}
             >
               <span aria-hidden="true">
                 <Icon name={item.icon} size={20} />
@@ -257,7 +323,11 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                 <span style={{ marginLeft: 'var(--space-2)' }}>· {step.duration}</span>
               </h3>
               <p>{step.desc}</p>
-              <Button variant="secondary" size="sm" onClick={() => onNavigate(step.route)}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onNavigate(step.route, { source: 'hero', fromLanding: true })}
+              >
                 {step.action}
                 <Icon name="arrow-right" size={15} />
               </Button>
@@ -268,13 +338,55 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
 
       <Card>
         <CardHeader
+          title="도입 유형별 추천 시작점"
+          subtitle="역할에 따라 집중하면 교육 비용이 줄어듭니다."
+        />
+        <div className="guide-examples" style={{ marginTop: 'var(--space-4)' }}>
+          {tutorialPersonas.map((persona) => (
+            <div key={persona.role}>
+              <dl>
+                <dt>
+                  <Icon name={persona.icon} size={16} /> {persona.role}
+                </dt>
+                <dd>
+                  {persona.summary}
+                  <div
+                    style={{
+                      marginTop: 'var(--space-3)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 'var(--space-2)',
+                    }}
+                  >
+                    <Badge tone="neutral" plain>
+                      추천 시작: {persona.startAt}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        onNavigate(persona.route, { source: 'hero', fromLanding: true })
+                      }
+                    >
+                      {persona.action}
+                    </Button>
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
           title="10분 체크리스트"
           subtitle="각 단계 완료 시 체크하면 진척률이 남습니다."
         />
         <div className="guide-progress" aria-live="polite" aria-atomic="true">
           <div className="guide-progress-head">
             <span>진행률</span>
-            <strong>{allChecked ? '완료' : `${checkedCount} / ${tutorialSteps.length}단계`}</strong>
+            <strong>{progressLabel}</strong>
           </div>
           <div className="guide-progress-track">
             <span style={{ width: `${progressRate}%` }} />
@@ -296,7 +408,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                   onChange={(event) => toggleStep(index, event.currentTarget.checked)}
                 />
                 <span>{step.step}</span>
-                <p>
+                <div>
                   <strong>{step.title}</strong>
                   <span
                     className="guide-step-subtitle"
@@ -307,19 +419,29 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                   <button
                     type="button"
                     className="card-link"
-                    onClick={() => onNavigate(step.route)}
+                    onClick={() =>
+                      onNavigate(step.route, {
+                        source: 'hero',
+                        fromLanding: true,
+                      })
+                    }
                   >
-                    {step.action}
+                    {checkedSteps.includes(index) ? '재확인하기' : '지금 실행'}
                   </button>
                   <button
                     type="button"
                     className="card-link"
                     style={{ marginLeft: 'var(--space-2)' }}
-                    onClick={() => onNavigate(step.route)}
+                    onClick={() =>
+                      onNavigate(step.route, {
+                        source: 'hero',
+                        fromLanding: true,
+                      })
+                    }
                   >
                     데모에서 바로 실행
                   </button>
-                </p>
+                </div>
               </label>
             </li>
           ))}
@@ -342,7 +464,11 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                 </span>
                 <h3>{goal.title}</h3>
                 <p>{goal.detail}</p>
-                <Button variant="secondary" size="sm" onClick={() => onNavigate(goal.route)}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => onNavigate(goal.route, { source: 'hero', fromLanding: true })}
+                >
                   {goal.action}
                   <Icon name="arrow-right" size={15} />
                 </Button>
