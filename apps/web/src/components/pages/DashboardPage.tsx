@@ -1,4 +1,5 @@
 import { managementRoutes, routeDefs, type AppRoute } from '../../routeConfig'
+import { useState } from 'react'
 import type { PlatformData } from '../../state/usePlatformData'
 import { claimStatusClass, formatWon } from '../../utils'
 import type { ClaimStatus } from '../../types'
@@ -14,6 +15,32 @@ import {
   Skeleton,
   Stat,
 } from '../ui'
+
+const DASHBOARD_ONBOARDING_KEY = 'dashboard-first-onboarding-dismissed-v1'
+
+const isDashboardOnboardingDismissed = () => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  try {
+    return window.localStorage.getItem(DASHBOARD_ONBOARDING_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+const dismissDashboardOnboarding = () => {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  try {
+    window.localStorage.setItem(DASHBOARD_ONBOARDING_KEY, '1')
+  } catch {
+    // storage unavailable: degrade gracefully
+  }
+}
 
 type DashboardPageProps = {
   data: PlatformData
@@ -44,6 +71,7 @@ const greetByHour = () => {
 }
 
 export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
+  const [showOnboarding, setShowOnboarding] = useState(!isDashboardOnboardingDismissed())
   const recentCare = data.careLogs.slice(0, 5)
   const pendingClaimList = data.claims.filter((claim) => claim.status !== '승인').slice(0, 4)
   const todayTasks = buildTodayWorkQueue({
@@ -54,8 +82,86 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
   })
   const managementLinks = managementRoutes.map((path) => routeDefs[path])
 
+  const shouldShowOnboarding =
+    showOnboarding &&
+    data.schedules.length === 0 &&
+    data.careLogs.length === 0 &&
+    data.settlements.length === 0 &&
+    data.claims.length === 0
+
+  const starterChecklist: { route: AppRoute; label: string; detail: string; action: string }[] = [
+    {
+      route: '/schedule',
+      label: '방문 일정 입력',
+      detail: '오늘부터 운영할 대상과 일정을 먼저 등록해 흐름을 시작하세요.',
+      action: '일정 등록으로 이동',
+    },
+    {
+      route: '/care',
+      label: '돌봄 기록 남기기',
+      detail: '첫 방문 이후 활동 이력을 기록해 정산 및 청구가 이어지게 만듭니다.',
+      action: '기록 화면으로 이동',
+    },
+    {
+      route: '/settlements',
+      label: '돌봄비 정산 확인',
+      detail: '돌봄 시간과 단가 입력으로 정산액 계산 흐름을 확인하세요.',
+      action: '정산 화면으로 이동',
+    },
+    {
+      route: '/claims',
+      label: '보험청구 상태 설정',
+      detail: '요청·검토·승인 상태를 입력하면 대시보드 알림이 정리됩니다.',
+      action: '청구 화면으로 이동',
+    },
+  ]
+
+  const hideOnboarding = () => {
+    dismissDashboardOnboarding()
+    setShowOnboarding(false)
+  }
+
   return (
     <div className="stack">
+      {shouldShowOnboarding ? (
+        <Card>
+          <CardHeader
+            title="처음 시작 10분 가이드"
+            subtitle="아직 데이터가 비어있다면 아래 순서부터 시작하면 운영 흐름을 빠르게 연결할 수 있습니다."
+            action={
+              <button type="button" className="card-link" onClick={() => onNavigate('/guide')}>
+                상세 가이드 보기
+              </button>
+            }
+          />
+          <ul className="guide-checklist">
+            {starterChecklist.map((step) => (
+              <li key={step.route}>
+                <span>{step.route.replace('/', '')}</span>
+                <p>
+                  <strong>{step.label}</strong>
+                  {` ${step.detail}`}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => onNavigate(step.route)}
+                    style={{ marginLeft: 'var(--space-3)' }}
+                  >
+                    {step.action}
+                    <Icon name="arrow-right" size={14} />
+                  </Button>
+                </p>
+              </li>
+            ))}
+          </ul>
+          <div className="public-hero-actions" style={{ marginTop: 'var(--space-4)' }}>
+            <button type="button" className="card-link" onClick={hideOnboarding}>
+              지금은 안 볼래요
+            </button>
+          </div>
+        </Card>
+      ) : null}
+
       <section className="today-panel" aria-labelledby="today-panel-title">
         <div className="today-panel-head">
           <div className="greeting">
