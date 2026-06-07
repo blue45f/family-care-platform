@@ -25,6 +25,24 @@ type TutorialGoal = {
   action: string
 }
 
+type TutorialScenario = {
+  title: string
+  duration: string
+  target: AppRoute
+  ctaLabel: string
+  steps: readonly number[]
+  summary: string
+}
+
+type TutorialMilestone = {
+  phase: string
+  title: string
+  plan: string
+  route: AppRoute
+  action: string
+  icon: 'schedule' | 'care' | 'settlement' | 'claims' | 'analytics'
+}
+
 type TutorialPersona = {
   role: string
   summary: string
@@ -96,6 +114,60 @@ const quickGoals: TutorialGoal[] = [
     detail: '센터 규모별 가격 정책이 어느 지점에서 바뀌어야 하는지 시뮬레이션으로 확인합니다.',
     route: '/plans',
     action: '요금제 보기',
+  },
+]
+
+const onboardingMilestones: TutorialMilestone[] = [
+  {
+    phase: 'D+1',
+    title: '운영 준비 완료',
+    plan: '대시보드에서 오늘 할 일, 일정, 미처리 청구 건을 먼저 파악합니다.',
+    route: '/',
+    action: '대시보드로 이동',
+    icon: 'analytics',
+  },
+  {
+    phase: '1주차',
+    title: '현장 기록 정착',
+    plan: '일정 등록 후 즉시 돌봄 기록과 정산을 남겨 운영 공백을 줄입니다.',
+    route: '/schedule',
+    action: '일정 화면으로 이동',
+    icon: 'schedule',
+  },
+  {
+    phase: '2주차',
+    title: '정산/청구 일치',
+    plan: '돌봄비 계산과 청구 상태 갱신까지 한 번에 점검해 이월 지연을 줄입니다.',
+    route: '/claims',
+    action: '청구 화면으로 이동',
+    icon: 'claims',
+  },
+]
+
+const scenarios: TutorialScenario[] = [
+  {
+    title: '신규 담당자 1일차 적응',
+    duration: '약 7분',
+    target: '/schedule',
+    ctaLabel: '일정 화면으로 이동',
+    steps: [0, 1],
+    summary: '일정 등록 → 돌봄 기록까지 한 번에 연결합니다.',
+  },
+  {
+    title: '정산·청구 관리 시작',
+    duration: '약 10분',
+    target: '/claims',
+    ctaLabel: '청구 화면으로 이동',
+    steps: [2, 3],
+    summary: '돌봄비 계산 후 청구 상태까지 점검 흐름으로 넘어갑니다.',
+  },
+  {
+    title: '운영 정합성 점검',
+    duration: '약 5분',
+    target: '/analytics',
+    ctaLabel: '운영 분석 보기',
+    steps: [0, 2, 3],
+    summary: '일정/정산/청구를 월간 관점으로 교차 확인합니다.',
   },
 ]
 
@@ -246,6 +318,52 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
     ? '모든 단계 완료'
     : `${checkedCount} / ${tutorialSteps.length} 단계`
 
+  const [copyResult, setCopyResult] = useState('')
+
+  const scenarioSummaries = useMemo(
+    () =>
+      scenarios.map((scenario) => {
+        const completedSteps = scenario.steps.filter((step) => checkedSteps.includes(step))
+        const rate = Math.round((completedSteps.length / scenario.steps.length) * 100)
+        return {
+          ...scenario,
+          completed: completedSteps.length === scenario.steps.length,
+          rate,
+        }
+      }),
+    [checkedSteps],
+  )
+
+  const summaryText = useMemo(
+    () =>
+      [
+        `튜토리얼 진행률: ${progressLabel}`,
+        ...scenarioSummaries.map(
+          (scenario) =>
+            `${scenario.title} (${scenario.duration}) - ${scenario.completed ? '완료' : `${scenario.rate}%`}: ${scenario.summary}`,
+        ),
+      ].join('\n'),
+    [progressLabel, scenarioSummaries],
+  )
+
+  const copySummary = async () => {
+    if (typeof window === 'undefined' || !window.navigator || !window.navigator.clipboard) {
+      setCopyResult('브라우저에서 클립보드를 지원하지 않습니다.')
+      return
+    }
+
+    try {
+      await window.navigator.clipboard.writeText(summaryText)
+      setCopyResult('요약 내용을 복사했습니다.')
+    } catch {
+      setCopyResult('복사에 실패했습니다. 브라우저 권한을 확인해 주세요.')
+    }
+
+    window.setTimeout(() => {
+      setCopyResult('')
+    }, 1600)
+  }
+
   return (
     <div className="stack">
       <PageHeader eyebrow={def.eyebrow} title={def.title} description={def.description} />
@@ -282,8 +400,13 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
             >
               자세한 사용법으로 이동
             </Button>
+            <Button variant="secondary" onClick={copySummary}>
+              <Icon name="arrow-right" size={15} />
+              진행 요약 복사
+            </Button>
           </div>
         </div>
+        {copyResult ? <p role="status">{copyResult}</p> : null}
         <div className="guide-mini-map" aria-label="튜토리얼 단계 요약">
           {tutorialSteps.map((item) => (
             <button
@@ -448,11 +571,76 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
         </ol>
       </Card>
 
+      <section className="guide-flow" aria-labelledby="tutorial-scenarios-title">
+        <div>
+          <p className="page-eyebrow">시나리오별 진행 체크</p>
+          <h2 id="tutorial-scenarios-title" className="section-title">
+            역할/목표별 추천 흐름
+          </h2>
+        </div>
+        <div className="guide-card-grid">
+          {scenarioSummaries.map((scenario) => (
+            <Card as="article" className="guide-article-card" key={scenario.title}>
+              <span className="guide-step-icon" aria-hidden="true">
+                <Icon name="check" size={20} />
+              </span>
+              <Badge tone={scenario.completed ? 'accent' : 'neutral'} plain>
+                {scenario.completed ? '시나리오 완료' : `${scenario.rate}%`}
+              </Badge>
+              <h3>{scenario.title}</h3>
+              <p>{scenario.summary}</p>
+              <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-2)' }}>
+                예상 소요: {scenario.duration}
+              </p>
+              <Button
+                variant={scenario.completed ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => onNavigate(scenario.target, { source: 'hero', fromLanding: true })}
+              >
+                {scenario.ctaLabel}
+                <Icon name="arrow-right" size={15} />
+              </Button>
+            </Card>
+          ))}
+        </div>
+      </section>
+
       <section className="guide-flow" aria-labelledby="tutorial-goals-title">
         <div>
           <p className="page-eyebrow">도입 후 자주 확인할 화면</p>
           <h2 id="tutorial-goals-title" className="section-title">
             첫 일주일 운영 체크포인트
+          </h2>
+        </div>
+        <div className="guide-card-grid">
+          {onboardingMilestones.map((milestone) => (
+            <Card as="article" className="guide-article-card" key={milestone.phase}>
+              <span className="guide-step-icon" aria-hidden="true">
+                <Icon name={milestone.icon} size={20} />
+              </span>
+              <Badge tone="neutral" plain>
+                {milestone.phase}
+              </Badge>
+              <h3>{milestone.title}</h3>
+              <p>{milestone.plan}</p>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => onNavigate(milestone.route, { source: 'hero', fromLanding: true })}
+              >
+                {milestone.action}
+                <Icon name="arrow-right" size={15} />
+              </Button>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section className="guide-flow" aria-labelledby="tutorial-checkpoint-title">
+        <div>
+          <p className="page-eyebrow">정합성 점검 루틴</p>
+          <h2 id="tutorial-checkpoint-title" className="section-title">
+            운영을 안정적으로 확장하는 기준
           </h2>
         </div>
         <div className="guide-card-grid">
