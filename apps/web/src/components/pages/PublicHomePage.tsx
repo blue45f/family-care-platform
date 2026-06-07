@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import type { AppRoute } from '../../routeConfig'
 import { Button, Icon } from '../ui'
 
@@ -33,6 +35,29 @@ const publicHighlights = [
   '처음 쓰는 담당자를 위한 사용 가이드와 역할별 체크포인트',
 ]
 
+const publicFaqs = [
+  {
+    question: '지금 바로 데모를 볼 수 있나요?',
+    answer:
+      '로그인 화면의 데모 시작 버튼으로 샘플 데이터와 함께 바로 체험할 수 있습니다. 별도 계약 전에도 사용 흐름을 확인해보세요.',
+  },
+  {
+    question: '직원 수가 적은 작은 센터도 사용할 수 있나요?',
+    answer:
+      '네, 스태프 수와 대상자 수가 적은 센터를 기준으로 설계되어 있습니다. 대시보드와 일정표는 기본 사용자 수가 늘어나도 팀 구성에 맞춰 확장됩니다.',
+  },
+  {
+    question: '보험청구/정산은 어느 단계부터 쓰기 시작할 수 있나요?',
+    answer:
+      '등록된 방문 일정에서 돌봄 내역이 쌓이면 정산 항목 생성이 자동으로 이어집니다. 이후 정산 목록에서 청구 상태를 한눈에 확인하면 됩니다.',
+  },
+  {
+    question: '센터 전체 규정을 반영한 맞춤 설정이 가능할까요?',
+    answer:
+      '업무 절차에 맞게 체크포인트·상태 문구·권한 관리를 조정해 단계별 운영 규칙을 맞출 수 있습니다. 향후 추가 설정은 가이드 페이지와 함께 점진적으로 확장될 예정입니다.',
+  },
+] as const
+
 const productPreviewRows = [
   ['09:00', '이은정', '방문 예정', '예정'],
   ['11:30', '김민수', '복약 확인', '진행중'],
@@ -40,6 +65,8 @@ const productPreviewRows = [
 ]
 
 export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
+  const [activeFaqIndex, setActiveFaqIndex] = useState(0)
+
   return (
     <main className="public-page" aria-labelledby="public-home-title">
       <header className="public-nav" aria-label="공개 사이트 내비게이션">
@@ -52,7 +79,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             <small>CARE OPERATIONS</small>
           </span>
         </button>
-        <nav className="public-nav-actions" aria-label="계정">
+        <nav className="public-nav-actions" aria-label="서비스 탐색 및 계정">
+          <a className="public-anchor-link" href="#workflow">
+            핵심 기능
+          </a>
+          <a className="public-anchor-link" href="#faq">
+            자주 묻는 질문
+          </a>
           <button type="button" className="public-text-link" onClick={() => onNavigate('/login')}>
             로그인
           </button>
@@ -79,7 +112,11 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         </div>
       </section>
 
-      <section className="public-band public-workflow" aria-labelledby="public-workflow-title">
+      <section
+        id="workflow"
+        className="public-band public-workflow"
+        aria-labelledby="public-workflow-title"
+      >
         <div className="public-section-head">
           <p className="page-eyebrow">운영 흐름</p>
           <h2 id="public-workflow-title">하루 업무가 같은 순서로 정리됩니다</h2>
@@ -158,6 +195,41 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="public-band public-faq" id="faq" aria-labelledby="public-faq-title">
+        <div className="public-section-head">
+          <p className="page-eyebrow">도입 가이드</p>
+          <h2 id="public-faq-title">실제 운영 전 더 잘 이해할 수 있게 정리했습니다</h2>
+        </div>
+        <div className="public-faq-list">
+          {publicFaqs.map((faq, index) => {
+            const isOpen = activeFaqIndex === index
+
+            return (
+              <article className="public-faq-item" key={faq.question}>
+                <button
+                  type="button"
+                  className="public-faq-question"
+                  onClick={() => setActiveFaqIndex(isOpen ? -1 : index)}
+                  aria-expanded={isOpen}
+                  aria-controls={`public-faq-answer-${index}`}
+                >
+                  <span>{faq.question}</span>
+                  <span className={`public-faq-sign ${isOpen ? 'is-open' : ''}`} aria-hidden="true">
+                    {isOpen ? '−' : '+'}
+                  </span>
+                </button>
+                <div
+                  id={`public-faq-answer-${index}`}
+                  className={`public-faq-answer ${isOpen ? 'is-open' : ''}`}
+                >
+                  <p>{faq.answer}</p>
+                </div>
+              </article>
+            )
+          })}
+        </div>
       </section>
 
       <section className="public-cta" aria-labelledby="public-cta-title">

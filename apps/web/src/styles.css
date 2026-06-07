@@ -1452,6 +1452,17 @@ svg {
   align-items: center;
   gap: var(--space-2);
 }
+.public-anchor-link {
+  min-height: 2.5rem;
+  padding: 0 var(--space-3);
+  color: var(--fg-default);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+}
+.public-anchor-link:hover {
+  color: var(--accent-hover);
+}
 .public-text-link {
   min-height: 2.5rem;
   padding: 0 var(--space-3);
@@ -1665,6 +1676,71 @@ svg {
   flex: none;
   margin-top: 0.18rem;
   color: var(--accent);
+}
+.public-faq {
+  background: var(--bg-surface);
+}
+.public-faq-list {
+  display: grid;
+  max-width: var(--content-max);
+  gap: var(--space-3);
+  margin: 0 auto;
+}
+.public-faq-item {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface-raised);
+  overflow: hidden;
+}
+.public-faq-question {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 3.4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--fg-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-align: left;
+  cursor: pointer;
+}
+.public-faq-question::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  border-bottom: 1px solid transparent;
+}
+.public-faq-question .public-faq-sign {
+  flex: none;
+  color: var(--fg-muted);
+  transition: transform var(--motion-fast);
+}
+.public-faq-question .public-faq-sign.is-open {
+  transform: rotate(180deg);
+}
+.public-faq-answer {
+  max-height: 0;
+  padding: 0 var(--space-4);
+  overflow: hidden;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  transition:
+    max-height var(--motion-fast),
+    padding var(--motion-fast);
+}
+.public-faq-answer.is-open {
+  max-height: 8.5rem;
+  padding: 0 var(--space-4) var(--space-4);
+}
+.public-faq-answer p {
+  margin: 0;
+  padding-top: var(--space-3);
 }
 .public-cta {
   display: flex;
