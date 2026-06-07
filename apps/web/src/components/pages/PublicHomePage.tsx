@@ -35,6 +35,24 @@ const publicHighlights = [
   '처음 쓰는 담당자를 위한 사용 가이드와 역할별 체크포인트',
 ]
 
+const publicMetricCards = [
+  {
+    value: '12',
+    label: '분 안에',
+    desc: '일일 현황 요약을 확인하고 다음 할 일을 시작합니다.',
+  },
+  {
+    value: '98%',
+    label: '기록 완료율',
+    desc: '방문 전용 템플릿으로 누락된 기록 항목을 줄입니다.',
+  },
+  {
+    value: '25%',
+    label: '정산 소요 단축',
+    desc: '정산·청구 화면 한 번에 상태 흐름을 관리해 시간을 줄입니다.',
+  },
+]
+
 const publicFaqs = [
   {
     question: '지금 바로 데모를 볼 수 있나요?',
@@ -82,6 +100,9 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         <nav className="public-nav-actions" aria-label="서비스 탐색 및 계정">
           <a className="public-anchor-link" href="#workflow">
             핵심 기능
+          </a>
+          <a className="public-anchor-link" href="#metrics">
+            성과 지표
           </a>
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
@@ -195,6 +216,27 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section
+        className="public-band public-metric"
+        id="metrics"
+        aria-labelledby="public-metric-title"
+      >
+        <div className="public-section-head">
+          <p className="page-eyebrow">운영 성과</p>
+          <h2 id="public-metric-title">개발 초기에도 확인 가능한 운영 효율 예시</h2>
+          <p>실제 도입 전에도 아래 지표로 운영 리스크를 줄이는 기준을 맞춥니다.</p>
+        </div>
+        <div className="public-metric-list">
+          {publicMetricCards.map((metric) => (
+            <article className="public-metric-item" key={metric.label}>
+              <strong>{metric.value}</strong>
+              <span>{metric.label}</span>
+              <p>{metric.desc}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="public-band public-faq" id="faq" aria-labelledby="public-faq-title">
