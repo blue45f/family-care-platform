@@ -6,11 +6,11 @@ import {
   protectedRouteEntries,
   publicRouteEntries,
 } from './appRoutes'
-import { managementRoutes, todayFirstRoutes } from './routeConfig'
+import { managementRoutes, publicLandingRoutes, todayFirstRoutes } from './routeConfig'
 
 describe('appRoutes', () => {
   it('비로그인 공개 라우트는 홈페이지를 먼저 보여준다', () => {
-    expect(publicRouteEntries.map((entry) => entry.path)).toEqual(['/'])
+    expect(publicRouteEntries.map((entry) => entry.path)).toEqual([...publicLandingRoutes])
   })
 
   it('인증 후 라우트는 오늘 업무 흐름과 관리 화면 순서를 보존한다', () => {
@@ -18,6 +18,7 @@ describe('appRoutes', () => {
       '/',
       ...todayFirstRoutes,
       ...managementRoutes,
+      '/overview',
     ])
   })
 
@@ -32,7 +33,10 @@ describe('appRoutes', () => {
   })
 
   it('미인증 사용자는 루트에서 홈페이지를 보고 보호 화면에서는 로그인 안내로 이동한다', () => {
+    expect(getUnauthenticatedRouteIntent('/overview')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/')).toBe('public')
+    expect(getUnauthenticatedRouteIntent('/guide')).toBe('public')
+    expect(getUnauthenticatedRouteIntent('/plans')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/login')).toBe('auth')
     expect(getUnauthenticatedRouteIntent('/register')).toBe('auth')
     expect(getUnauthenticatedRouteIntent('/schedule')).toBe('protected')

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react'
 
 import type { AppRoute } from '../../routeConfig'
+import type { PublicNavigateState } from '../../routeConfig'
 import { Button, Icon } from '../ui'
 
 type PublicHomePageProps = {
-  onNavigate: (path: AppRoute) => void
+  onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
 }
 
 const publicWorkflow = [
@@ -161,8 +162,29 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <a className="public-anchor-link" href="#metrics">
             성과 지표
           </a>
-          <a className="public-anchor-link" href="#plans">
+          <button
+            type="button"
+            className="public-text-link"
+            onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
+          >
+            시작 가이드
+          </button>
+          <button
+            type="button"
+            className="public-text-link"
+            onClick={() => onNavigate('/overview', { source: 'hero', fromLanding: true })}
+          >
+            서비스 소개
+          </button>
+          <button
+            type="button"
+            className="public-text-link"
+            onClick={() => onNavigate('/plans', { source: 'pricing_button', fromLanding: true })}
+          >
             요금제
+          </button>
+          <a className="public-anchor-link" href="#plans">
+            요금 안내
           </a>
           <a className="public-anchor-link" href="#contact">
             데모 문의
@@ -170,10 +192,18 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
           </a>
-          <button type="button" className="public-text-link" onClick={() => onNavigate('/login')}>
+          <button
+            type="button"
+            className="public-text-link"
+            onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}
+          >
             로그인
           </button>
-          <Button variant="secondary" size="sm" onClick={() => onNavigate('/register')}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onNavigate('/register', { source: 'hero', fromLanding: true })}
+          >
             회원가입
           </Button>
         </nav>
@@ -185,11 +215,20 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <h1 id="public-home-title">가족 돌봄 운영 플랫폼</h1>
           <p>방문 일정부터 보험청구까지, 센터 담당자가 오늘 해야 할 일을 놓치지 않게 정리합니다.</p>
           <div className="public-hero-actions">
-            <Button onClick={() => onNavigate('/login')}>
+            <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>
               <Icon name="arrow-right" size={16} />
               데모 계정으로 둘러보기
             </Button>
-            <Button variant="secondary" onClick={() => onNavigate('/register')}>
+            <Button
+              variant="secondary"
+              onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
+            >
+              운영 가이드 보기
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => onNavigate('/register', { source: 'hero', fromLanding: true })}
+            >
               센터 계정 만들기
             </Button>
           </div>
@@ -334,7 +373,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
               </ul>
               <Button
                 variant={plan.highlight ? 'primary' : 'secondary'}
-                onClick={() => onNavigate('/register')}
+                onClick={() =>
+                  onNavigate('/register', {
+                    source: 'pricing_button',
+                    plan: plan.name,
+                    fromLanding: true,
+                  })
+                }
               >
                 {plan.highlight ? '가장 많이 쓰는 플랜 보기' : '도입 문의'}
               </Button>
@@ -437,22 +482,28 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         <h2 id="public-cta-title">실제 화면을 바로 둘러보세요</h2>
         <p>로그인 화면에서 데모 계정을 누르면 샘플 운영 데이터로 전체 기능을 확인할 수 있습니다.</p>
         <div className="public-hero-actions">
-          <Button onClick={() => onNavigate('/login')}>
+          <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>
             <Icon name="arrow-right" size={16} />
             데모 계정으로 둘러보기
           </Button>
-          <Button variant="secondary" onClick={() => onNavigate('/register')}>
+          <Button
+            variant="secondary"
+            onClick={() => onNavigate('/register', { source: 'hero', fromLanding: true })}
+          >
             회원가입
           </Button>
         </div>
       </section>
 
       <aside className="public-sticky-cta" aria-label="빠른 시작">
-        <Button onClick={() => onNavigate('/login')}>
+        <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>
           <Icon name="arrow-right" size={16} />
           데모로 시작
         </Button>
-        <Button variant="secondary" onClick={() => onNavigate('/register')}>
+        <Button
+          variant="secondary"
+          onClick={() => onNavigate('/register', { source: 'hero', fromLanding: true })}
+        >
           회원가입
         </Button>
       </aside>

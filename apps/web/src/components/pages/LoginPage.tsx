@@ -2,13 +2,14 @@ import { useId, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useLocation } from 'react-router-dom'
 
-import type { AppRoute } from '../../routeConfig'
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { DEMO_CREDENTIALS, useAuth } from '../../auth/useAuth'
 import { Button, Card, Field, Icon, Input } from '../ui'
 
 type LoginPageProps = {
-  onNavigate: (path: AppRoute) => void
+  onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
   /** 로그인 성공 후 이동할 경로(기본: 대시보드). */
   redirectTo?: AppRoute
 }
@@ -39,6 +40,8 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
   const [formError, setFormError] = useState('')
   const [isDemoLoading, setIsDemoLoading] = useState(false)
   const demoCredsId = useId()
+  const location = useLocation()
+  const locationState = (location.state as PublicNavigateState | null) ?? {}
 
   const {
     register: registerField,
@@ -120,7 +123,11 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
               로그인
             </h1>
             <p className="card-subtitle" style={{ marginTop: 0 }}>
-              담당자 계정으로 로그인해 돌봄 기록과 정산을 관리하세요.
+              {locationState.fromLanding
+                ? '데모 문의 후 이어진 사용자님이라면, 담당자 계정으로 바로 로그인해 작업 화면을 확인하세요.'
+                : locationState.source === 'pricing_button'
+                  ? `${locationState.plan ?? ''} 플랜 관심 대상자로서, 담당자 계정 로그인 후 대시보드를 확인하세요.`.trim()
+                  : '담당자 계정으로 로그인해 돌봄 기록과 정산을 관리하세요.'}
             </p>
           </div>
 
@@ -229,7 +236,13 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
               type="button"
               className="inline-action"
               style={{ marginLeft: 0 }}
-              onClick={() => onNavigate('/register')}
+              onClick={() =>
+                onNavigate('/register', {
+                  source: locationState.source,
+                  fromLanding: locationState.fromLanding,
+                  plan: locationState.plan,
+                })
+              }
             >
               회원가입
             </button>

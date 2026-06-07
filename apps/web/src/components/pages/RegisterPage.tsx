@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useLocation } from 'react-router-dom'
 
-import type { AppRoute } from '../../routeConfig'
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { useAuth } from '../../auth/useAuth'
 import { Button, Card, Field, Icon, Input } from '../ui'
 
 type RegisterPageProps = {
-  onNavigate: (path: AppRoute) => void
+  onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
   /** 가입 성공 후 이동할 경로(기본: 대시보드). */
   redirectTo?: AppRoute
 }
@@ -50,6 +51,8 @@ const normalizeMessage = (error: unknown) => {
 export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps) => {
   const { register: registerAccount } = useAuth()
   const [formError, setFormError] = useState('')
+  const location = useLocation()
+  const locationState = (location.state as PublicNavigateState | null) ?? {}
 
   const {
     register: registerField,
@@ -109,7 +112,11 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
               회원가입
             </h1>
             <p className="card-subtitle" style={{ marginTop: 0 }}>
-              담당자 정보를 입력해 새 계정을 만드세요.
+              {locationState.fromLanding
+                ? '데모 문의 흐름으로 왔더라도, 담당자 전용 계정은 바로 만들 수 있습니다.'
+                : locationState.source === 'pricing_button'
+                  ? `${locationState.plan ?? ''} 플랜으로 시작할 예정이라면, 새 계정 생성 후 바로 비교 가능한 화면으로 이동하세요.`.trim()
+                  : '담당자 정보를 입력해 새 계정을 만드세요.'}
             </p>
           </div>
 
@@ -201,7 +208,13 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
               type="button"
               className="inline-action"
               style={{ marginLeft: 0 }}
-              onClick={() => onNavigate('/login')}
+              onClick={() =>
+                onNavigate('/login', {
+                  source: locationState.source,
+                  fromLanding: locationState.fromLanding,
+                  plan: locationState.plan,
+                })
+              }
             >
               로그인
             </button>

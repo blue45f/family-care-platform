@@ -1,9 +1,11 @@
-import type { AppRoute } from '../../routeConfig'
+import { useEffect, useMemo, useState } from 'react'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { routeDefs } from '../../routeConfig'
 import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
 
 type GuidePageProps = {
-  onNavigate: (path: AppRoute) => void
+  onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
 }
 
 const workflowSteps: {
@@ -236,8 +238,75 @@ const faq = [
   },
 ]
 
+const GUIDE_CHECKLIST_STORAGE_KEY = 'guide-first-day-checklist-v1'
+const parseChecklistState = () => {
+  if (typeof window === 'undefined') {
+    return [] as number[]
+  }
+
+  try {
+    const raw = window.localStorage.getItem(GUIDE_CHECKLIST_STORAGE_KEY)
+    if (!raw) {
+      return []
+    }
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed.filter((value): value is number => Number.isInteger(value))
+  } catch {
+    return []
+  }
+}
+
+const clampStepIndex = (index: number) => {
+  if (index < 0 || Number.isNaN(index)) {
+    return false
+  }
+  return index >= 0 && index < firstDayTutorial.length
+}
+
+const useFirstDayChecklist = () => {
+  const [checkedSteps, setCheckedSteps] = useState<number[]>(parseChecklistState)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    window.localStorage.setItem(GUIDE_CHECKLIST_STORAGE_KEY, JSON.stringify(checkedSteps))
+  }, [checkedSteps])
+
+  const toggleStep = (stepIndex: number, checked: boolean) => {
+    if (!clampStepIndex(stepIndex)) {
+      return
+    }
+    setCheckedSteps((current) => {
+      const next = current.filter((step) => step !== stepIndex)
+      if (!checked) {
+        return next
+      }
+      if (current.includes(stepIndex)) {
+        return current
+      }
+      return [...current, stepIndex]
+    })
+  }
+
+  const clear = () => setCheckedSteps([])
+
+  return { checkedSteps, toggleStep, clear }
+}
+
 export const GuidePage = ({ onNavigate }: GuidePageProps) => {
   const def = routeDefs['/guide']
+  const { checkedSteps, toggleStep, clear } = useFirstDayChecklist()
+  const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1)
+
+  const checkedCount = checkedSteps.length
+  const completionRate = useMemo(
+    () => Math.round((checkedCount / firstDayTutorial.length) * 100),
+    [checkedCount],
+  )
 
   return (
     <div className="stack">
@@ -304,17 +373,41 @@ export const GuidePage = ({ onNavigate }: GuidePageProps) => {
           title="처음 10분 튜토리얼"
           subtitle="샘플 데이터 한 건으로 전체 흐름을 끝까지 확인하는 순서입니다."
         />
-        <ol className="guide-checklist">
+        <div className="guide-progress" aria-live="polite" aria-atomic="true">
+          <div className="guide-progress-head">
+            <span>진행률</span>
+            <strong>
+              {checkedCount} / {firstDayTutorial.length} 단계 완료
+            </strong>
+          </div>
+          <div className="guide-progress-track">
+            <span style={{ width: `${completionRate}%` }} />
+          </div>
+          {checkedCount > 0 ? (
+            <button type="button" className="card-link guide-progress-reset" onClick={clear}>
+              진행률 초기화
+            </button>
+          ) : null}
+        </div>
+        <ol className="guide-checklist guide-checklist--interactive">
           {firstDayTutorial.map((item, index) => (
             <li key={item.title}>
-              <span>{index + 1}</span>
-              <p>
-                <strong>{item.title}</strong>
-                {item.desc}
+              <label className="guide-check-item">
+                <input
+                  type="checkbox"
+                  aria-label={`${item.title} 완료`}
+                  checked={checkedSteps.includes(index)}
+                  onChange={(event) => toggleStep(index, event.currentTarget.checked)}
+                />
+                <span>{index + 1}</span>
+                <p>
+                  <strong>{item.title}</strong>
+                  {item.desc}
+                </p>
                 <button type="button" className="card-link" onClick={() => onNavigate(item.route)}>
                   {item.action}
                 </button>
-              </p>
+              </label>
             </li>
           ))}
         </ol>
@@ -426,12 +519,31 @@ export const GuidePage = ({ onNavigate }: GuidePageProps) => {
           subtitle="운영 중 막히기 쉬운 상황을 기준으로 정리했습니다."
         />
         <div className="guide-faq">
-          {faq.map((item) => (
-            <article key={item.q}>
-              <h3>{item.q}</h3>
-              <p>{item.a}</p>
-            </article>
-          ))}
+          {faq.map((item, index) => {
+            const isOpen = openFaqIndex === index
+            return (
+              <article className="public-faq-item" key={item.q}>
+                <button
+                  type="button"
+                  className={`public-faq-question ${isOpen ? 'is-open' : ''}`}
+                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
+                  aria-expanded={isOpen}
+                  aria-controls={`guide-faq-answer-${index}`}
+                >
+                  <span>{item.q}</span>
+                  <span className={`public-faq-sign ${isOpen ? 'is-open' : ''}`} aria-hidden="true">
+                    {isOpen ? '−' : '+'}
+                  </span>
+                </button>
+                <div
+                  id={`guide-faq-answer-${index}`}
+                  className={`public-faq-answer ${isOpen ? 'is-open' : ''}`}
+                >
+                  <p>{item.a}</p>
+                </div>
+              </article>
+            )
+          })}
         </div>
       </Card>
     </div>
