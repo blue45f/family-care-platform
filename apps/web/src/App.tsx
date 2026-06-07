@@ -4,7 +4,6 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-
 import {
   authRouteEntries,
   findProtectedRouteEntry,
-  getUnauthenticatedRouteIntent,
   protectedRouteEntries,
   publicRouteEntries,
 } from './appRoutes'
@@ -21,7 +20,7 @@ const ROUTE_MAIN_ID = 'route-main-content'
 type RouteState = {
   activeRoute: AppRoute
   routeDef: RouteDef
-  navigate: (path: AppRoute) => void
+  navigate: (path: AppRoute, state?: unknown) => void
   isFallback: boolean
   mainRef: RefObject<HTMLDivElement | null>
 }
@@ -157,8 +156,8 @@ const App = () => {
   const routeDef = getRouteDef(activeRoute)
 
   const navigate = useCallback(
-    (path: AppRoute) => {
-      routerNavigate(path)
+    (path: AppRoute, state?: unknown) => {
+      routerNavigate(path, state ? { state: state as Record<string, unknown> } : undefined)
     },
     [routerNavigate],
   )
@@ -185,13 +184,15 @@ const App = () => {
     mainRef,
   }
 
-  const locationState = location.state as { from?: AppRoute } | null
+  const locationState = location.state as {
+    from?: AppRoute
+    source?: string
+    plan?: string
+    fromLanding?: boolean
+  } | null
   const redirectTo = locationState?.from ?? '/'
 
-  const metaTitle =
-    !auth.isAuthenticated && getUnauthenticatedRouteIntent(activeRoute) === 'public'
-      ? SITE_NAME
-      : routeDef.title
+  const metaTitle = !auth.isAuthenticated && activeRoute === '/' ? SITE_NAME : routeDef.title
 
   useRouteMeta(activeRoute, metaTitle)
 

@@ -20,6 +20,7 @@ export type AppRoute =
   | '/analytics'
   | '/plans'
   | '/guide'
+  | '/overview'
   | '/login'
   | '/register'
 
@@ -43,6 +44,17 @@ export type RouteDef = {
   /** Phase 2에서 본 콘텐츠를 채울 라우트(현재는 placeholder). */
   placeholder: boolean
 }
+
+export type NavigationSource = 'lead_form' | 'pricing_button' | 'hero'
+
+export type PublicNavigateState = {
+  source?: NavigationSource
+  plan?: string
+  fromLanding?: boolean
+}
+
+export type AuthRoute = Extract<AppRoute, '/login' | '/register'>
+export type PublicLandingRoute = '/' | '/guide' | '/plans' | '/overview'
 
 export const SITE_NAME = '가족 돌봄 운영 플랫폼'
 
@@ -127,6 +139,17 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     inNav: true,
     placeholder: false,
   },
+  '/overview': {
+    path: '/overview',
+    title: '서비스 소개',
+    eyebrow: '서비스 소개',
+    description:
+      '돌봄 일정, 기록, 정산, 보험청구를 이어주는 운영 설계가 어떤 문제를 덜어주는지 한 번에 확인합니다.',
+    icon: 'guide',
+    section: 'manage',
+    inNav: false,
+    placeholder: false,
+  },
   '/login': {
     path: '/login',
     title: '로그인',
@@ -169,6 +192,13 @@ export const managementRoutes = [
   '/plans',
   '/guide',
 ] as const satisfies readonly AppRoute[]
+
+export const publicLandingRoutes = [
+  '/',
+  '/overview',
+  '/guide',
+  '/plans',
+] as const satisfies readonly PublicLandingRoute[]
 
 /** 사이드바 네비게이션 그룹(섹션별로 묶어 노출). */
 export type NavGroup = {

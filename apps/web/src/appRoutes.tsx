@@ -5,55 +5,72 @@ import { CarePage } from './components/pages/CarePage'
 import { ClaimsPage } from './components/pages/ClaimsPage'
 import { DashboardPage } from './components/pages/DashboardPage'
 import { GuidePage } from './components/pages/GuidePage'
+import { PublicOverviewPage } from './components/pages/PublicOverviewPage'
 import { LoginPage } from './components/pages/LoginPage'
 import { PlansPage } from './components/pages/PlansPage'
 import { PublicHomePage } from './components/pages/PublicHomePage'
+import { PublicPlansPage } from './components/pages/PublicPlansPage'
 import { RegisterPage } from './components/pages/RegisterPage'
 import { SchedulePage } from './components/pages/SchedulePage'
 import { SettlementsPage } from './components/pages/SettlementsPage'
-import type { AppRoute } from './routeConfig'
+import type { AppRoute, AuthRoute, PublicLandingRoute, PublicNavigateState } from './routeConfig'
+import { publicLandingRoutes } from './routeConfig'
 import type { PlatformData } from './state/usePlatformData'
 
-type ProtectedAppRoute = Exclude<AppRoute, '/login' | '/register'>
-type AuthAppRoute = Extract<AppRoute, '/login' | '/register'>
-type PublicAppRoute = Extract<AppRoute, '/'>
+type AuthAppRoute = AuthRoute
+type PublicAppRoute = PublicLandingRoute
+type ProtectedAppRoute = Exclude<AppRoute, AuthAppRoute>
 
 export type UnauthenticatedRouteIntent = 'public' | 'auth' | 'protected'
 
-export type PublicRouteContext = {
-  navigate: (path: AppRoute) => void
-}
+const AUTH_ROUTES: readonly AuthAppRoute[] = ['/login', '/register']
+export type AuthRouteNavigateState = PublicNavigateState
 
+const ROUTE_RENDERERS = {
+  public: {
+    '/': ({ navigate }: PublicRouteContext) => <PublicHomePage onNavigate={navigate} />,
+    '/guide': ({ navigate }: PublicRouteContext) => <GuidePage onNavigate={navigate} />,
+    '/plans': ({ navigate }: PublicRouteContext) => <PublicPlansPage onNavigate={navigate} />,
+    '/overview': ({ navigate }: PublicRouteContext) => <PublicOverviewPage onNavigate={navigate} />,
+  },
+  auth: {
+    '/login': ({ navigate, redirectTo }: AuthRouteContext) => (
+      <LoginPage onNavigate={navigate} redirectTo={redirectTo} />
+    ),
+    '/register': ({ navigate, redirectTo }: AuthRouteContext) => (
+      <RegisterPage onNavigate={navigate} redirectTo={redirectTo} />
+    ),
+  },
+} as const
+
+export type PublicRouteNavigateState = PublicNavigateState
+
+export type PublicRouteContext = {
+  navigate: (path: AppRoute, state?: PublicRouteNavigateState) => void
+}
 export type ProtectedRouteContext = {
   data: PlatformData
-  navigate: (path: AppRoute) => void
+  navigate: (path: AppRoute, state?: { source?: string }) => void
 }
-
 export type AuthRouteContext = {
-  navigate: (path: AppRoute) => void
+  navigate: (path: AppRoute, state?: AuthRouteNavigateState) => void
   redirectTo: AppRoute
 }
 
-export type PublicRouteEntry = {
-  path: PublicAppRoute
-  render: (context: PublicRouteContext) => ReactElement
+type RouteEntry<TPath extends AppRoute, TContext> = {
+  path: TPath
+  render: (context: TContext) => ReactElement
 }
 
-export type ProtectedRouteEntry = {
-  path: ProtectedAppRoute
-  render: (context: ProtectedRouteContext) => ReactElement
-}
-
-export type AuthRouteEntry = {
-  path: AuthAppRoute
-  render: (context: AuthRouteContext) => ReactElement
-}
+export type PublicRouteEntry = RouteEntry<PublicAppRoute, PublicRouteContext>
+export type ProtectedRouteEntry = RouteEntry<ProtectedAppRoute, ProtectedRouteContext>
+export type AuthRouteEntry = RouteEntry<AuthAppRoute, AuthRouteContext>
 
 export const publicRouteEntries: PublicRouteEntry[] = [
-  {
-    path: '/',
-    render: ({ navigate }) => <PublicHomePage onNavigate={navigate} />,
-  },
+  ...publicLandingRoutes.map((path) => ({
+    path,
+    render: ROUTE_RENDERERS.public[path],
+  })),
 ]
 
 export const protectedRouteEntries: ProtectedRouteEntry[] = [
@@ -89,28 +106,31 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
     path: '/guide',
     render: ({ navigate }) => <GuidePage onNavigate={navigate} />,
   },
+  {
+    path: '/overview',
+    render: ({ navigate }) => <PublicOverviewPage onNavigate={navigate} />,
+  },
 ]
 
 export const authRouteEntries: AuthRouteEntry[] = [
   {
     path: '/login',
-    render: ({ navigate, redirectTo }) => (
-      <LoginPage onNavigate={navigate} redirectTo={redirectTo} />
-    ),
+    render: ROUTE_RENDERERS.auth['/login'],
   },
   {
     path: '/register',
-    render: ({ navigate, redirectTo }) => (
-      <RegisterPage onNavigate={navigate} redirectTo={redirectTo} />
-    ),
+    render: ROUTE_RENDERERS.auth['/register'],
   },
 ]
 
+const publicRouteSet = new Set<AppRoute>([...publicLandingRoutes])
+const authRouteSet = new Set<AppRoute>([...AUTH_ROUTES])
+
 export const getUnauthenticatedRouteIntent = (path: AppRoute): UnauthenticatedRouteIntent => {
-  if (path === '/') {
+  if (publicRouteSet.has(path)) {
     return 'public'
   }
-  if (path === '/login' || path === '/register') {
+  if (authRouteSet.has(path)) {
     return 'auth'
   }
   return 'protected'

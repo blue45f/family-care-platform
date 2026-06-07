@@ -15,5 +15,7 @@ describe('PublicHomePage', () => {
     expect(markup).toContain('데모 계정으로 둘러보기')
     expect(markup).toContain('로그인')
     expect(markup).toContain('회원가입')
+    expect(markup).toContain('시작 가이드')
+    expect(markup).toContain('요금제')
   })
 })

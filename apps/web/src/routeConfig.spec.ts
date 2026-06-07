@@ -4,6 +4,7 @@ import {
   type AppRoute,
   DEFAULT_ROUTE,
   managementRoutes,
+  publicLandingRoutes,
   todayFirstRoutes,
   isAppRoute,
   operationalWorkflowRoutes,
@@ -94,6 +95,23 @@ describe('상용 서비스 정보 구조', () => {
         placeholder: false,
       })
     }
+  })
+
+  it('공개 랜딩 라우트는 확장 가능한 별도 목록으로 관리한다', () => {
+    expect(publicLandingRoutes).toEqual(['/', '/overview', '/guide', '/plans'])
+    expect(publicLandingRoutes).toContain('/guide')
+    expect(publicLandingRoutes).toContain('/plans')
+    expect(publicLandingRoutes).not.toContain('/login')
+  })
+
+  it('서비스 소개 라우트가 등록되고 메인 탐색에서 제외된다', () => {
+    expect(routeDefs['/overview']).toMatchObject({
+      title: '서비스 소개',
+      inNav: false,
+      section: 'manage',
+      icon: 'guide',
+      placeholder: false,
+    })
   })
 
   it('인증 라우트는 본문 내비게이션에 노출하지 않는다', () => {

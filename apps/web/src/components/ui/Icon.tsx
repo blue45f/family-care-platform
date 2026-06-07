@@ -33,47 +33,44 @@ type IconProps = SVGProps<SVGSVGElement> & {
 const PATHS: Record<IconName, ReactElement> = {
   home: (
     <>
-      <path d="M4.25 10.8 12 4.25l7.75 6.55" />
-      <path d="M6.25 9.75v8.65a1.35 1.35 0 0 0 1.35 1.35h8.8a1.35 1.35 0 0 0 1.35-1.35V9.75" />
-      <path d="M9.6 19.75v-5.4h4.8v5.4" />
-      <path d="M10.1 10.75h3.8" />
+      <path d="M3 10.5 12 4l9 6.5v8.5A1.5 1.5 0 0 1 19.5 21H4.5A1.5 1.5 0 0 1 3 19.5Z" />
+      <path d="M9 21v-6.8h6V21" />
+      <path d="M8.25 10.75h7.5" />
     </>
   ),
   schedule: (
     <>
-      <rect x="4.25" y="5.25" width="15.5" height="14.5" rx="2" />
-      <path d="M8.2 3.75v3" />
-      <path d="M15.8 3.75v3" />
-      <path d="M4.25 9.2h15.5" />
-      <path d="M8.35 13.15h2.25" />
-      <path d="M13.4 13.15h2.25" />
-      <path d="M8.35 16.35h2.25" />
+      <path d="M7.25 3.75v3" />
+      <path d="M16.75 3.75v3" />
+      <path d="M4.5 9h15" />
+      <rect x="4.25" y="5.5" width="15.5" height="15" rx="2" />
+      <path d="M7.5 13h9" />
+      <path d="M7.5 16.5h6.5" />
     </>
   ),
   care: (
     <>
-      <path d="M7.2 12.2H5.5a2.5 2.5 0 0 0-2.2 1.3l-.8 1.45" />
-      <path d="M16.8 12.2h1.7a2.5 2.5 0 0 1 2.2 1.3l.8 1.45" />
-      <path d="M7.3 15.2 12 19.3l4.7-4.1" />
-      <path d="M15.9 7.4a2.7 2.7 0 0 0-3.9-.15 2.7 2.7 0 0 0-3.9.15c-1.05 1.15-.95 2.95.2 4.05L12 14.9l3.7-3.45c1.15-1.1 1.25-2.9.2-4.05Z" />
+      <path d="M12 20.5a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" />
+      <path d="M8 11.3c.8-1.9 2.5-3.2 4.5-3.2 2 0 3.8 1.3 4.5 3.2" />
+      <path d="M9.7 16h4.6" />
     </>
   ),
   settlement: (
     <>
-      <path d="M7.25 3.75h9.5a1.5 1.5 0 0 1 1.5 1.5v15l-2-1.1-2 1.1-2.25-1.1-2.25 1.1-2-1.1-2 1.1v-15a1.5 1.5 0 0 1 1.5-1.5Z" />
-      <path d="M8.85 8.2h6.3" />
-      <path d="M8.85 11.35h4.1" />
-      <path d="M9.6 15.45h4.8" />
-      <path d="M12 13.15v4.6" />
+      <path d="M4.5 4.75h15v14.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5Z" />
+      <path d="M8.25 8.75h7.5" />
+      <path d="M8.25 11.5h7.5" />
+      <path d="M8.25 14.25h7.5" />
+      <path d="M11 17v-1.5h2V17" />
     </>
   ),
   claims: (
     <>
-      <path d="M14.2 3.75H7.4A1.65 1.65 0 0 0 5.75 5.4v13.2a1.65 1.65 0 0 0 1.65 1.65h9.2a1.65 1.65 0 0 0 1.65-1.65V7.8Z" />
-      <path d="M14.2 3.75v4.1h4.05" />
-      <path d="M8.85 12.35h4.25" />
-      <path d="M8.85 16.2h2.55" />
-      <path d="m13.75 15.85 1.3 1.3 2.45-2.7" />
+      <path d="M17.25 4H6.75A1.75 1.75 0 0 0 5 5.75V19a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V7.25Z" />
+      <path d="M9 8h6" />
+      <path d="M9 12h4.5" />
+      <path d="M9 15h3" />
+      <path d="M17 7.25V4" />
     </>
   ),
   analytics: (
@@ -88,20 +85,21 @@ const PATHS: Record<IconName, ReactElement> = {
   ),
   plans: (
     <>
-      <rect x="4.25" y="5.25" width="15.5" height="13.5" rx="2" />
-      <path d="M7.25 8.7h3.2" />
-      <path d="M7.25 12h9.5" />
-      <path d="M7.25 15.25h5.2" />
-      <path d="M15.25 8.6h1.5" />
+      <path d="M8.25 4.5h7A1.5 1.5 0 0 1 16.75 6v2.5H7.25V6A1.5 1.5 0 0 1 8.75 4.5h-.5Z" />
+      <path d="M7.25 8.5h9.5" />
+      <path d="M7.25 11.25h9.5" />
+      <path d="M7.25 14h7.5" />
+      <path d="M7.25 16.75h5.5" />
+      <path d="M17 4.5v14a1.5 1.5 0 0 1-1.5 1.5H8.25" />
     </>
   ),
   guide: (
     <>
-      <path d="M6.25 4.75h8.9a2.6 2.6 0 0 1 2.6 2.6v12.4H8.85a2.6 2.6 0 0 1-2.6-2.6Z" />
-      <path d="M8.85 4.75a2.6 2.6 0 0 0-2.6 2.6v12.4" />
-      <path d="M9.65 9.1h5.2" />
-      <path d="M9.65 12.45h5.2" />
-      <path d="M9.65 15.8h3.3" />
+      <path d="M8 4h8.5a2 2 0 0 1 2 2v13H6V6a2 2 0 0 1 2-2Z" />
+      <path d="M8 7.25h8.5" />
+      <path d="M9.5 10h5.5" />
+      <path d="M9.5 13h5.5" />
+      <path d="M9.5 16h2.75" />
     </>
   ),
   menu: (
@@ -171,9 +169,10 @@ export const Icon = ({ name, size = 20, ...props }: IconProps) => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth={1.75}
+    strokeWidth={1.9}
     strokeLinecap="round"
     strokeLinejoin="round"
+    shapeRendering="geometricPrecision"
     aria-hidden="true"
     focusable="false"
     {...props}
