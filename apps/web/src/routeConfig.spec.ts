@@ -78,7 +78,7 @@ describe('상용 서비스 정보 구조', () => {
   })
 
   it('운영 업무와 서비스 관리 화면을 내비게이션 성격별로 분리한다', () => {
-    expect(managementRoutes).toEqual(['/analytics', '/plans', '/guide'])
+    expect(managementRoutes).toEqual(['/analytics', '/plans', '/tutorial', '/guide'])
 
     for (const path of todayFirstRoutes) {
       expect(routeDefs[path]).toMatchObject({
@@ -98,10 +98,21 @@ describe('상용 서비스 정보 구조', () => {
   })
 
   it('공개 랜딩 라우트는 확장 가능한 별도 목록으로 관리한다', () => {
-    expect(publicLandingRoutes).toEqual(['/', '/overview', '/guide', '/plans'])
+    expect(publicLandingRoutes).toEqual(['/', '/overview', '/tutorial', '/guide', '/plans'])
     expect(publicLandingRoutes).toContain('/guide')
+    expect(publicLandingRoutes).toContain('/tutorial')
     expect(publicLandingRoutes).toContain('/plans')
     expect(publicLandingRoutes).not.toContain('/login')
+  })
+
+  it('튜토리얼 라우트가 공개 탐색과 서비스 관리 메뉴에 반영된다', () => {
+    expect(routeDefs['/tutorial']).toMatchObject({
+      title: '튜토리얼',
+      inNav: true,
+      section: 'manage',
+      icon: 'book-open',
+      placeholder: false,
+    })
   })
 
   it('서비스 소개 라우트가 등록되고 메인 탐색에서 제외된다', () => {

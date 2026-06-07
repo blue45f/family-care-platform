@@ -14,6 +14,7 @@ export type IconName =
   | 'analytics'
   | 'plans'
   | 'guide'
+  | 'book-open'
   | 'menu'
   | 'close'
   | 'arrow-right'
@@ -100,6 +101,14 @@ const PATHS: Record<IconName, ReactElement> = {
       <path d="M9.5 10h5.5" />
       <path d="M9.5 13h5.5" />
       <path d="M9.5 16h2.75" />
+    </>
+  ),
+  'book-open': (
+    <>
+      <path d="M6.5 5.5h11a2 2 0 0 1 2 2v12.5H8.5a2 2 0 0 0-2 2" />
+      <path d="M6.5 4.5A1.5 1.5 0 0 0 5 6v13.5h10.5" />
+      <path d="M6.5 20h11.5" />
+      <path d="M4 6a1.5 1.5 0 0 1 2-1.5h0.5" />
     </>
   ),
   menu: (

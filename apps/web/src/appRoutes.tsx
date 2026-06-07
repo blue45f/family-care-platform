@@ -6,6 +6,7 @@ import { ClaimsPage } from './components/pages/ClaimsPage'
 import { DashboardPage } from './components/pages/DashboardPage'
 import { GuidePage } from './components/pages/GuidePage'
 import { PublicOverviewPage } from './components/pages/PublicOverviewPage'
+import { PublicTutorialPage } from './components/pages/PublicTutorialPage'
 import { LoginPage } from './components/pages/LoginPage'
 import { PlansPage } from './components/pages/PlansPage'
 import { PublicHomePage } from './components/pages/PublicHomePage'
@@ -30,6 +31,7 @@ const ROUTE_RENDERERS = {
   public: {
     '/': ({ navigate }: PublicRouteContext) => <PublicHomePage onNavigate={navigate} />,
     '/guide': ({ navigate }: PublicRouteContext) => <GuidePage onNavigate={navigate} />,
+    '/tutorial': ({ navigate }: PublicRouteContext) => <PublicTutorialPage onNavigate={navigate} />,
     '/plans': ({ navigate }: PublicRouteContext) => <PublicPlansPage onNavigate={navigate} />,
     '/overview': ({ navigate }: PublicRouteContext) => <PublicOverviewPage onNavigate={navigate} />,
   },
@@ -101,6 +103,10 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
   {
     path: '/plans',
     render: ({ data }) => <PlansPage data={data} />,
+  },
+  {
+    path: '/tutorial',
+    render: ({ navigate }) => <PublicTutorialPage onNavigate={navigate} />,
   },
   {
     path: '/guide',

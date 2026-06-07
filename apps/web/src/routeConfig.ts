@@ -19,6 +19,7 @@ export type AppRoute =
   | '/claims'
   | '/analytics'
   | '/plans'
+  | '/tutorial'
   | '/guide'
   | '/overview'
   | '/login'
@@ -54,7 +55,7 @@ export type PublicNavigateState = {
 }
 
 export type AuthRoute = Extract<AppRoute, '/login' | '/register'>
-export type PublicLandingRoute = '/' | '/guide' | '/plans' | '/overview'
+export type PublicLandingRoute = '/' | '/guide' | '/plans' | '/overview' | '/tutorial'
 
 export const SITE_NAME = '가족 돌봄 운영 플랫폼'
 
@@ -129,6 +130,16 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     inNav: true,
     placeholder: false,
   },
+  '/tutorial': {
+    path: '/tutorial',
+    title: '튜토리얼',
+    eyebrow: '도입 가이드',
+    description: '실제 업무 화면에서 단계별로 연습하는 10분 시작 가이드입니다.',
+    icon: 'book-open',
+    section: 'manage',
+    inNav: true,
+    placeholder: false,
+  },
   '/guide': {
     path: '/guide',
     title: '사용 가이드',
@@ -190,12 +201,14 @@ export const todayFirstRoutes = operationalWorkflowRoutes
 export const managementRoutes = [
   '/analytics',
   '/plans',
+  '/tutorial',
   '/guide',
 ] as const satisfies readonly AppRoute[]
 
 export const publicLandingRoutes = [
   '/',
   '/overview',
+  '/tutorial',
   '/guide',
   '/plans',
 ] as const satisfies readonly PublicLandingRoute[]

@@ -21,6 +21,7 @@ const iconNames: IconName[] = [
   'check',
   'clock',
   'inbox',
+  'book-open',
   'heart',
   'logout',
 ]

@@ -331,6 +331,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <button
             type="button"
             className="public-text-link"
+            onClick={() => onNavigate('/tutorial', { source: 'hero', fromLanding: true })}
+          >
+            튜토리얼
+          </button>
+          <button
+            type="button"
+            className="public-text-link"
             onClick={() => onNavigate('/overview', { source: 'hero', fromLanding: true })}
           >
             서비스 소개
@@ -377,6 +384,10 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>
               <Icon name="arrow-right" size={16} />
               데모 계정으로 둘러보기
+            </Button>
+            <Button onClick={() => onNavigate('/tutorial', { source: 'hero', fromLanding: true })}>
+              <Icon name="book-open" size={16} />
+              3분 튜토리얼
             </Button>
             <Button
               variant="secondary"

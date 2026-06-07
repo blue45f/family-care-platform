@@ -35,6 +35,7 @@ describe('appRoutes', () => {
   it('미인증 사용자는 루트에서 홈페이지를 보고 보호 화면에서는 로그인 안내로 이동한다', () => {
     expect(getUnauthenticatedRouteIntent('/overview')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/')).toBe('public')
+    expect(getUnauthenticatedRouteIntent('/tutorial')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/guide')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/plans')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/login')).toBe('auth')
