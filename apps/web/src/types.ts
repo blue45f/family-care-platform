@@ -3,6 +3,8 @@
 export type {
   CareLogType,
   CareLog,
+  ScheduleStatus,
+  CareSchedule,
   Settlement,
   ClaimStatus,
   Claim,
@@ -13,9 +15,18 @@ export type {
   AdminOverview,
 } from '@family-care/shared'
 
-import type { CareLog, Settlement, Claim, RevenuePlan, RevenuePlanId } from '@family-care/shared'
+import type {
+  CareLog,
+  CareSchedule,
+  Settlement,
+  Claim,
+  RevenuePlan,
+  RevenuePlanId,
+} from '@family-care/shared'
 
 export type CareLogDraft = Omit<CareLog, 'id'>
+
+export type CareScheduleDraft = Omit<CareSchedule, 'id'>
 
 export type SettlementDraft = Omit<Settlement, 'id' | 'totalAmount'>
 

@@ -1,0 +1,85 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" font-family="'Pretendard Variable','Noto Sans KR','Apple SD Gothic Neo',system-ui,sans-serif">
+  <defs>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#065f46" flood-opacity="0.08"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#065f46" flood-opacity="0.04"/>
+    </filter>
+    <linearGradient id="surface" x1="120" y1="70" x2="1080" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#faf8f4"/>
+    </linearGradient>
+    <linearGradient id="sage" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#059669"/>
+      <stop offset="1" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="softSage" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ecfdf5"/>
+      <stop offset="1" stop-color="#d1fae5"/>
+    </linearGradient>
+    <linearGradient id="warmBeige" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fef3c7"/>
+      <stop offset="1" stop-color="#fde68a"/>
+    </linearGradient>
+    <linearGradient id="slateBeige" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f5f9"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background base -->
+  <rect width="1200" height="630" fill="#f4fbf7"/>
+  <path d="M0 502 C 164 448, 277 503, 424 464 C 608 416, 749 326, 954 370 C 1080 397, 1137 449, 1200 431 V 630 H 0 Z" fill="#d1fae5" opacity="0.6"/>
+  <path d="M940 72 C 1020 43, 1118 74, 1162 142 C 1197 197, 1185 264, 1145 305 C 1089 362, 987 351, 932 286 C 873 216, 864 100, 940 72 Z" fill="#a7f3d0" opacity="0.4"/>
+
+  <g transform="translate(84 72)">
+    <!-- Container Card -->
+    <rect width="1032" height="486" rx="34" fill="url(#surface)" stroke="#e2e8f0" stroke-width="1.5" filter="url(#softShadow)"/>
+
+    <!-- Logo icon group -->
+    <g transform="translate(56 56)">
+      <rect width="64" height="64" rx="18" fill="url(#sage)"/>
+      <path d="M43.2 20.6C38.9 18 34.4 19.5 32 22.5C29.6 19.5 25.1 18 20.8 20.6C16.7 23.1 15.8 29 19 32.9C22.5 37.1 32 45.1 32 45.1C32 45.1 41.5 37.1 45 32.9C48.2 29 47.3 23.1 43.2 20.6Z" stroke="#ffffff" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M21.6 48.4H42.4" stroke="#ffffff" stroke-dasharray="2 2" stroke-width="3.3" stroke-linecap="round" opacity="0.8"/>
+    </g>
+
+    <!-- Header texts -->
+    <text x="144" y="84" font-size="34" font-weight="700" fill="#0f172a">가족 돌봄 운영 플랫폼</text>
+    <text x="146" y="120" font-size="18" font-weight="700" letter-spacing="3" fill="#059669">CARE OPERATIONS</text>
+
+    <!-- Main Title -->
+    <text x="56" y="232" font-size="68" font-weight="800" fill="#0f172a">돌봄 기록부터 청구까지</text>
+    <text x="56" y="314" font-size="68" font-weight="800" fill="#0f172a">오늘 할 일을 한 흐름으로</text>
+    <text x="60" y="370" font-size="25" font-weight="500" fill="#475569">방문 기록, 돌봄비 정산, 보험청구 진행을 센터 운영자가 놓치지 않게 관리합니다.</text>
+
+    <!-- Feature badges -->
+    <g transform="translate(58 412)">
+      <g>
+        <rect width="210" height="74" rx="18" fill="url(#softSage)" stroke="#a7f3d0" stroke-width="1.5"/>
+        <path d="M44 30C39 27 33.8 28.8 31 32.2C28.2 28.8 23 27 18 30C13.3 32.9 12.2 39.6 15.9 44.1C19.8 48.8 31 58.2 31 58.2C31 58.2 42.2 48.8 46.1 44.1C49.8 39.6 48.7 32.9 44 30Z" stroke="#047857" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="76" y="44" font-size="24" font-weight="700" fill="#064e3b">돌봄 기록</text>
+      </g>
+      <g transform="translate(242 0)">
+        <rect width="210" height="74" rx="18" fill="url(#warmBeige)" stroke="#fcd34d" stroke-width="1.5"/>
+        <path d="M31 18H51C54.3 18 57 20.7 57 24V58L51 55L45 58L39 55L33 58L27 55L21 58V24C21 20.7 23.7 18 27 18H31Z" stroke="#b45309" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M29 32H49M29 43H43" stroke="#b45309" stroke-width="3" stroke-linecap="round"/>
+        <text x="76" y="44" font-size="24" font-weight="700" fill="#78350f">정산 계산</text>
+      </g>
+      <g transform="translate(484 0)">
+        <rect width="210" height="74" rx="18" fill="url(#slateBeige)" stroke="#cbd5e1" stroke-width="1.5"/>
+        <path d="M43 17H25C21.7 17 19 19.7 19 23V55C19 58.3 21.7 61 25 61H53C56.3 61 59 58.3 59 55V33L43 17Z" stroke="#475569" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M43 17V33H59M29 46H41M45 50L49 54L56 45" stroke="#475569" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="76" y="44" font-size="24" font-weight="700" fill="#1e293b">보험청구</text>
+      </g>
+    </g>
+
+    <!-- Mock UI panel -->
+    <g transform="translate(780 104)">
+      <rect width="188" height="244" rx="26" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" filter="url(#softShadow)"/>
+      <rect x="22" y="28" width="144" height="28" rx="8" fill="#ecfdf5"/>
+      <rect x="22" y="74" width="102" height="16" rx="8" fill="#e2e8f0"/>
+      <rect x="22" y="108" width="144" height="52" rx="14" fill="#f8fafc" stroke="#e2e8f0"/>
+      <rect x="22" y="176" width="144" height="40" rx="14" fill="#ecfdf5" stroke="#a7f3d0"/>
+      <circle cx="146" cy="188" r="7" fill="#10b981"/>
+    </g>
+  </g>
+</svg>

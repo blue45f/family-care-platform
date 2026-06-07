@@ -1,16 +1,19 @@
 import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { careLogTypes, claimStatuses } from '@family-care/shared'
+import { careLogTypes, claimStatuses, scheduleStatuses } from '@family-care/shared'
 
 import {
   fetchAdminOverview,
   fetchAdminPlans,
   fetchCareLogs,
   fetchClaims,
+  fetchSchedules,
   fetchSettlements,
   patchClaimStatus,
+  patchScheduleStatus,
   postCareLog,
   postClaim,
+  postSchedule,
   postSettlement,
   updateAdminPlan,
 } from '../api'
@@ -18,12 +21,15 @@ import type {
   AdminOverview,
   CareLog,
   CareLogDraft,
+  CareSchedule,
+  CareScheduleDraft,
   Claim,
   ClaimDraft,
   ClaimStatus,
   AdminMonthlyTrend,
   RevenuePlan,
   RevenuePlanDraft,
+  ScheduleStatus,
   Settlement,
   SettlementDraft,
 } from '../types'
@@ -43,6 +49,7 @@ const PLAN_TARGET_MONTHLY = 5_000_000
 // 도메인 enum 리터럴(careLogTypes/claimStatuses)은 @family-care/shared가 단일 소스다.
 // 인라인 청구 상태 변경(목록 행)에서 쓰는 옵션. 폼 enum도 동일 소스를 재사용한다.
 export const claimStatusOptions = claimStatuses
+export const scheduleStatusOptions = scheduleStatuses
 
 export type AdminMonthlyTrendWithDelta = AdminMonthlyTrend & {
   settlementDelta: number
@@ -77,17 +84,22 @@ type UsePlatformDataResult = {
   clearError: () => void
 
   careLogs: CareLog[]
+  schedules: CareSchedule[]
   settlements: Settlement[]
   claims: Claim[]
   adminOverview: AdminOverview
   plans: RevenuePlan[]
   savingPlanId: string | null
+  updatingScheduleId: number | null
   updatingClaimId: number | null
+  isSubmittingSchedule: boolean
   isSubmittingCareLog: boolean
   isSubmittingSettlement: boolean
   isSubmittingClaim: boolean
 
   activeHouseholds: number
+  todaySchedules: number
+  pendingSchedules: number
   totalSettlement: number
   approvedClaims: number
   pendingClaims: number
@@ -112,14 +124,17 @@ type UsePlatformDataResult = {
   scenarioRevenue: ScenarioRevenue
   growthRecommendations: string[]
 
+  submitSchedule: (values: CareScheduleDraft) => Promise<void>
   submitCareLog: (values: CareLogDraft) => Promise<void>
   submitSettlement: (values: SettlementDraft) => Promise<void>
   submitClaim: (values: ClaimDraft) => Promise<void>
 
+  defaultScheduleValues: CareScheduleDraft
   defaultCareLogValues: CareLogDraft
   defaultSettlementValues: SettlementDraft
   defaultClaimValues: ClaimDraft
 
+  updateScheduleStatus: (scheduleId: number, nextStatus: ScheduleStatus) => Promise<void>
   updateClaimStatus: (claimId: number, nextStatus: ClaimStatus) => Promise<void>
 
   submitPlan: (draft: RevenuePlanDraft) => Promise<void>
@@ -186,6 +201,16 @@ export const createInitialCareLogDraft = (): CareLogDraft => ({
   date: formatInputDateNow(),
 })
 
+export const createInitialScheduleDraft = (): CareScheduleDraft => ({
+  recipient: '',
+  caregiver: '',
+  date: formatInputDateNow(),
+  startTime: '09:00',
+  endTime: '10:00',
+  status: '예정',
+  note: '',
+})
+
 export const createInitialSettlementDraft = (): SettlementDraft => ({
   recipient: '',
   date: formatInputDateNow(),
@@ -209,13 +234,16 @@ export const usePlatformData = (): UsePlatformDataResult => {
   const [errorMessage, setErrorMessage] = useState('')
 
   const [careLogs, setCareLogs] = useState<CareLog[]>([])
+  const [schedules, setSchedules] = useState<CareSchedule[]>([])
   const [settlements, setSettlements] = useState<Settlement[]>([])
   const [claims, setClaims] = useState<Claim[]>([])
 
   const [adminOverview, setAdminOverview] = useState<AdminOverview>(initialAdminOverview)
   const [plans, setPlans] = useState<RevenuePlan[]>([])
   const [savingPlanId, setSavingPlanId] = useState<string | null>(null)
+  const [updatingScheduleId, setUpdatingScheduleId] = useState<number | null>(null)
   const [updatingClaimId, setUpdatingClaimId] = useState<number | null>(null)
+  const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false)
   const [isSubmittingCareLog, setIsSubmittingCareLog] = useState(false)
   const [isSubmittingSettlement, setIsSubmittingSettlement] = useState(false)
   const [isSubmittingClaim, setIsSubmittingClaim] = useState(false)
@@ -224,17 +252,32 @@ export const usePlatformData = (): UsePlatformDataResult => {
   const [upgradePushPercent, setUpgradePushPercent] = useState(8)
 
   // 폼 기본값은 마운트 시 한 번 계산한다(초기 날짜를 안정적으로 고정 — 기존 draft 초기화와 동일).
+  const [defaultScheduleValues] = useState<CareScheduleDraft>(createInitialScheduleDraft)
   const [defaultCareLogValues] = useState<CareLogDraft>(createInitialCareLogDraft)
   const [defaultSettlementValues] = useState<SettlementDraft>(createInitialSettlementDraft)
   const [defaultClaimValues] = useState<ClaimDraft>(createInitialClaimDraft)
 
   const activeHouseholds = useMemo(() => {
     const recipients = new Set([
+      ...schedules.map((schedule) => schedule.recipient),
       ...careLogs.map((log) => log.recipient),
       ...settlements.map((settlement) => settlement.recipient),
     ])
     return recipients.size
-  }, [careLogs, settlements])
+  }, [careLogs, schedules, settlements])
+
+  const todaySchedules = useMemo(() => {
+    const today = localYmd()
+    return schedules.filter((schedule) => schedule.date === today && schedule.status !== '취소')
+      .length
+  }, [schedules])
+
+  const pendingSchedules = useMemo(
+    () =>
+      schedules.filter((schedule) => schedule.status === '예정' || schedule.status === '진행중')
+        .length,
+    [schedules],
+  )
 
   const totalSettlement = useMemo(() => {
     return settlements.reduce((sum, settlement) => sum + settlement.totalAmount, 0)
@@ -451,15 +494,23 @@ export const usePlatformData = (): UsePlatformDataResult => {
     setLoading(true)
     try {
       setErrorMessage('')
-      const [logsResult, settlementsResult, claimsResult, overviewResult, plansResult] =
-        await Promise.all([
-          fetchCareLogs(),
-          fetchSettlements(),
-          fetchClaims(),
-          fetchAdminOverview(),
-          fetchAdminPlans(),
-        ])
+      const [
+        schedulesResult,
+        logsResult,
+        settlementsResult,
+        claimsResult,
+        overviewResult,
+        plansResult,
+      ] = await Promise.all([
+        fetchSchedules(),
+        fetchCareLogs(),
+        fetchSettlements(),
+        fetchClaims(),
+        fetchAdminOverview(),
+        fetchAdminPlans(),
+      ])
 
+      setSchedules(schedulesResult)
       setCareLogs(logsResult)
       setSettlements(settlementsResult)
       setClaims(claimsResult)
@@ -481,6 +532,32 @@ export const usePlatformData = (): UsePlatformDataResult => {
   }, [load])
 
   // 검증은 폼(zodResolver)에서 끝난 뒤 검증된 값을 받는다. 여기서는 제출 부수효과만 처리한다.
+  const submitSchedule = useCallback(
+    async (values: CareScheduleDraft) => {
+      if (isSubmittingSchedule) {
+        return
+      }
+
+      try {
+        setIsSubmittingSchedule(true)
+        setErrorMessage('')
+        const next = await postSchedule(values)
+        setSchedules((prev) => [next, ...prev])
+        await load()
+      } catch (error) {
+        setErrorMessage(
+          normalizeErrorMessage(
+            error,
+            '방문 일정 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+          ),
+        )
+      } finally {
+        setIsSubmittingSchedule(false)
+      }
+    },
+    [isSubmittingSchedule, load],
+  )
+
   const submitCareLog = useCallback(
     async (values: CareLogDraft) => {
       if (isSubmittingCareLog) {
@@ -567,6 +644,30 @@ export const usePlatformData = (): UsePlatformDataResult => {
     }
   }, [])
 
+  const updateScheduleStatus = useCallback(
+    async (scheduleId: number, nextStatus: ScheduleStatus) => {
+      const current = schedules.find((item) => item.id === scheduleId)?.status
+      if (!current || current === nextStatus) {
+        return
+      }
+
+      try {
+        setUpdatingScheduleId(scheduleId)
+        const updated = await patchScheduleStatus(scheduleId, nextStatus)
+        setSchedules((prev) =>
+          prev.map((schedule) => (schedule.id === updated.id ? updated : schedule)),
+        )
+      } catch (error) {
+        setErrorMessage(
+          normalizeErrorMessage(error, '방문 일정 상태 변경 실패. 잠시 후 다시 시도해 주세요.'),
+        )
+      } finally {
+        setUpdatingScheduleId(null)
+      }
+    },
+    [schedules],
+  )
+
   const updateClaimStatus = useCallback(
     async (claimId: number, nextStatus: ClaimStatus) => {
       const current = claims.find((item) => item.id === claimId)?.status
@@ -607,17 +708,22 @@ export const usePlatformData = (): UsePlatformDataResult => {
     clearError,
 
     careLogs,
+    schedules,
     settlements,
     claims,
     adminOverview,
     plans,
     savingPlanId,
+    updatingScheduleId,
     updatingClaimId,
+    isSubmittingSchedule,
     isSubmittingCareLog,
     isSubmittingSettlement,
     isSubmittingClaim,
 
     activeHouseholds,
+    todaySchedules,
+    pendingSchedules,
     totalSettlement,
     approvedClaims,
     pendingClaims,
@@ -637,14 +743,17 @@ export const usePlatformData = (): UsePlatformDataResult => {
     scenarioRevenue,
     growthRecommendations,
 
+    submitSchedule,
     submitCareLog,
     submitSettlement,
     submitClaim,
 
+    defaultScheduleValues,
     defaultCareLogValues,
     defaultSettlementValues,
     defaultClaimValues,
 
+    updateScheduleStatus,
     updateClaimStatus,
 
     submitPlan,

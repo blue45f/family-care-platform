@@ -9,37 +9,37 @@ import {
 
 describe('canonicalizeLocation', () => {
   it('정규 경로는 보정이 필요 없다', () => {
-    const result = canonicalizeLocation({ pathname: '/operations/care' })
-    expect(result.route).toBe('/operations/care')
+    const result = canonicalizeLocation({ pathname: '/care' })
+    expect(result.route).toBe('/care')
     expect(result.shouldReplace).toBe(false)
     expect(result.isFallback).toBe(false)
   })
 
   it('정규 경로에 붙은 쿼리·해시는 보존하며 보정 대상이 아니다', () => {
     const result = canonicalizeLocation({
-      pathname: '/admin/plans',
+      pathname: '/plans',
       search: '?tab=fee',
       hash: '#row',
     })
-    expect(result.route).toBe('/admin/plans')
-    expect(result.nextUrl).toBe('/admin/plans?tab=fee#row')
+    expect(result.route).toBe('/plans')
+    expect(result.nextUrl).toBe('/plans?tab=fee#row')
     expect(result.shouldReplace).toBe(false)
   })
 
   it('미등록 딥링크는 폴백 경로로 보정하되 쿼리·해시는 이어 붙인다', () => {
     const result = canonicalizeLocation({
-      pathname: '/operations/ghost',
+      pathname: '/ghost',
       search: '?ref=email',
     })
-    expect(result.route).toBe('/operations')
-    expect(result.nextUrl).toBe('/operations?ref=email')
+    expect(result.route).toBe('/')
+    expect(result.nextUrl).toBe('/?ref=email')
     expect(result.shouldReplace).toBe(true)
     expect(result.isFallback).toBe(true)
   })
 
   it('트레일링 슬래시는 정규형으로 보정한다(폴백 아님)', () => {
-    const result = canonicalizeLocation({ pathname: '/admin/' })
-    expect(result.route).toBe('/admin')
+    const result = canonicalizeLocation({ pathname: '/claims/' })
+    expect(result.route).toBe('/claims')
     expect(result.shouldReplace).toBe(true)
     expect(result.isFallback).toBe(false)
   })
@@ -55,21 +55,21 @@ describe('reconcileLocationToRoute', () => {
   it('정규 경로에서는 replaceState를 호출하지 않는다', () => {
     const { history, replaceState } = makeHistory()
     const route = reconcileLocationToRoute(history, {
-      pathname: '/operations/care',
+      pathname: '/care',
     })
-    expect(route).toBe('/operations/care')
+    expect(route).toBe('/care')
     expect(replaceState).not.toHaveBeenCalled()
   })
 
   it('미등록 경로는 정규 URL로 replaceState 보정한다', () => {
     const { history, replaceState } = makeHistory()
     const route = reconcileLocationToRoute(history, {
-      pathname: '/admin/unknown',
+      pathname: '/unknown',
       search: '?x=1',
     })
-    expect(route).toBe('/admin')
+    expect(route).toBe('/')
     expect(replaceState).toHaveBeenCalledTimes(1)
-    expect(replaceState).toHaveBeenCalledWith({}, '', '/admin?x=1')
+    expect(replaceState).toHaveBeenCalledWith({}, '', '/?x=1')
   })
 })
 

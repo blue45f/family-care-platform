@@ -24,16 +24,18 @@
 
 ## 엔티티 도메인
 
+- 방문 일정: `schedules`
 - 운영 기록: `care-logs`
 - 정산: `settlements`
 - 보험청구: `claims`
 - 수익 관리: `admin`
 
-## 클라이언트 라우터 (react-router 없이 직접 구현)
+## 클라이언트 라우터 (React Router DOM)
 
-- 웹앱은 표준 History API만으로 라우팅을 직접 구현합니다(의존성 최소화). 경로는 `AppRoute` 유니온으로 타입 고정되어 잘못된 경로는 컴파일 에러입니다.
-- 구성: `apps/web/src/routeConfig.ts`(타입 레지스트리·순수 해석기 `resolveRouteResult`/폴백·`DEFAULT_ROUTE`·`isAppRoute`), `routeNavigation.ts`(History/스크롤/포커스 순수 헬퍼), `useRouteState.ts`(상태·`popstate`·`pushState` 연동 훅).
-- 딥링크/북마크/공유 URL이 동작하며, 마운트·`popstate` 시 미등록/비정규 URL을 `replaceState`로 정규화합니다. 라우트 변경 시 스크롤 복원 + 메인 포커스 이동(a11y), `isFallback`로 not-found 안내를 제공합니다.
+- 웹앱은 `react-router-dom` v7 기반입니다. `main.tsx`에서 `BrowserRouter`를 제공하고, `App.tsx`는 `Routes`, `Route`, `Navigate`, `useLocation`, `useNavigate`로 인증 게이트와 페이지 전환을 처리합니다.
+- 구성: `apps/web/src/routeConfig.ts`(경로 타입·메타데이터·내비게이션 IA·순수 해석기), `appRoutes.tsx`(React Router에 연결되는 보호 라우트/인증 라우트 매니페스트), `routeNavigation.ts`(URL 정규화·스크롤·포커스 순수 헬퍼).
+- 비로그인 사용자의 `/`는 공개 홈페이지를 보여주고, 로그인 후 `/`는 운영 대시보드를 보여줍니다. 보호 라우트(`/schedule`, `/care`, `/claims` 등)에 직접 접근하면 로그인 화면으로 이동하되 원래 경로로 복귀할 수 있게 `location.state.from`을 유지합니다.
+- 경로는 `AppRoute` 유니온으로 타입 고정되어 잘못된 경로는 컴파일 에러입니다. 미등록/비정규 URL은 `canonicalizeLocation` 결과를 기준으로 `Navigate`/`replace` 처리하며, 라우트 변경 시 스크롤 복원 + 메인 포커스 이동(a11y), `isFallback` not-found 안내를 유지합니다.
 - 자세한 설계/라우트 추가법은 `docs/DEVELOPMENT.md`의 "라우터" 절을 참고하세요.
 
 ## 데이터 레이어 (DB 없는 JSON 파일 영속화)
@@ -48,4 +50,5 @@
 
 1. API 타입체크(`typecheck`) → 웹 타입체크(`typecheck`)
 2. 빌드(`build`) → 통합 빌드(`pnpm -r run build`)
-3. 필요 시 `ci`/`verify`를 통해 타입체크+테스트+빌드 실행
+3. `ci`/`verify`를 통해 포맷+린트+타입체크+테스트+빌드 실행
+4. 실행 중인 웹/API를 대상으로 `pnpm run smoke:web`, `python3 scripts/verify-web-ui.py`로 샘플 API 흐름과 주요 화면 라우팅을 검증

@@ -3,6 +3,8 @@ import { readFile } from 'node:fs/promises'
 
 const API_URL = process.env.FAMILY_CARE_API_URL ?? 'http://127.0.0.1:3001/api'
 const APP_URL = process.env.FAMILY_CARE_APP_URL
+const SMOKE_EMAIL = process.env.FAMILY_CARE_SMOKE_EMAIL ?? 'demo@familycare.app'
+const SMOKE_PASSWORD = process.env.FAMILY_CARE_SMOKE_PASSWORD ?? 'demo-1234'
 const SCENARIO_PATH = new URL('./sample-scenario.json', import.meta.url)
 const APP_DEFAULT_CANDIDATES = [
   'http://localhost:5173',
@@ -13,10 +15,13 @@ const APP_DEFAULT_CANDIDATES = [
   'http://127.0.0.1:4173',
 ]
 
+let authToken = ''
+
 async function requestText(url, init = {}) {
   const response = await fetch(url, {
     headers: {
       'content-type': 'application/json',
+      ...(authToken ? { authorization: `Bearer ${authToken}` } : {}),
       ...init.headers,
     },
     ...init,
@@ -108,11 +113,38 @@ async function main() {
     '앱 루트 페이지 응답이 HTML이 아닙니다.',
   )
 
+  const auth = await requestJson(`${API_URL}/auth/login`, {
+    method: 'POST',
+    body: JSON.stringify({
+      email: SMOKE_EMAIL,
+      password: SMOKE_PASSWORD,
+    }),
+  })
+  assert(auth?.token, '스모크 로그인 토큰을 받지 못했습니다.')
+  authToken = auth.token
+  console.log(`[OK] 스모크 계정 로그인 확인 (${SMOKE_EMAIL})`)
+
   const initialOverview = await requestJson(`${API_URL}/admin/overview`)
   assert(
     typeof initialOverview.activeHouseholds === 'number',
     '관리자 overview 응답 스키마가 올바르지 않습니다.',
   )
+
+  const createdSchedules = []
+  for (const schedule of scenario.schedules) {
+    const payload = {
+      ...schedule,
+      recipient: `${schedule.recipient} ${marker}`,
+      note: `${schedule.note} (${marker})`,
+    }
+    const created = await requestJson(`${API_URL}/schedules`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    assert(created.recipient === payload.recipient, '방문 일정이 정상 등록되지 않았습니다.')
+    assert(created.status === schedule.status, '방문 일정 상태 값이 저장 시점과 다릅니다.')
+    createdSchedules.push(created)
+  }
 
   const createdCareLogs = []
   for (const careLog of scenario.careLogs) {
@@ -155,6 +187,33 @@ async function main() {
     assert(created.recipient === payload.recipient, '보험청구가 정상 등록되지 않았습니다.')
     createdClaims.push(created)
   }
+
+  const schedules = await requestJson(`${API_URL}/schedules`)
+  for (const created of createdSchedules) {
+    assert(
+      schedules.some(
+        (item) =>
+          item.id === created.id &&
+          item.recipient === created.recipient &&
+          item.startTime === created.startTime,
+      ),
+      `방문 일정 누락: ${created.id}`,
+    )
+  }
+
+  const targetSchedule = schedules.find((item) =>
+    item.recipient.startsWith(`${scenario.scheduleTargetRecipient} ${marker}`),
+  )
+  assert(targetSchedule, '테스트 방문 일정 대상 건을 찾을 수 없습니다.')
+
+  const updatedSchedule = await requestJson(`${API_URL}/schedules/${targetSchedule.id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: scenario.scheduleStatusTransition }),
+  })
+  assert(
+    updatedSchedule.status === scenario.scheduleStatusTransition,
+    '방문 일정 상태 전환 결과가 예상과 다릅니다.',
+  )
 
   const careLogs = await requestJson(`${API_URL}/care-logs`)
   for (const created of createdCareLogs) {
@@ -219,6 +278,13 @@ async function main() {
     (claim) => claim.id === targetClaim.id && claim.status === scenario.claimStatusTransition,
   )
   assert(verifiedApproved, '최종 조회 기준에서 청구 상태가 반영되지 않습니다.')
+
+  const updatedSchedules = await requestJson(`${API_URL}/schedules`)
+  const verifiedCompleted = updatedSchedules.some(
+    (schedule) =>
+      schedule.id === targetSchedule.id && schedule.status === scenario.scheduleStatusTransition,
+  )
+  assert(verifiedCompleted, '최종 조회 기준에서 방문 일정 상태가 반영되지 않습니다.')
 
   console.log('✅ 브라우저 샘플 시나리오 E2E 스모크 통과')
 }

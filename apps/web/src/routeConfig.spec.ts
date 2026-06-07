@@ -3,9 +3,13 @@ import { describe, expect, it } from 'vitest'
 import {
   type AppRoute,
   DEFAULT_ROUTE,
+  managementRoutes,
+  todayFirstRoutes,
   isAppRoute,
+  operationalWorkflowRoutes,
   resolveRoute,
   resolveRouteResult,
+  routeDefs,
   routeMap,
 } from './routeConfig'
 
@@ -20,28 +24,21 @@ describe('routeConfig 라우트 해석', () => {
   })
 
   it('트레일링 슬래시는 정규형으로 보정(폴백은 아님)된다', () => {
-    const result = resolveRouteResult('/operations/care/')
-    expect(result.route).toBe('/operations/care')
+    const result = resolveRouteResult('/care/')
+    expect(result.route).toBe('/care')
     expect(result.isFallback).toBe(false)
     expect(result.isCanonical).toBe(false)
   })
 
   it('쿼리·해시는 무시하고 경로만 보고 해석한다', () => {
-    expect(resolveRoute('/admin/plans?tab=x#top')).toBe('/admin/plans')
+    expect(resolveRoute('/plans?tab=x#top')).toBe('/plans')
   })
 
-  it('미등록 하위 경로는 가장 가까운 섹션 루트로 상향 폴백된다', () => {
-    expect(resolveRouteResult('/operations/unknown')).toMatchObject({
-      route: '/operations',
+  it('미등록 경로는 기본 라우트로 폴백된다', () => {
+    expect(resolveRouteResult('/care/unknown')).toMatchObject({
+      route: DEFAULT_ROUTE,
       isFallback: true,
     })
-    expect(resolveRouteResult('/admin/does-not-exist')).toMatchObject({
-      route: '/admin',
-      isFallback: true,
-    })
-  })
-
-  it('그 외 알 수 없는 경로는 기본 라우트로 폴백된다', () => {
     expect(resolveRouteResult('/totally/unknown')).toMatchObject({
       route: DEFAULT_ROUTE,
       isFallback: true,
@@ -56,19 +53,69 @@ describe('routeConfig 라우트 해석', () => {
 
 describe('isAppRoute 타입 가드', () => {
   it('등록된 경로에는 true, 미등록 경로에는 false를 반환한다', () => {
-    expect(isAppRoute('/admin/simulator')).toBe(true)
-    expect(isAppRoute('/operations/care')).toBe(true)
-    expect(isAppRoute('/operations/care/')).toBe(false)
+    expect(isAppRoute('/claims')).toBe(true)
+    expect(isAppRoute('/care')).toBe(true)
+    expect(isAppRoute('/care/')).toBe(false)
     expect(isAppRoute('/nope')).toBe(false)
   })
 
   it('좁혀진 값은 AppRoute로 안전하게 다룰 수 있다', () => {
-    const raw: string = '/admin'
+    const raw: string = '/analytics'
     if (isAppRoute(raw)) {
       const narrowed: AppRoute = raw
-      expect(narrowed).toBe('/admin')
+      expect(narrowed).toBe('/analytics')
     } else {
       throw new Error('기대한 라우트가 가드를 통과하지 못했습니다.')
     }
+  })
+})
+
+describe('상용 서비스 정보 구조', () => {
+  it('오늘 화면에서 이어지는 핵심 업무 흐름을 라우터 단일 소스로 제공한다', () => {
+    expect(todayFirstRoutes).toEqual(['/schedule', '/care', '/settlements', '/claims'])
+    expect(operationalWorkflowRoutes).toEqual(['/schedule', '/care', '/settlements', '/claims'])
+  })
+
+  it('운영 업무와 서비스 관리 화면을 내비게이션 성격별로 분리한다', () => {
+    expect(managementRoutes).toEqual(['/analytics', '/plans', '/guide'])
+
+    for (const path of todayFirstRoutes) {
+      expect(routeDefs[path]).toMatchObject({
+        section: 'main',
+        inNav: true,
+        placeholder: false,
+      })
+    }
+
+    for (const path of managementRoutes) {
+      expect(routeDefs[path]).toMatchObject({
+        section: 'manage',
+        inNav: true,
+        placeholder: false,
+      })
+    }
+  })
+
+  it('인증 라우트는 본문 내비게이션에 노출하지 않는다', () => {
+    expect(routeDefs['/login']).toMatchObject({ section: 'account', inNav: false })
+    expect(routeDefs['/register']).toMatchObject({ section: 'account', inNav: false })
+  })
+
+  it('사용법 가이드는 서비스 관리 내비게이션에 노출된다', () => {
+    expect(routeDefs['/guide']).toMatchObject({
+      title: '사용 가이드',
+      section: 'manage',
+      inNav: true,
+      placeholder: false,
+    })
+  })
+
+  it('방문 일정은 돌봄 운영 첫 라우트로 노출된다', () => {
+    expect(routeDefs['/schedule']).toMatchObject({
+      title: '방문 일정',
+      section: 'main',
+      inNav: true,
+      placeholder: false,
+    })
   })
 })
