@@ -353,6 +353,16 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           </Button>
         </div>
       </section>
+
+      <aside className="public-sticky-cta" aria-label="빠른 시작">
+        <Button onClick={() => onNavigate('/login')}>
+          <Icon name="arrow-right" size={16} />
+          데모로 시작
+        </Button>
+        <Button variant="secondary" onClick={() => onNavigate('/register')}>
+          회원가입
+        </Button>
+      </aside>
     </main>
   )
 }

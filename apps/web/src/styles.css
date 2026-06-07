@@ -1852,7 +1852,31 @@ svg {
   width: min(100%, var(--content-max));
   margin-inline: auto;
 }
+.public-sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  display: none;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + env(safe-area-inset-bottom));
+  background: color-mix(in oklch, var(--bg-surface-raised) 94%, transparent);
+  border-top: 1px solid var(--border-subtle);
+}
+.public-sticky-cta .btn {
+  width: 100%;
+}
 @media (max-width: 39rem) {
+  .public-page {
+    padding-bottom: 5.8rem;
+  }
+  .public-sticky-cta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
   .public-nav {
     align-items: flex-start;
     flex-direction: column;
