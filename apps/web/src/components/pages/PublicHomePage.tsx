@@ -53,6 +53,28 @@ const publicMetricCards = [
   },
 ]
 
+const publicPricingTiers = [
+  {
+    name: '스타터',
+    price: '월 49,000원',
+    desc: '작은 센터, 소규모 팀 파일럿용',
+    bullets: ['월 최대 30건 일정', '돌봄 기록/정산 기본 탭', '데모 기반 튜토리얼 포함'],
+  },
+  {
+    name: '프로',
+    price: '월 119,000원',
+    desc: '정규 운영 중인 팀 운영용',
+    bullets: ['월 최대 200건 일정', '권한별 업무 템플릿', '보험청구 대시보드 강화'],
+    highlight: true,
+  },
+  {
+    name: '엔터프라이즈',
+    price: '문의',
+    desc: '다수 센터·규모형 운영용',
+    bullets: ['센터 다중 운영', '조직 맞춤 규칙', '우선 지원 및 온보딩 지원'],
+  },
+]
+
 const publicFaqs = [
   {
     question: '지금 바로 데모를 볼 수 있나요?',
@@ -103,6 +125,9 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           </a>
           <a className="public-anchor-link" href="#metrics">
             성과 지표
+          </a>
+          <a className="public-anchor-link" href="#plans">
+            요금제
           </a>
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
@@ -234,6 +259,47 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
               <strong>{metric.value}</strong>
               <span>{metric.label}</span>
               <p>{metric.desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section
+        className="public-band public-pricing"
+        id="plans"
+        aria-labelledby="public-pricing-title"
+      >
+        <div className="public-section-head">
+          <p className="page-eyebrow">도입 계획</p>
+          <h2 id="public-pricing-title">규모에 맞는 시작점을 바로 고를 수 있습니다</h2>
+          <p>
+            운영 규모가 커질수록 실제 적용 단계가 달라집니다. 지금은 데모로 기능을 확인한 뒤
+            단계적으로 확장하세요.
+          </p>
+        </div>
+        <div className="public-pricing-list">
+          {publicPricingTiers.map((plan) => (
+            <article
+              className={`public-pricing-item ${plan.highlight ? 'public-pricing-item--highlight' : ''}`}
+              key={plan.name}
+            >
+              <p className="public-pricing-name">{plan.name}</p>
+              <h3>{plan.price}</h3>
+              <p>{plan.desc}</p>
+              <ul>
+                {plan.bullets.map((bullet) => (
+                  <li key={bullet}>
+                    <Icon name="check" size={16} />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button
+                variant={plan.highlight ? 'primary' : 'secondary'}
+                onClick={() => onNavigate('/register')}
+              >
+                {plan.highlight ? '가장 많이 쓰는 플랜 보기' : '도입 문의'}
+              </Button>
             </article>
           ))}
         </div>

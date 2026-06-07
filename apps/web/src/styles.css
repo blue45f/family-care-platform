@@ -1715,6 +1715,66 @@ svg {
   color: var(--fg-muted);
   font-size: var(--text-sm);
 }
+.public-pricing {
+  background: var(--bg-app);
+}
+.public-pricing-list {
+  display: grid;
+  max-width: var(--content-max);
+  gap: var(--space-4);
+  margin: 0 auto;
+}
+@media (min-width: 54rem) {
+  .public-pricing-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.public-pricing-item {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-surface);
+}
+.public-pricing-item--highlight {
+  border-color: color-mix(in oklch, var(--accent) 40%, var(--border-subtle));
+  background: color-mix(in oklch, var(--accent-soft) 32%, var(--bg-surface-raised));
+}
+.public-pricing-item p,
+.public-pricing-item li {
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+}
+.public-pricing-name {
+  margin: 0;
+  color: var(--fg-default);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.public-pricing-item h3 {
+  margin: 0;
+  color: var(--fg-strong);
+  font-size: var(--text-2xl);
+}
+.public-pricing-item ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.public-pricing-item li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.public-pricing-item svg {
+  color: var(--accent);
+  flex: none;
+  margin-top: 0.16rem;
+}
 .public-faq {
   background: var(--bg-surface);
 }
@@ -1807,6 +1867,9 @@ svg {
   .public-nav-actions .btn,
   .public-hero-actions .btn {
     flex: 1 1 auto;
+  }
+  .public-pricing-item .btn {
+    width: 100%;
   }
   .public-hero {
     min-height: 34rem;
