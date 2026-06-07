@@ -22,4 +22,13 @@ describe('TermsPage', () => {
     expect(markup).toContain('서비스 공개 범위')
     expect(markup).toContain('필수 동의 항목이 남아 있습니다')
   })
+
+  it('도입 점검 체크리스트와 액션 로그 블록이 렌더된다', () => {
+    const markup = renderToStaticMarkup(createElement(TermsPage, { onNavigate: () => undefined }))
+
+    expect(markup).toContain('약관 데모 체크리스트')
+    expect(markup).toContain('운영 검토 액션 로그')
+    expect(markup).toContain('동의 정합성')
+    expect(markup).toContain('액션 로그 삭제')
+  })
 })

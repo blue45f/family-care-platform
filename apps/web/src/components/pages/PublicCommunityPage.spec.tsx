@@ -39,4 +39,15 @@ describe('PublicCommunityPage', () => {
     expect(markup).toContain('북마크 글')
     expect(markup).toContain('신고 사유')
   })
+
+  it('데모 미션 요약 블록을 노출한다', () => {
+    const markup = renderToStaticMarkup(
+      createElement(PublicCommunityPage, { onNavigate: () => undefined }),
+    )
+
+    expect(markup).toContain('커뮤니티 데모 미션')
+    expect(markup).toContain('데모 동작 요약')
+    expect(markup).toContain('로그 삭제')
+    expect(markup).toContain('데모 초기화')
+  })
 })

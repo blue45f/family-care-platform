@@ -31,4 +31,15 @@ describe('PublicTutorialPage', () => {
     expect(markup).toContain('튜토리얼에서 무엇을 먼저 보면 좋나요?')
     expect(markup).toContain('운영을 안정적으로 확장하는 기준')
   })
+
+  it('운영 데모 미션과 시나리오 지표가 노출된다', () => {
+    const markup = renderToStaticMarkup(
+      createElement(PublicTutorialPage, { onNavigate: () => undefined }),
+    )
+
+    expect(markup).toContain('운영 데모 미션')
+    expect(markup).toContain('화면 탐색 커버리지')
+    expect(markup).toContain('주요 화면 탐색 현황')
+    expect(markup).toContain('시나리오 완주율')
+  })
 })
