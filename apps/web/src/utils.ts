@@ -24,6 +24,9 @@ export const localYmd = (d: Date = new Date()): string => {
 
 export const localMonthKey = (d: Date = new Date()): string => localYmd(d).slice(0, 7)
 
+export const isReadOnlyErrorMessage = (message: string) =>
+  message.includes('권한이 없어') || message.includes('401') || message.includes('403')
+
 export const roundMoney = (value: number) => (Number.isFinite(value) ? Math.round(value) : 0)
 export const formatWon = (value: number) => `${roundMoney(value).toLocaleString()}원`
 export const formatRate = (value: number) => `${Number.isFinite(value) ? value.toFixed(1) : '0.0'}%`

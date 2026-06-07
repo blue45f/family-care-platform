@@ -8,7 +8,7 @@ import {
   type RevenuePlanFormValues,
 } from '../../features/revenue-plan/schema'
 import type { RevenuePlan } from '../../types'
-import { formatRate, formatWon } from '../../utils'
+import { formatRate, formatWon, isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,
   Button,
@@ -242,12 +242,12 @@ const PlanCard = ({ plan, submitPlan, isSaving, isReadOnly }: PlanCardProps): Re
 
 export const PlansPage = ({ data }: PlansPageProps) => {
   // 읽기 전용(권한 부족) 상태에서는 저장을 막는다. App과 동일한 판별 규칙.
-  const isReadOnly =
-    data.errorMessage.includes('권한이 없어') ||
-    data.errorMessage.includes('401') ||
-    data.errorMessage.includes('403')
+  const isReadOnly = isReadOnlyErrorMessage(data.errorMessage)
 
   const { scenarioRevenue } = data
+  const clampedGoalRate = Number.isFinite(scenarioRevenue.goalRate)
+    ? Math.max(0, Math.min(100, scenarioRevenue.goalRate))
+    : 0
   const isInitialLoading = data.loading && data.plans.length === 0
 
   return (
@@ -445,20 +445,20 @@ export const PlansPage = ({ data }: PlansPageProps) => {
               }}
             >
               <span className="field-label">월 목표 진행률</span>
-              <span style={controlValueStyle}>{scenarioRevenue.goalRate}%</span>
+              <span style={controlValueStyle}>{clampedGoalRate}%</span>
             </div>
             <div
               style={progressTrackStyle}
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={scenarioRevenue.goalRate}
-              aria-label={`월 목표 진행률 ${scenarioRevenue.goalRate}%`}
+              aria-valuenow={clampedGoalRate}
+              aria-label={`월 목표 진행률 ${clampedGoalRate}%`}
             >
               <div
                 style={{
                   height: '100%',
-                  width: `${scenarioRevenue.goalRate}%`,
+                  width: `${clampedGoalRate}%`,
                   background: 'var(--accent)',
                   transition: 'width var(--dur-base, 0.2s) var(--ease-out, ease)',
                 }}

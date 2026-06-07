@@ -10,6 +10,7 @@ import {
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import type { PlatformData } from '../../state/usePlatformData'
 import type { CareSchedule, ScheduleStatus } from '../../types'
+import { isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,
   type BadgeTone,
@@ -72,14 +73,11 @@ const STATUS_CELL_STYLE: CSSProperties = {
   alignItems: 'flex-start',
 }
 
-const isReadOnlyError = (message: string) =>
-  message.includes('권한이 없어') || message.includes('401') || message.includes('403')
-
 const formatShortDate = (date: string) => date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, '$2.$3')
 
 export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
   const routeDef = routeDefs['/schedule']
-  const isReadOnly = isReadOnlyError(data.errorMessage)
+  const isReadOnly = isReadOnlyErrorMessage(data.errorMessage)
   const isSubmitting = data.isSubmittingSchedule
   const isBusy = isReadOnly || isSubmitting
   const isInitialLoading = data.loading && data.schedules.length === 0

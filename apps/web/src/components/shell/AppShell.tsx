@@ -51,7 +51,7 @@ export const AppShell = ({
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setDrawerOpen(false)
+        closeDrawer()
       }
     }
     window.addEventListener('keydown', onKey)
@@ -82,7 +82,7 @@ export const AppShell = ({
   }
 
   const handleNavigate = () => {
-    setDrawerOpen(false)
+    closeDrawer()
   }
 
   return (

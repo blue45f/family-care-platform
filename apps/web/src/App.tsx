@@ -13,6 +13,7 @@ import { AppShell } from './components/shell/AppShell'
 import { getRouteDef, SITE_NAME, type AppRoute, type RouteDef } from './routeConfig'
 import { applyRouteEntrySideEffects, canonicalizeLocation } from './routeNavigation'
 import { usePlatformData } from './state/usePlatformData'
+import { isReadOnlyErrorMessage } from './utils'
 import { useRouteMeta } from './useRouteMeta'
 
 const ROUTE_MAIN_ID = 'route-main-content'
@@ -54,10 +55,7 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
     setRouteAnnouncement(`${routeDef.title} 페이지로 이동했습니다`)
   }, [routeDef.title])
 
-  const hasReadOnlyError =
-    data.errorMessage.includes('권한이 없어') ||
-    data.errorMessage.includes('401') ||
-    data.errorMessage.includes('403')
+  const hasReadOnlyError = isReadOnlyErrorMessage(data.errorMessage)
 
   const isOnline = !data.errorMessage.includes('연결')
 
