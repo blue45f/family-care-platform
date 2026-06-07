@@ -331,6 +331,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <button
             type="button"
             className="public-text-link"
+            onClick={() => onNavigate('/community', { source: 'hero', fromLanding: true })}
+          >
+            커뮤니티 데모
+          </button>
+          <button
+            type="button"
+            className="public-text-link"
             onClick={() => onNavigate('/tutorial', { source: 'hero', fromLanding: true })}
           >
             튜토리얼
@@ -358,6 +365,20 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
           </a>
+          <button
+            type="button"
+            className="public-text-link"
+            onClick={() => onNavigate('/terms', { source: 'hero', fromLanding: true })}
+          >
+            이용약관
+          </button>
+          <button
+            type="button"
+            className="public-text-link"
+            onClick={() => onNavigate('/privacy', { source: 'hero', fromLanding: true })}
+          >
+            개인정보 처리방침
+          </button>
           <button
             type="button"
             className="public-text-link"

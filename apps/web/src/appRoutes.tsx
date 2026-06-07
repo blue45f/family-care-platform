@@ -6,10 +6,13 @@ import { ClaimsPage } from './components/pages/ClaimsPage'
 import { DashboardPage } from './components/pages/DashboardPage'
 import { GuidePage } from './components/pages/GuidePage'
 import { PublicOverviewPage } from './components/pages/PublicOverviewPage'
+import { PublicCommunityPage } from './components/pages/PublicCommunityPage'
 import { PublicTutorialPage } from './components/pages/PublicTutorialPage'
 import { LoginPage } from './components/pages/LoginPage'
 import { PlansPage } from './components/pages/PlansPage'
+import { PrivacyPage } from './components/pages/PrivacyPage'
 import { PublicHomePage } from './components/pages/PublicHomePage'
+import { TermsPage } from './components/pages/TermsPage'
 import { PublicPlansPage } from './components/pages/PublicPlansPage'
 import { RegisterPage } from './components/pages/RegisterPage'
 import { SchedulePage } from './components/pages/SchedulePage'
@@ -31,9 +34,14 @@ const ROUTE_RENDERERS = {
   public: {
     '/': ({ navigate }: PublicRouteContext) => <PublicHomePage onNavigate={navigate} />,
     '/guide': ({ navigate }: PublicRouteContext) => <GuidePage onNavigate={navigate} />,
+    '/community': ({ navigate }: PublicRouteContext) => (
+      <PublicCommunityPage onNavigate={navigate} />
+    ),
     '/tutorial': ({ navigate }: PublicRouteContext) => <PublicTutorialPage onNavigate={navigate} />,
     '/plans': ({ navigate }: PublicRouteContext) => <PublicPlansPage onNavigate={navigate} />,
     '/overview': ({ navigate }: PublicRouteContext) => <PublicOverviewPage onNavigate={navigate} />,
+    '/terms': ({ navigate }: PublicRouteContext) => <TermsPage onNavigate={navigate} />,
+    '/privacy': ({ navigate }: PublicRouteContext) => <PrivacyPage onNavigate={navigate} />,
   },
   auth: {
     '/login': ({ navigate, redirectTo }: AuthRouteContext) => (
@@ -115,6 +123,18 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
   {
     path: '/overview',
     render: ({ navigate }) => <PublicOverviewPage onNavigate={navigate} />,
+  },
+  {
+    path: '/community',
+    render: ({ navigate }) => <PublicCommunityPage onNavigate={navigate} />,
+  },
+  {
+    path: '/terms',
+    render: ({ navigate }) => <TermsPage onNavigate={navigate} />,
+  },
+  {
+    path: '/privacy',
+    render: ({ navigate }) => <PrivacyPage onNavigate={navigate} />,
   },
 ]
 

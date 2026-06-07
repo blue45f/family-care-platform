@@ -19,6 +19,9 @@ describe('appRoutes', () => {
       ...todayFirstRoutes,
       ...managementRoutes,
       '/overview',
+      '/community',
+      '/terms',
+      '/privacy',
     ])
   })
 
@@ -38,6 +41,9 @@ describe('appRoutes', () => {
     expect(getUnauthenticatedRouteIntent('/tutorial')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/guide')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/plans')).toBe('public')
+    expect(getUnauthenticatedRouteIntent('/community')).toBe('public')
+    expect(getUnauthenticatedRouteIntent('/terms')).toBe('public')
+    expect(getUnauthenticatedRouteIntent('/privacy')).toBe('public')
     expect(getUnauthenticatedRouteIntent('/login')).toBe('auth')
     expect(getUnauthenticatedRouteIntent('/register')).toBe('auth')
     expect(getUnauthenticatedRouteIntent('/schedule')).toBe('protected')

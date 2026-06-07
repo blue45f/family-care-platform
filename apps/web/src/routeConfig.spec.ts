@@ -98,11 +98,29 @@ describe('상용 서비스 정보 구조', () => {
   })
 
   it('공개 랜딩 라우트는 확장 가능한 별도 목록으로 관리한다', () => {
-    expect(publicLandingRoutes).toEqual(['/', '/overview', '/tutorial', '/guide', '/plans'])
+    expect(publicLandingRoutes).toEqual([
+      '/',
+      '/overview',
+      '/tutorial',
+      '/guide',
+      '/community',
+      '/plans',
+      '/terms',
+      '/privacy',
+    ])
     expect(publicLandingRoutes).toContain('/guide')
     expect(publicLandingRoutes).toContain('/tutorial')
     expect(publicLandingRoutes).toContain('/plans')
+    expect(publicLandingRoutes).toContain('/community')
+    expect(publicLandingRoutes).toContain('/terms')
+    expect(publicLandingRoutes).toContain('/privacy')
     expect(publicLandingRoutes).not.toContain('/login')
+  })
+
+  it('커뮤니티/약관/개인정보 페이지는 공개 탐색에서 노출되지만 네비게이션에선 제외된다', () => {
+    expect(routeDefs['/community']).toMatchObject({ inNav: false })
+    expect(routeDefs['/terms']).toMatchObject({ inNav: false })
+    expect(routeDefs['/privacy']).toMatchObject({ inNav: false })
   })
 
   it('튜토리얼 라우트가 공개 탐색과 서비스 관리 메뉴에 반영된다', () => {

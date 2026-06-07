@@ -22,6 +22,9 @@ export type AppRoute =
   | '/tutorial'
   | '/guide'
   | '/overview'
+  | '/community'
+  | '/terms'
+  | '/privacy'
   | '/login'
   | '/register'
 
@@ -55,7 +58,15 @@ export type PublicNavigateState = {
 }
 
 export type AuthRoute = Extract<AppRoute, '/login' | '/register'>
-export type PublicLandingRoute = '/' | '/guide' | '/plans' | '/overview' | '/tutorial'
+export type PublicLandingRoute =
+  | '/'
+  | '/guide'
+  | '/plans'
+  | '/overview'
+  | '/tutorial'
+  | '/community'
+  | '/terms'
+  | '/privacy'
 
 export const SITE_NAME = '가족 돌봄 운영 플랫폼'
 
@@ -161,6 +172,39 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     inNav: false,
     placeholder: false,
   },
+  '/community': {
+    path: '/community',
+    title: '커뮤니티 데모',
+    eyebrow: '커뮤니티',
+    description:
+      '게시글 작성, 댓글/좋아요 동선을 통해 실사용자 소통 흐름을 바로 확인할 수 있습니다.',
+    icon: 'inbox',
+    section: 'manage',
+    inNav: false,
+    placeholder: false,
+  },
+  '/terms': {
+    path: '/terms',
+    title: '이용약관',
+    eyebrow: '법적 고지',
+    description:
+      '서비스 이용 조건과 운영 책임 범위를 명확하게 공개해 서비스 기대치와 제약을 확인할 수 있습니다.',
+    icon: 'guide',
+    section: 'manage',
+    inNav: false,
+    placeholder: false,
+  },
+  '/privacy': {
+    path: '/privacy',
+    title: '개인정보 처리방침',
+    eyebrow: '법적 고지',
+    description:
+      '수집·보관·파기 정책, 보관 기간, 제3자 제공 범위까지 운영자 관점으로 정리한 정책 안내입니다.',
+    icon: 'guide',
+    section: 'manage',
+    inNav: false,
+    placeholder: false,
+  },
   '/login': {
     path: '/login',
     title: '로그인',
@@ -210,7 +254,10 @@ export const publicLandingRoutes = [
   '/overview',
   '/tutorial',
   '/guide',
+  '/community',
   '/plans',
+  '/terms',
+  '/privacy',
 ] as const satisfies readonly PublicLandingRoute[]
 
 /** 사이드바 네비게이션 그룹(섹션별로 묶어 노출). */
