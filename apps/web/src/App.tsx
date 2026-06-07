@@ -1,24 +1,30 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 
+import {
+  authRouteEntries,
+  findProtectedRouteEntry,
+  getUnauthenticatedRouteIntent,
+  protectedRouteEntries,
+  publicRouteEntries,
+} from './appRoutes'
 import { useAuth } from './auth/useAuth'
-import { AnalyticsPage } from './components/pages/AnalyticsPage'
-import { CarePage } from './components/pages/CarePage'
-import { ClaimsPage } from './components/pages/ClaimsPage'
-import { DashboardPage } from './components/pages/DashboardPage'
-import { LoginPage } from './components/pages/LoginPage'
 import { PlaceholderPage } from './components/pages/PlaceholderPage'
-import { PlansPage } from './components/pages/PlansPage'
-import { RegisterPage } from './components/pages/RegisterPage'
-import { SettlementsPage } from './components/pages/SettlementsPage'
 import { AppShell } from './components/shell/AppShell'
-import type { AppRoute } from './routeConfig'
+import { getRouteDef, SITE_NAME, type AppRoute, type RouteDef } from './routeConfig'
+import { applyRouteEntrySideEffects, canonicalizeLocation } from './routeNavigation'
 import { usePlatformData } from './state/usePlatformData'
 import { useRouteMeta } from './useRouteMeta'
-import { useRouteState } from './useRouteState'
 
 const ROUTE_MAIN_ID = 'route-main-content'
 
-type RouteState = ReturnType<typeof useRouteState<HTMLDivElement>>
+type RouteState = {
+  activeRoute: AppRoute
+  routeDef: RouteDef
+  navigate: (path: AppRoute) => void
+  isFallback: boolean
+  mainRef: RefObject<HTMLDivElement | null>
+}
 
 /**
  * 인증된 운영 화면. usePlatformData가 여기서 마운트되므로(=로그인 이후에만)
@@ -28,6 +34,8 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
   const { activeRoute, routeDef, navigate, isFallback, mainRef } = route
   const auth = useAuth()
   const data = usePlatformData()
+  const shellRoute = activeRoute === '/login' || activeRoute === '/register' ? '/' : activeRoute
+  const shellRouteDef = getRouteDef(shellRoute)
 
   // 로그인 상태에서 인증 전용 경로(/login·/register)로 들어오면 대시보드로 보낸다.
   useEffect(() => {
@@ -59,24 +67,12 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
     [data.pendingClaims],
   )
 
-  const renderPage = () => {
-    switch (activeRoute) {
-      case '/':
-        return <DashboardPage data={data} onNavigate={navigate} />
-      case '/care':
-        return <CarePage data={data} onNavigate={navigate} />
-      case '/settlements':
-        return <SettlementsPage data={data} onNavigate={navigate} />
-      case '/claims':
-        return <ClaimsPage data={data} onNavigate={navigate} />
-      case '/analytics':
-        return <AnalyticsPage data={data} onNavigate={navigate} />
-      case '/plans':
-        return <PlansPage data={data} />
-      default:
-        return <PlaceholderPage def={routeDef} onNavigate={navigate} />
-    }
-  }
+  const fallbackEntry = findProtectedRouteEntry(activeRoute)
+  const fallbackPage = fallbackEntry ? (
+    fallbackEntry.render({ data, navigate })
+  ) : (
+    <PlaceholderPage def={routeDef} onNavigate={navigate} />
+  )
 
   return (
     <>
@@ -85,9 +81,7 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
       </p>
 
       <AppShell
-        activeRoute={activeRoute}
-        routeTitle={routeDef.title}
-        onNavigate={navigate}
+        routeTitle={shellRouteDef.title}
         badges={navBadges}
         isOnline={isOnline}
         mainRef={mainRef}
@@ -125,7 +119,14 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
           </p>
         ) : null}
 
-        {renderPage()}
+        <Routes>
+          {protectedRouteEntries.map((entry) => (
+            <Route key={entry.path} path={entry.path} element={entry.render({ data, navigate })} />
+          ))}
+          <Route path="/login" element={<Navigate to="/" replace />} />
+          <Route path="/register" element={<Navigate to="/" replace />} />
+          <Route path="*" element={fallbackPage} />
+        </Routes>
       </AppShell>
     </>
   )
@@ -136,10 +137,63 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
  * 셸 밖) → 인증되면 AuthedApp. 라우터는 한 번만 구독해 자식에 전달한다.
  */
 const App = () => {
-  const route = useRouteState<HTMLDivElement>()
+  const location = useLocation()
+  const routerNavigate = useNavigate()
   const auth = useAuth()
+  const mainRef = useRef<HTMLDivElement | null>(null)
+  const hasEnteredRef = useRef(false)
 
-  useRouteMeta(route.activeRoute, route.routeDef.title)
+  const canonical = useMemo(
+    () =>
+      canonicalizeLocation({
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+      }),
+    [location.hash, location.pathname, location.search],
+  )
+
+  const activeRoute = canonical.route
+  const routeDef = getRouteDef(activeRoute)
+
+  const navigate = useCallback(
+    (path: AppRoute) => {
+      routerNavigate(path)
+    },
+    [routerNavigate],
+  )
+
+  useEffect(() => {
+    if (canonical.shouldReplace) {
+      routerNavigate(canonical.nextUrl, { replace: true })
+    }
+  }, [canonical.nextUrl, canonical.shouldReplace, routerNavigate])
+
+  useEffect(() => {
+    if (!hasEnteredRef.current) {
+      hasEnteredRef.current = true
+      return
+    }
+    applyRouteEntrySideEffects(mainRef.current)
+  }, [location.key])
+
+  const route: RouteState = {
+    activeRoute,
+    routeDef,
+    navigate,
+    isFallback: canonical.isFallback,
+    mainRef,
+  }
+
+  const locationState = location.state as { from?: AppRoute } | null
+  const redirectTo = locationState?.from ?? '/'
+
+  const metaTitle =
+    !auth.isAuthenticated && getUnauthenticatedRouteIntent(activeRoute) === 'public'
+      ? SITE_NAME
+      : routeDef.title
+
+  useRouteMeta(activeRoute, metaTitle)
 
   if (auth.isResolving) {
     return (
@@ -151,10 +205,29 @@ const App = () => {
   }
 
   if (!auth.isAuthenticated) {
-    return route.activeRoute === '/register' ? (
-      <RegisterPage onNavigate={route.navigate} />
-    ) : (
-      <LoginPage onNavigate={route.navigate} />
+    return (
+      <Routes>
+        {publicRouteEntries.map((entry) => (
+          <Route key={entry.path} path={entry.path} element={entry.render({ navigate })} />
+        ))}
+        {authRouteEntries.map((entry) => (
+          <Route
+            key={entry.path}
+            path={entry.path}
+            element={entry.render({ navigate, redirectTo })}
+          />
+        ))}
+        {protectedRouteEntries
+          .filter((entry) => entry.path !== '/')
+          .map((entry) => (
+            <Route
+              key={entry.path}
+              path={entry.path}
+              element={<Navigate to="/login" replace state={{ from: entry.path }} />}
+            />
+          ))}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     )
   }
 

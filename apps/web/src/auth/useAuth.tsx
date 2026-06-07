@@ -4,7 +4,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -155,19 +154,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [status, setStatus] = useState<AuthStatus>(() =>
     readStoredToken() ? 'loading' : 'unauthenticated',
   )
-  // StrictMode 이중 마운트에서 me 확인이 중복 실행되지 않도록 가드.
-  const bootstrappedRef = useRef(false)
 
-  // 마운트 시 1회: 저장된 토큰이 있으면 /auth/me로 사용자를 복원한다.
+  // 마운트 시 저장된 토큰이 있으면 /auth/me로 사용자를 복원한다.
+  // StrictMode 개발 환경에서는 effect가 재실행될 수 있으므로, 각 실행마다 자체 cancelled
+  // 플래그를 둔다. 모듈 레벨 가드로 막으면 두 번째 실행이 건너뛰어 loading에 머문다.
   useEffect(() => {
-    if (bootstrappedRef.current) {
-      return
-    }
-    bootstrappedRef.current = true
-
     const token = readStoredToken()
     if (!token) {
-      setStatus('unauthenticated')
       return
     }
 

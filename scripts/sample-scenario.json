@@ -1,4 +1,24 @@
 {
+  "schedules": [
+    {
+      "recipient": "이은정",
+      "caregiver": "김돌봄",
+      "date": "2026-06-07",
+      "startTime": "09:00",
+      "endTime": "10:30",
+      "status": "예정",
+      "note": "혈압계 지참, 보호자에게 도착 전 연락"
+    },
+    {
+      "recipient": "최성수",
+      "caregiver": "이지원",
+      "date": "2026-06-08",
+      "startTime": "14:00",
+      "endTime": "15:00",
+      "status": "예정",
+      "note": "복약 알림 스케줄 재확인"
+    }
+  ],
   "careLogs": [
     {
       "recipient": "이은정",
@@ -42,6 +62,8 @@
       "note": "당월 투약·활동 내역 기반 청구"
     }
   ],
+  "scheduleStatusTransition": "완료",
+  "scheduleTargetRecipient": "이은정",
   "claimStatusTransition": "승인",
   "claimTargetRecipient": "이은정"
 }

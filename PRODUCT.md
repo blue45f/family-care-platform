@@ -29,9 +29,11 @@ What they need from the product:
 ## Product purpose
 
 Replace scattered spreadsheets and memory with one place that follows the real
-workflow: **돌봄 기록 → 돌봄비 정산 → 보험청구**, with **운영 분석** and **요금제 관리**
-for the people running the business. Phase 1 of the redesign separates these
-into distinct routed pages (away from the previous "3 pages with nested tabs").
+workflow: **방문 일정 → 돌봄 기록 → 돌봄비 정산 → 보험청구**, with **운영 분석** and
+**요금제 관리** for the people running the business. Phase 1 of the redesign
+separates these into distinct routed pages (away from the previous "3 pages with
+nested tabs") and gives unauthenticated visitors a public commercial homepage
+before asking them to log in.
 
 ## Tone
 

@@ -1,3 +1,5 @@
+import { NavLink } from 'react-router-dom'
+
 import type { AppRoute } from '../../routeConfig'
 import { navGroups, SITE_NAME } from '../../routeConfig'
 import { Icon } from '../ui/Icon'
@@ -5,7 +7,6 @@ import { Icon } from '../ui/Icon'
 type NavBadges = Partial<Record<AppRoute, number>>
 
 type SidebarProps = {
-  activeRoute: AppRoute
   onNavigate: (path: AppRoute) => void
   badges?: NavBadges
   isOnline: boolean
@@ -18,7 +19,6 @@ type SidebarProps = {
  * 자체적으로 nav 랜드마크를 제공한다.
  */
 export const Sidebar = ({
-  activeRoute,
   onNavigate,
   badges = {},
   isOnline,
@@ -41,14 +41,13 @@ export const Sidebar = ({
         <div key={group.section}>
           <p className="nav-section-label">{group.label}</p>
           {group.items.map((item) => {
-            const isActive = item.path === activeRoute
             const badge = badges[item.path]
             return (
-              <button
+              <NavLink
                 key={item.path}
-                type="button"
+                to={item.path}
+                end={item.path === '/'}
                 className="nav-item"
-                aria-current={isActive ? 'page' : undefined}
                 onClick={() => onNavigate(item.path)}
               >
                 <span className="nav-icon">
@@ -60,7 +59,7 @@ export const Sidebar = ({
                     {badge}
                   </span>
                 ) : null}
-              </button>
+              </NavLink>
             )
           })}
         </div>

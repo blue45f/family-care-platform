@@ -4,8 +4,8 @@ import type { IconName } from './components/ui/Icon'
    Route configuration — separated-page IA (Phase 1 redesign).
 
    Moves away from the old "3 pages with nested tabs" model into distinct
-   top-level routes, each its own page. Keeps the manual-router contract used
-   by useRouteState / routeNavigation:
+   top-level routes, each its own page. Keeps the route metadata contract used
+   by React Router / routeNavigation:
      - AppRoute tagged paths
      - resolveRouteResult / resolveRoute (canonicalize + fallback)
      - isAppRoute type guard, DEFAULT_ROUTE, routeMap
@@ -13,11 +13,13 @@ import type { IconName } from './components/ui/Icon'
 
 export type AppRoute =
   | '/'
+  | '/schedule'
   | '/care'
   | '/settlements'
   | '/claims'
   | '/analytics'
   | '/plans'
+  | '/guide'
   | '/login'
   | '/register'
 
@@ -51,6 +53,16 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     eyebrow: '오늘의 돌봄',
     description: '오늘 처리할 돌봄 업무와 정산·청구 현황을 한눈에 확인하세요.',
     icon: 'home',
+    section: 'main',
+    inNav: true,
+    placeholder: false,
+  },
+  '/schedule': {
+    path: '/schedule',
+    title: '방문 일정',
+    eyebrow: '돌봄 운영',
+    description: '방문 예정 시간, 담당자, 진행 상태를 확인하고 새 일정을 등록합니다.',
+    icon: 'schedule',
     section: 'main',
     inNav: true,
     placeholder: false,
@@ -105,6 +117,16 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     inNav: true,
     placeholder: false,
   },
+  '/guide': {
+    path: '/guide',
+    title: '사용 가이드',
+    eyebrow: '서비스 관리',
+    description: '처음 사용하는 담당자를 위한 업무 순서, 입력 예시, 자주 묻는 질문입니다.',
+    icon: 'guide',
+    section: 'manage',
+    inNav: true,
+    placeholder: false,
+  },
   '/login': {
     path: '/login',
     title: '로그인',
@@ -129,6 +151,24 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
 
 /** 등록된 모든 라우트(스펙·가드의 단일 소스). */
 export const routeMap: RouteDef[] = Object.values(routeDefs)
+
+/** Today-first 업무 순서: 방문 일정 → 돌봄 기록 → 돌봄비 정산 → 보험청구. */
+export const operationalWorkflowRoutes = [
+  '/schedule',
+  '/care',
+  '/settlements',
+  '/claims',
+] as const satisfies readonly AppRoute[]
+
+/** 대시보드에서 우선 안내할 업무 흐름. */
+export const todayFirstRoutes = operationalWorkflowRoutes
+
+/** 서비스 운영자가 주기적으로 점검하는 관리 화면. */
+export const managementRoutes = [
+  '/analytics',
+  '/plans',
+  '/guide',
+] as const satisfies readonly AppRoute[]
 
 /** 사이드바 네비게이션 그룹(섹션별로 묶어 노출). */
 export type NavGroup = {

@@ -2,7 +2,7 @@ import { type AppRoute, resolveRouteResult, type ResolveRouteResult } from './ro
 
 /**
  * 라우터의 부수효과(History API·스크롤·포커스)를 순수 함수로 묶어
- * `useRouteState`에서 분리한 모듈. DOM 전역에 직접 의존하지 않고
+ * React Router 셸에서 재사용하는 모듈. DOM 전역에 직접 의존하지 않고
  * 주입 가능한 어댑터를 받으므로, jsdom 없이(node 환경) 단위 테스트할 수 있다.
  */
 

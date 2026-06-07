@@ -3,9 +3,13 @@ import { describe, expect, it } from 'vitest'
 import {
   type AppRoute,
   DEFAULT_ROUTE,
+  managementRoutes,
+  todayFirstRoutes,
   isAppRoute,
+  operationalWorkflowRoutes,
   resolveRoute,
   resolveRouteResult,
+  routeDefs,
   routeMap,
 } from './routeConfig'
 
@@ -63,5 +67,55 @@ describe('isAppRoute 타입 가드', () => {
     } else {
       throw new Error('기대한 라우트가 가드를 통과하지 못했습니다.')
     }
+  })
+})
+
+describe('상용 서비스 정보 구조', () => {
+  it('오늘 화면에서 이어지는 핵심 업무 흐름을 라우터 단일 소스로 제공한다', () => {
+    expect(todayFirstRoutes).toEqual(['/schedule', '/care', '/settlements', '/claims'])
+    expect(operationalWorkflowRoutes).toEqual(['/schedule', '/care', '/settlements', '/claims'])
+  })
+
+  it('운영 업무와 서비스 관리 화면을 내비게이션 성격별로 분리한다', () => {
+    expect(managementRoutes).toEqual(['/analytics', '/plans', '/guide'])
+
+    for (const path of todayFirstRoutes) {
+      expect(routeDefs[path]).toMatchObject({
+        section: 'main',
+        inNav: true,
+        placeholder: false,
+      })
+    }
+
+    for (const path of managementRoutes) {
+      expect(routeDefs[path]).toMatchObject({
+        section: 'manage',
+        inNav: true,
+        placeholder: false,
+      })
+    }
+  })
+
+  it('인증 라우트는 본문 내비게이션에 노출하지 않는다', () => {
+    expect(routeDefs['/login']).toMatchObject({ section: 'account', inNav: false })
+    expect(routeDefs['/register']).toMatchObject({ section: 'account', inNav: false })
+  })
+
+  it('사용법 가이드는 서비스 관리 내비게이션에 노출된다', () => {
+    expect(routeDefs['/guide']).toMatchObject({
+      title: '사용 가이드',
+      section: 'manage',
+      inNav: true,
+      placeholder: false,
+    })
+  })
+
+  it('방문 일정은 돌봄 운영 첫 라우트로 노출된다', () => {
+    expect(routeDefs['/schedule']).toMatchObject({
+      title: '방문 일정',
+      section: 'main',
+      inNav: true,
+      placeholder: false,
+    })
   })
 })

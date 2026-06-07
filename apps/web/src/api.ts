@@ -2,9 +2,12 @@ import type {
   AdminOverview,
   CareLog,
   CareLogDraft,
+  CareSchedule,
+  CareScheduleDraft,
   Claim,
   ClaimDraft,
   ClaimStatus,
+  ScheduleStatus,
   RevenuePlan,
   RevenuePlanDraft,
   Settlement,
@@ -62,6 +65,18 @@ export const postCareLog = (body: CareLogDraft) =>
   request<CareLog>('/care-logs', {
     method: 'POST',
     body: JSON.stringify(body),
+  })
+
+export const fetchSchedules = () => request<CareSchedule[]>('/schedules')
+export const postSchedule = (body: CareScheduleDraft) =>
+  request<CareSchedule>('/schedules', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+export const patchScheduleStatus = (scheduleId: number, status: ScheduleStatus) =>
+  request<CareSchedule>(`/schedules/${scheduleId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
   })
 
 export const fetchSettlements = () => request<Settlement[]>('/settlements')

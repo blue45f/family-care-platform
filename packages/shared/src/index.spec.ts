@@ -6,12 +6,14 @@ import {
   claimStatuses,
   revenuePlanDraftSchema,
   revenuePlanIds,
+  scheduleStatuses,
 } from './index'
 
 describe('@family-care/shared 도메인 계약', () => {
   it('careLogTypes/claimStatuses/revenuePlanIds 리터럴이 고정되어 있다', () => {
     expect(careLogTypes).toEqual(['방문', '원격상담', '투약', '식사관리', '기타'])
     expect(claimStatuses).toEqual(['요청', '검토중', '승인', '거절'])
+    expect(scheduleStatuses).toEqual(['예정', '진행중', '완료', '취소'])
     expect(revenuePlanIds).toEqual(['starter', 'pro', 'enterprise'])
   })
 

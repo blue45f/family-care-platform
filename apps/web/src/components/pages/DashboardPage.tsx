@@ -1,7 +1,8 @@
-import type { AppRoute } from '../../routeConfig'
+import { managementRoutes, routeDefs, type AppRoute } from '../../routeConfig'
 import type { PlatformData } from '../../state/usePlatformData'
 import { claimStatusClass, formatWon } from '../../utils'
 import type { ClaimStatus } from '../../types'
+import { buildTodayWorkQueue } from './dashboardViewModel'
 import {
   Badge,
   type BadgeTone,
@@ -45,29 +46,57 @@ const greetByHour = () => {
 export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
   const recentCare = data.careLogs.slice(0, 5)
   const pendingClaimList = data.claims.filter((claim) => claim.status !== '승인').slice(0, 4)
-
-  const quickLinks: {
-    path: AppRoute
-    label: string
-    sub: string
-    icon: 'care' | 'settlement' | 'claims'
-  }[] = [
-    { path: '/care', label: '돌봄 기록 남기기', sub: '방문·상담·투약 기록', icon: 'care' },
-    {
-      path: '/settlements',
-      label: '돌봄비 정산',
-      sub: '시간·단가로 합계 계산',
-      icon: 'settlement',
-    },
-    { path: '/claims', label: '보험청구 점검', sub: '요청·검토 상태 확인', icon: 'claims' },
-  ]
+  const todayTasks = buildTodayWorkQueue({
+    scheduleCount: data.schedules.length,
+    careLogCount: data.careLogs.length,
+    settlementCount: data.settlements.length,
+    pendingClaims: data.pendingClaims,
+  })
+  const managementLinks = managementRoutes.map((path) => routeDefs[path])
 
   return (
     <div className="stack">
-      <div className="greeting">
-        <p className="greeting-date">{formatToday()}</p>
-        <h1 className="greeting-title">{greetByHour()}</h1>
-      </div>
+      <section className="today-panel" aria-labelledby="today-panel-title">
+        <div className="today-panel-head">
+          <div className="greeting">
+            <p className="greeting-date">{formatToday()}</p>
+            <h1 id="today-panel-title" className="greeting-title">
+              {greetByHour()}
+            </h1>
+            <p className="today-panel-copy">
+              방문 일정, 돌봄 기록, 정산, 보험청구 순서로 오늘 놓치기 쉬운 일을 확인하세요.
+            </p>
+          </div>
+          <Badge tone={data.pendingClaims > 0 ? 'warn' : 'success'}>
+            {data.pendingClaims > 0 ? `청구 ${data.pendingClaims}건 확인` : '청구 정리됨'}
+          </Badge>
+        </div>
+
+        <ol className="today-task-list" aria-label="오늘 처리할 일">
+          {todayTasks.map((task, index) => (
+            <li className="today-task" data-tone={task.tone} key={task.route}>
+              <span className="today-task-step" aria-hidden="true">
+                {index + 1}
+              </span>
+              <span className="today-task-icon" aria-hidden="true">
+                <Icon name={task.icon} size={20} />
+              </span>
+              <span className="today-task-body">
+                <span className="today-task-title">{task.title}</span>
+                <span className="today-task-desc">{task.description}</span>
+              </span>
+              <Button
+                variant={task.tone === 'primary' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => onNavigate(task.route)}
+              >
+                {task.actionLabel}
+                <Icon name="arrow-right" size={15} />
+              </Button>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       {/* 차분한 지표: hero-metric 클리셰 대신 절제된 라벨+값 카드 */}
       <section aria-label="오늘의 현황" className="stat-row">
@@ -81,11 +110,11 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
         ) : (
           <>
             <Stat
-              icon="care"
-              label="돌봄 가구"
-              value={`${data.activeHouseholds}개`}
-              valueLabel={`돌봄 가구 ${data.activeHouseholds}개`}
-              foot="기록·정산 기준 활성 대상"
+              icon="schedule"
+              label="오늘 일정"
+              value={`${data.todaySchedules}건`}
+              valueLabel={`오늘 방문 일정 ${data.todaySchedules}건`}
+              foot={`진행 전 일정 ${data.pendingSchedules}건`}
             />
             <Stat
               icon="settlement"
@@ -202,7 +231,7 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
           <Card>
             <CardHeader title="바로가기" subtitle="자주 쓰는 업무로 이동합니다." titleAs="h2" />
             <div className="quicklinks">
-              {quickLinks.map((link) => (
+              {managementLinks.map((link) => (
                 <button
                   key={link.path}
                   type="button"
@@ -213,8 +242,8 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
                     <Icon name={link.icon} size={18} />
                   </span>
                   <span className="quicklink-text">
-                    <span>{link.label}</span>
-                    <span className="quicklink-sub">{link.sub}</span>
+                    <span>{link.title}</span>
+                    <span className="quicklink-sub">{link.description}</span>
                   </span>
                 </button>
               ))}

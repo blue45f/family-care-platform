@@ -5,10 +5,8 @@ import { Icon } from '../ui/Icon'
 import { Sidebar } from './Sidebar'
 
 type AppShellProps = {
-  activeRoute: AppRoute
   /** 현재 라우트 타이틀(모바일 상단바 + 드로어 헤더). */
   routeTitle: string
-  onNavigate: (path: AppRoute) => void
   badges?: Partial<Record<AppRoute, number>>
   isOnline: boolean
   /** 본문 영역 ref(라우트 포커스 관리). */
@@ -28,9 +26,7 @@ const DESKTOP_QUERY = '(min-width: 64rem)'
  * 스킵링크, 랜드마크(role), 드로어 Escape 닫기, 포커스 관리를 포함한다.
  */
 export const AppShell = ({
-  activeRoute,
   routeTitle,
-  onNavigate,
   badges,
   isOnline,
   mainRef,
@@ -85,8 +81,7 @@ export const AppShell = ({
     toggleRef.current?.focus()
   }
 
-  const handleNavigate = (path: AppRoute) => {
-    onNavigate(path)
+  const handleNavigate = () => {
     setDrawerOpen(false)
   }
 
@@ -108,7 +103,6 @@ export const AppShell = ({
         aria-label="사이드바"
       >
         <Sidebar
-          activeRoute={activeRoute}
           onNavigate={handleNavigate}
           badges={badges}
           isOnline={isOnline}

@@ -107,12 +107,14 @@ hero-metric template), `Icon` (hand-rolled stroke SVG set, no deps).
 
 ## Information architecture
 
-Separated top-level routes (manual tagged-union router preserved):
+Separated top-level routes (React Router DOM with typed route metadata):
 
-`/` Dashboard · `/care` 돌봄 기록 · `/settlements` 돌봄비 정산 · `/claims` 보험청구 ·
-`/analytics` 운영 분석 · `/plans` 요금제 관리 · `/login` · `/register` (auth reserved
-for Phase 3). Nav groups: 돌봄 운영 (care/settlements/claims + dashboard) and
-서비스 관리 (analytics/plans). Source of truth: `routeConfig.ts` `routeDefs`.
+비로그인 `/` 공개 홈페이지 · 로그인 후 `/` Dashboard · `/schedule` 방문 일정 · `/care`
+돌봄 기록 · `/settlements` 돌봄비 정산 · `/claims` 보험청구 · `/analytics` 운영 분석 ·
+`/plans` 요금제 관리 · `/guide` 사용 가이드 · `/login` · `/register`. Nav groups:
+돌봄 운영 (dashboard/schedule/care/settlements/claims) and 서비스 관리
+(analytics/plans/guide). Source of truth: `routeConfig.ts` `routeDefs` and
+`appRoutes.tsx` route manifests.
 
 ## Banned (do not reintroduce)
 
