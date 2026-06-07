@@ -46,6 +46,10 @@ type CommunityThreadActionType =
   | 'delete_comment'
   | 'bookmark'
   | 'unbookmark'
+  | 'search'
+  | 'category-filter'
+  | 'state-filter'
+  | 'sort-change'
 
 type CommunityActionLog = {
   id: string
@@ -66,11 +70,22 @@ type ThreadFilterMode = '전체' | '열린 글' | '종료 글' | '고정 글' | 
 
 type ReportReason = '스팸' | '욕설/비방' | '허위정보' | '개인정보침해' | '영리성 광고' | '기타'
 
+type CommunityMission = {
+  id: string
+  title: string
+  detail: string
+  requiredAction: CommunityThreadActionType
+  tone: 'accent' | 'neutral'
+}
+
 const COMMUNITY_DEMO_STORAGE = 'public-community-demo-v1'
 const COMMUNITY_LIKE_STORAGE = 'public-community-liked-threads-v1'
 const COMMUNITY_BOOKMARK_STORAGE = 'public-community-bookmarked-threads-v1'
 const COMMUNITY_ACTIVITY_LOG_STORAGE = 'public-community-activity-log-v1'
 const REPORT_WARNING_THRESHOLD = 3
+const MIN_POST_TITLE_LENGTH = 8
+const MIN_POST_TEXT_LENGTH = 120
+const MIN_REPLY_TEXT_LENGTH = 10
 const MAX_POST_TITLE_LENGTH = 80
 const MAX_POST_TEXT_LENGTH = 1_200
 const MAX_REPLY_TEXT_LENGTH = 500
@@ -172,6 +187,86 @@ const BASE_THREADS: CommunityThread[] = [
         createdAt: now - DAY_MS * 9,
       },
     ],
+  },
+]
+
+const cloneSeedThreads = () =>
+  BASE_THREADS.map((thread) => ({
+    ...thread,
+    replies: thread.replies.map((reply) => ({ ...reply })),
+    tags: [...thread.tags],
+  }))
+
+const communityMissions: CommunityMission[] = [
+  {
+    id: 'view-thread',
+    title: '글 상세 열람',
+    detail: '목록에서 글을 선택해 상세 내용을 확인해 보세요.',
+    requiredAction: 'view',
+    tone: 'neutral',
+  },
+  {
+    id: 'like-thread',
+    title: '좋아요 반응',
+    detail: '운영자가 반응을 남기면 협업 피드백이 누적됩니다.',
+    requiredAction: 'like',
+    tone: 'accent',
+  },
+  {
+    id: 'comment-thread',
+    title: '댓글 작성',
+    detail: '선택 글에 댓글을 추가해 소통 동작이 저장되는지 확인하세요.',
+    requiredAction: 'comment',
+    tone: 'accent',
+  },
+  {
+    id: 'report-thread',
+    title: '신고 처리',
+    detail: '의심되는 글을 신고해 검토 로그가 남는지 확인하세요.',
+    requiredAction: 'report',
+    tone: 'neutral',
+  },
+  {
+    id: 'publish-thread',
+    title: '새 글 작성',
+    detail: '샘플 글을 등록해 커뮤니티 운영 플로우가 유지되는지 점검하세요.',
+    requiredAction: 'publish',
+    tone: 'accent',
+  },
+  {
+    id: 'pin-thread',
+    title: '글 고정 처리',
+    detail: '운영 공지성 글을 상단 고정하여 우선 노출 흐름을 확인하세요.',
+    requiredAction: 'pin',
+    tone: 'neutral',
+  },
+  {
+    id: 'bookmark-thread',
+    title: '북마크 저장',
+    detail: '중요 글을 북마크에 남겨 추후 점검 동작을 확인하세요.',
+    requiredAction: 'bookmark',
+    tone: 'accent',
+  },
+  {
+    id: 'search-thread',
+    title: '검색 탐색',
+    detail: '검색창을 이용해 대상 글을 찾습니다.',
+    requiredAction: 'search',
+    tone: 'neutral',
+  },
+  {
+    id: 'filter-thread',
+    title: '필터 탐색',
+    detail: '카테고리/상태 필터를 조정해 노출을 점검합니다.',
+    requiredAction: 'category-filter',
+    tone: 'neutral',
+  },
+  {
+    id: 'sort-thread',
+    title: '정렬 점검',
+    detail: '정렬 기준을 바꿔 정렬 동작을 점검합니다.',
+    requiredAction: 'sort-change',
+    tone: 'neutral',
   },
 ]
 
@@ -284,7 +379,11 @@ const normalizeActionType = (value: unknown): CommunityThreadActionType | undefi
     value === 'report' ||
     value === 'delete_comment' ||
     value === 'bookmark' ||
-    value === 'unbookmark'
+    value === 'unbookmark' ||
+    value === 'search' ||
+    value === 'category-filter' ||
+    value === 'state-filter' ||
+    value === 'sort-change'
   ) {
     return value
   }
@@ -315,6 +414,18 @@ const formatActionLabel = (action: CommunityThreadActionType) => {
   }
   if (action === 'unbookmark') {
     return '북마크 해제'
+  }
+  if (action === 'search') {
+    return '검색'
+  }
+  if (action === 'category-filter') {
+    return '카테고리 필터'
+  }
+  if (action === 'state-filter') {
+    return '상태 필터'
+  }
+  if (action === 'sort-change') {
+    return '정렬 변경'
   }
   if (action === 'delete_comment') {
     return '댓글 삭제'
@@ -488,27 +599,27 @@ const readBookmarkedThreads = (): string[] => {
 
 const readCommunityThreads = (): CommunityThread[] => {
   if (typeof window === 'undefined') {
-    return BASE_THREADS
+    return cloneSeedThreads()
   }
 
   try {
     const raw = window.localStorage.getItem(COMMUNITY_DEMO_STORAGE)
     if (!raw) {
-      return BASE_THREADS
+      return cloneSeedThreads()
     }
 
     const parsed = JSON.parse(raw)
     if (!Array.isArray(parsed)) {
-      return BASE_THREADS
+      return cloneSeedThreads()
     }
 
     const normalized = parsed
       .map((item, index) => normalizeThread(item, index))
       .filter((item): item is CommunityThread => Boolean(item))
 
-    return normalized.length ? normalized : BASE_THREADS
+    return normalized.length ? normalized : cloneSeedThreads()
   } catch {
-    return BASE_THREADS
+    return cloneSeedThreads()
   }
 }
 
@@ -573,6 +684,41 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const [replyDraft, setReplyDraft] = useState('')
   const [replyError, setReplyError] = useState('')
   const [feedbackMessage, setFeedbackMessage] = useState('')
+  const missionProgress = useMemo(
+    () =>
+      communityMissions.map((mission) => ({
+        ...mission,
+        completed: threadActionLogs.some((entry) => entry.action === mission.requiredAction),
+      })),
+    [threadActionLogs],
+  )
+  const missionRate = useMemo(
+    () =>
+      Math.round(
+        (missionProgress.filter((mission) => mission.completed).length / missionProgress.length) *
+          100,
+      ),
+    [missionProgress],
+  )
+  const threadActionSummary = useMemo(
+    () => ({
+      viewCount: threadActionLogs.filter((item) => item.action === 'view').length,
+      likeCount: threadActionLogs.filter((item) => item.action === 'like').length,
+      commentCount: threadActionLogs.filter((item) => item.action === 'comment').length,
+      reportCount: threadActionLogs.filter((item) => item.action === 'report').length,
+      publishCount: threadActionLogs.filter((item) => item.action === 'publish').length,
+      pinCount: threadActionLogs.filter((item) => item.action === 'pin').length,
+      closeCount: threadActionLogs.filter((item) => item.action === 'close').length,
+      bookmarkCount: threadActionLogs.filter((item) => item.action === 'bookmark').length,
+      unbookmarkCount: threadActionLogs.filter((item) => item.action === 'unbookmark').length,
+      searchCount: threadActionLogs.filter((item) => item.action === 'search').length,
+      categoryFilterCount: threadActionLogs.filter((item) => item.action === 'category-filter')
+        .length,
+      stateFilterCount: threadActionLogs.filter((item) => item.action === 'state-filter').length,
+      sortChangeCount: threadActionLogs.filter((item) => item.action === 'sort-change').length,
+    }),
+    [threadActionLogs],
+  )
 
   const filteredThreads = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase()
@@ -760,17 +906,22 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   }
 
   const appendActionLog = (
-    thread: CommunityThread,
+    thread: CommunityThread | undefined,
     action: CommunityThreadActionType,
     note?: string,
   ) => {
+    const targetThread = thread ?? threads[0]
+    if (!targetThread) {
+      return
+    }
+
     setThreadActionLogs((current) => {
       const next = [
         ...current,
         {
           id: makeActionId(),
-          threadId: thread.id,
-          threadTitle: thread.title,
+          threadId: targetThread.id,
+          threadTitle: targetThread.title,
           action,
           at: Date.now(),
           note,
@@ -978,6 +1129,11 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
+    if (text.length < MIN_REPLY_TEXT_LENGTH) {
+      setReplyError(`댓글은 최소 ${MIN_REPLY_TEXT_LENGTH}자 이상 입력해 주세요.`)
+      return
+    }
+
     if (text.length > MAX_REPLY_TEXT_LENGTH) {
       setReplyError(`댓글은 ${MAX_REPLY_TEXT_LENGTH}자 이하로 입력해 주세요.`)
       return
@@ -1013,8 +1169,18 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
+    if (title.length < MIN_POST_TITLE_LENGTH) {
+      setDraftError(`제목은 최소 ${MIN_POST_TITLE_LENGTH}자 이상 입력해 주세요.`)
+      return
+    }
+
     if (title.length > MAX_POST_TITLE_LENGTH) {
       setDraftError(`제목은 ${MAX_POST_TITLE_LENGTH}자 이하로 입력해 주세요.`)
+      return
+    }
+
+    if (text.length < MIN_POST_TEXT_LENGTH) {
+      setDraftError(`내용은 최소 ${MIN_POST_TEXT_LENGTH}자 이상 입력해 주세요.`)
       return
     }
 
@@ -1052,12 +1218,49 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
 
   const handleSetSort = (value: SortMode) => {
     setSortMode(value)
+    appendActionLog(
+      undefined,
+      'sort-change',
+      `정렬 변경: ${sortModes.find((mode) => mode.value === value)?.label}`,
+    )
     showFeedback(`${sortModes.find((mode) => mode.value === value)?.label}로 정렬했습니다.`)
   }
 
   const clearActionLogs = () => {
     setThreadActionLogs([])
     showFeedback('활동 로그를 삭제했습니다.')
+  }
+
+  const resetDemo = () => {
+    const seedThreads = cloneSeedThreads()
+    setThreads(seedThreads)
+    setSelectedThreadId(seedThreads[0]?.id ?? '')
+    setThreadActionLogs([])
+    setLikedThreadIds([])
+    setBookmarkedThreadIds([])
+    persistLikedThreads([])
+    persistBookmarkedThreads([])
+    setDraft({
+      title: '',
+      category: '운영 팁',
+      text: '',
+    })
+    setDraftError('')
+    setReplyDraft('')
+    setReplyError('')
+    setSearchQuery('')
+    setActiveCategory('전체')
+    setThreadFilterMode('전체')
+    setSortMode('latest')
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(COMMUNITY_DEMO_STORAGE)
+        window.localStorage.removeItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
+      } catch {
+        // ignore
+      }
+    }
+    showFeedback('데모를 기본 샘플 데이터로 초기화했습니다.')
   }
 
   useEffect(() => {
@@ -1154,6 +1357,79 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
             {feedbackMessage}
           </p>
         ) : null}
+
+        <Card>
+          <CardHeader
+            title="커뮤니티 데모 미션"
+            subtitle={`완료 ${missionProgress.filter((mission) => mission.completed).length}/${missionProgress.length}`}
+          />
+          <div className="guide-progress" aria-live="polite" aria-atomic="true">
+            <div className="guide-progress-head">
+              <span>진행률</span>
+              <strong>{missionRate}%</strong>
+            </div>
+            <div className="guide-progress-track" style={{ marginTop: 0 }}>
+              <span style={{ width: `${missionRate}%` }} />
+            </div>
+            <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-2)' }}>
+              데모 동작 요약: 조회 {threadActionSummary.viewCount}건 · 좋아요{' '}
+              {threadActionSummary.likeCount}건 · 댓글 {threadActionSummary.commentCount}건 · 신고{' '}
+              {threadActionSummary.reportCount}건 · 글작성 {threadActionSummary.publishCount}건 ·
+              고정 {threadActionSummary.pinCount}건 · 종료 {threadActionSummary.closeCount}건 ·
+              북마크 {threadActionSummary.bookmarkCount}건 · 북마크해제{' '}
+              {threadActionSummary.unbookmarkCount}건 · 검색 {threadActionSummary.searchCount}건 ·
+              카테고리 필터 {threadActionSummary.categoryFilterCount}건 · 상태 필터{' '}
+              {threadActionSummary.stateFilterCount}건 · 정렬 변경{' '}
+              {threadActionSummary.sortChangeCount}건
+            </p>
+          </div>
+          <ul className="guide-checklist">
+            {missionProgress.map((mission) => (
+              <li key={mission.id}>
+                <label className="guide-check-item">
+                  <input type="checkbox" checked={mission.completed} readOnly />
+                  <Icon
+                    name={mission.completed ? 'check' : 'clock'}
+                    size={16}
+                    aria-hidden="true"
+                    style={{
+                      marginTop: '0.15rem',
+                      color: mission.completed ? 'var(--accent)' : 'var(--fg-muted)',
+                    }}
+                  />
+                  <div>
+                    <strong>{mission.title}</strong>
+                    <p
+                      className="guide-step-subtitle"
+                      style={{
+                        marginTop: 'var(--space-1)',
+                        marginBottom: 0,
+                        color: 'var(--fg-muted)',
+                      }}
+                    >
+                      {mission.detail}
+                    </p>
+                    <Badge tone={mission.completed ? mission.tone : 'neutral'} plain>
+                      {mission.completed ? '완료' : '미완료'}
+                    </Badge>
+                  </div>
+                </label>
+              </li>
+            ))}
+          </ul>
+          <div className="public-hero-actions" style={{ marginTop: 'var(--space-3)' }}>
+            <Button variant="secondary" size="sm" onClick={clearActionLogs}>
+              로그 삭제
+            </Button>
+            <Button
+              variant={missionRate === 100 ? 'primary' : 'secondary'}
+              size="sm"
+              onClick={resetDemo}
+            >
+              데모 초기화
+            </Button>
+          </div>
+        </Card>
       </section>
 
       <section className="public-band">
@@ -1174,7 +1450,13 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                 type="search"
                 placeholder="제목/요약/작성자/태그로 검색"
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                onChange={(event) => {
+                  const next = event.target.value
+                  if (!searchQuery && next.trim()) {
+                    appendActionLog(undefined, 'search', '검색어 입력 시작')
+                  }
+                  setSearchQuery(next)
+                }}
                 className="public-community-search"
                 aria-label="커뮤니티 검색"
               />
@@ -1185,7 +1467,12 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                     type="button"
                     className={`public-community-filter ${activeCategory === category ? 'is-active' : ''}`}
                     key={category}
-                    onClick={() => setActiveCategory(category)}
+                    onClick={() => {
+                      if (activeCategory !== category) {
+                        setActiveCategory(category)
+                        appendActionLog(undefined, 'category-filter', `카테고리 필터: ${category}`)
+                      }
+                    }}
                   >
                     <Badge tone={activeCategory === category ? 'accent' : 'neutral'} plain>
                       {category}
@@ -1204,7 +1491,12 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                     type="button"
                     className={`public-community-filter ${threadFilterMode === mode.value ? 'is-active' : ''}`}
                     key={mode.value}
-                    onClick={() => setThreadFilterMode(mode.value)}
+                    onClick={() => {
+                      if (threadFilterMode !== mode.value) {
+                        setThreadFilterMode(mode.value)
+                        appendActionLog(undefined, 'state-filter', `상태 필터: ${mode.label}`)
+                      }
+                    }}
                   >
                     <Badge tone={threadFilterMode === mode.value ? 'accent' : 'neutral'} plain>
                       {mode.label}

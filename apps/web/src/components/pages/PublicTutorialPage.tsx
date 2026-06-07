@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
 import type { AppRoute, PublicNavigateState } from '../../routeConfig'
-import { routeDefs } from '../../routeConfig'
+import { operationalWorkflowRoutes, routeDefs } from '../../routeConfig'
 
 type TutorialPageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
@@ -55,6 +55,26 @@ type TutorialPersona = {
 type TutorialFaq = {
   q: string
   a: string
+}
+
+type TutorialMission = {
+  id: string
+  title: string
+  description: string
+  required: boolean
+  details: string
+  completed: boolean
+}
+
+type TutorialAction = 'route' | 'step-check' | 'step-reset' | 'copy-summary' | 'faq-toggle'
+
+type TutorialActionLog = {
+  id: string
+  at: number
+  action: TutorialAction
+  route?: AppRoute
+  label: string
+  detail?: string
 }
 
 const tutorialSteps: TutorialStep[] = [
@@ -218,12 +238,46 @@ const tutorialFaq: TutorialFaq[] = [
 ]
 
 const TUTORIAL_PROGRESS_KEY = 'tutorial-progress-v1'
+const TUTORIAL_ACTION_LOG_KEY = 'tutorial-action-log-v1'
+const MAX_TUTORIAL_ACTION_LOG = 40
+const TUTORIAL_ACTION_TYPES: readonly TutorialAction[] = [
+  'route',
+  'step-check',
+  'step-reset',
+  'copy-summary',
+  'faq-toggle',
+] as const
 
 const isValidStepIndex = (value: number) =>
   Number.isInteger(value) && value >= 0 && value < tutorialSteps.length
 
 const normalizeTutorialSteps = (values: number[]) =>
   [...new Set(values)].filter(isValidStepIndex).sort((left, right) => left - right)
+
+const parseTutorialAction = (
+  value: unknown,
+  fallbackRoute: unknown,
+  fallbackDetail: unknown,
+):
+  | {
+      action: TutorialAction
+      route?: AppRoute
+      detail?: string
+    }
+  | undefined => {
+  if (!TUTORIAL_ACTION_TYPES.includes(value as TutorialAction)) {
+    return undefined
+  }
+
+  return {
+    action: value as TutorialAction,
+    route:
+      typeof fallbackRoute === 'string' && fallbackRoute.startsWith('/')
+        ? (fallbackRoute as AppRoute)
+        : undefined,
+    detail: typeof fallbackDetail === 'string' ? fallbackDetail : undefined,
+  }
+}
 
 const parseProgress = () => {
   if (typeof window === 'undefined') {
@@ -301,6 +355,63 @@ const useTutorialProgress = () => {
   }
 }
 
+const makeTutorialActionId = () => `tu-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+const readTutorialActionLog = () => {
+  if (typeof window === 'undefined') {
+    return [] as TutorialActionLog[]
+  }
+
+  try {
+    const raw = window.localStorage.getItem(TUTORIAL_ACTION_LOG_KEY)
+    if (!raw) {
+      return [] as TutorialActionLog[]
+    }
+
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    const next: TutorialActionLog[] = []
+
+    for (const item of parsed) {
+      if (!item || typeof item !== 'object') {
+        continue
+      }
+
+      const candidate = item as Partial<TutorialActionLog> & { action?: unknown }
+      if (
+        typeof candidate.id !== 'string' ||
+        !candidate.id.trim() ||
+        typeof candidate.at !== 'number' ||
+        typeof candidate.label !== 'string' ||
+        !candidate.label.trim()
+      ) {
+        continue
+      }
+
+      const normalized = parseTutorialAction(candidate.action, candidate.route, candidate.detail)
+      if (!normalized) {
+        continue
+      }
+
+      next.push({
+        id: candidate.id,
+        at: candidate.at,
+        action: normalized.action,
+        route: normalized.route,
+        label: candidate.label,
+        detail: normalized.detail,
+      })
+    }
+
+    return next.slice(-MAX_TUTORIAL_ACTION_LOG)
+  } catch {
+    return []
+  }
+}
+
 export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
   const def = routeDefs['/tutorial']
   const {
@@ -319,12 +430,50 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
     : `${checkedCount} / ${tutorialSteps.length} 단계`
 
   const [copyResult, setCopyResult] = useState('')
+  const [actionLogs, setActionLogs] = useState<TutorialActionLog[]>(readTutorialActionLog)
+  const copyResultTimer = useRef<number | undefined>(undefined)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    try {
+      window.localStorage.setItem(TUTORIAL_ACTION_LOG_KEY, JSON.stringify(actionLogs))
+    } catch {
+      // ignore storage failures
+    }
+  }, [actionLogs])
+
+  const routeVisitCount = useMemo(() => {
+    const counts: Record<string, number> = {}
+
+    for (const item of actionLogs) {
+      if (item.action !== 'route' || !item.route) {
+        continue
+      }
+
+      counts[item.route] = (counts[item.route] ?? 0) + 1
+    }
+
+    return counts
+  }, [actionLogs])
+
+  const visitedRouteCount = useMemo(() => Object.keys(routeVisitCount).length, [routeVisitCount])
+
+  const requiredRouteVisitCount = useMemo(
+    () =>
+      operationalWorkflowRoutes.filter(
+        (route) => routeVisitCount[route] && routeVisitCount[route] > 0,
+      ).length,
+    [routeVisitCount],
+  )
 
   const scenarioSummaries = useMemo(
     () =>
       scenarios.map((scenario) => {
         const completedSteps = scenario.steps.filter((step) => checkedSteps.includes(step))
         const rate = Math.round((completedSteps.length / scenario.steps.length) * 100)
+
         return {
           ...scenario,
           completed: completedSteps.length === scenario.steps.length,
@@ -332,6 +481,125 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
         }
       }),
     [checkedSteps],
+  )
+
+  const routeCoverage = useMemo(
+    () =>
+      operationalWorkflowRoutes.map((route) => ({
+        route,
+        title: routeDefs[route]?.title || route,
+        visitCount: routeVisitCount[route] || 0,
+        isVisited: Boolean(routeVisitCount[route] && routeVisitCount[route] > 0),
+      })),
+    [routeVisitCount],
+  )
+
+  const scenarioCompletionRate = useMemo(
+    () =>
+      scenarioSummaries.length
+        ? Math.round(
+            (scenarioSummaries.filter((scenario) => scenario.completed).length /
+              scenarioSummaries.length) *
+              100,
+          )
+        : 0,
+    [scenarioSummaries],
+  )
+
+  const routeCoverageRate = useMemo(
+    () => Math.round((requiredRouteVisitCount / operationalWorkflowRoutes.length) * 100),
+    [requiredRouteVisitCount],
+  )
+
+  const appendActionLog = (
+    action: TutorialAction,
+    label: string,
+    detail?: string,
+    route?: AppRoute,
+  ) => {
+    setActionLogs((current) => {
+      const next = [
+        ...current,
+        {
+          id: makeTutorialActionId(),
+          at: Date.now(),
+          action,
+          route,
+          label,
+          detail,
+        },
+      ]
+      return next.length > MAX_TUTORIAL_ACTION_LOG ? next.slice(-MAX_TUTORIAL_ACTION_LOG) : next
+    })
+  }
+
+  const navigateTo = (path: AppRoute, label: string) => {
+    appendActionLog('route', `화면 이동: ${label}`, undefined, path)
+    onNavigate(path, { source: 'hero', fromLanding: true })
+  }
+
+  const resetProgressWithLog = () => {
+    reset()
+    appendActionLog('step-reset', '진행률 초기화', '체크 상태 초기화')
+  }
+
+  const isCopyActionDone = useMemo(
+    () => actionLogs.some((item) => item.action === 'copy-summary'),
+    [actionLogs],
+  )
+  const faqOpenCount = useMemo(
+    () => actionLogs.filter((item) => item.action === 'faq-toggle').length,
+    [actionLogs],
+  )
+  const tutorialMissions = useMemo<TutorialMission[]>(
+    () => [
+      {
+        id: 'step-check',
+        title: '핵심 단계 체크',
+        description: '4개 업무 단계 동의 여부 점검',
+        required: true,
+        details: `${checkedCount}/${tutorialSteps.length} 단계 체크 완료`,
+        completed: checkedCount >= 4,
+      },
+      {
+        id: 'route-visit',
+        title: '주요 화면 방문',
+        description: '일정·기록·정산·청구 화면 방문 커버리지',
+        required: true,
+        details: `${requiredRouteVisitCount}/${operationalWorkflowRoutes.length}개`,
+        completed: requiredRouteVisitCount >= operationalWorkflowRoutes.length,
+      },
+      {
+        id: 'scenario-check',
+        title: '시나리오 점검',
+        description: '1개 이상 시나리오를 끝까지 확인',
+        required: false,
+        details: `${scenarioSummaries.filter((scenario) => scenario.completed).length}개 완료 (${scenarioCompletionRate}%)`,
+        completed: scenarioSummaries.some((scenario) => scenario.completed),
+      },
+      {
+        id: 'copy-summary',
+        title: '요약 복사',
+        description: '운영 점검 내용을 팀에 전달 가능한 형태로 정리',
+        required: false,
+        details: isCopyActionDone ? '복사 완료' : '복사 미완료',
+        completed: isCopyActionDone,
+      },
+      {
+        id: 'faq-usage',
+        title: 'FAQ 확인',
+        description: '최소 1회 FAQ 토글을 사용해 의문 정리',
+        required: false,
+        details: `${faqOpenCount}회`,
+        completed: faqOpenCount > 0,
+      },
+    ],
+    [checkedCount, requiredRouteVisitCount, isCopyActionDone, faqOpenCount, scenarioCompletionRate],
+  )
+
+  const tutorialMissionRate = Math.round(
+    (tutorialMissions.filter((mission) => mission.completed).length / tutorialMissions.length) *
+      100,
   )
 
   const summaryText = useMemo(
@@ -349,19 +617,39 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
   const copySummary = async () => {
     if (typeof window === 'undefined' || !window.navigator || !window.navigator.clipboard) {
       setCopyResult('브라우저에서 클립보드를 지원하지 않습니다.')
+      appendActionLog('copy-summary', '요약 복사 실패', '클립보드 미지원')
       return
     }
 
     try {
       await window.navigator.clipboard.writeText(summaryText)
       setCopyResult('요약 내용을 복사했습니다.')
+      appendActionLog('copy-summary', '요약 복사 완료', `${progressLabel}`)
     } catch {
       setCopyResult('복사에 실패했습니다. 브라우저 권한을 확인해 주세요.')
+      appendActionLog('copy-summary', '요약 복사 실패', '클립보드 권한 거부')
     }
 
-    window.setTimeout(() => {
+    if (copyResultTimer.current) {
+      window.clearTimeout(copyResultTimer.current)
+    }
+
+    copyResultTimer.current = window.setTimeout(() => {
       setCopyResult('')
     }, 1600)
+  }
+
+  useEffect(() => {
+    return () => {
+      if (copyResultTimer.current) {
+        window.clearTimeout(copyResultTimer.current)
+      }
+    }
+  }, [])
+
+  const clearActionLogs = () => {
+    setActionLogs([])
+    appendActionLog('step-reset', '액션 로그 삭제', '튜토리얼 액션 로그 전체 초기화')
   }
 
   return (
@@ -379,25 +667,17 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
             동일한 순서로 진행하면 되고, 데모 계정으로 바로 시험해볼 수도 있습니다.
           </p>
           <div className="public-hero-actions">
-            <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>
+            <Button onClick={() => navigateTo('/login', '데모 로그인')}>
               <Icon name="arrow-right" size={16} />
               데모 로그인으로 시작
             </Button>
             <Button
               variant={allChecked ? 'primary' : 'secondary'}
-              onClick={() =>
-                onNavigate(nextStep.route, {
-                  source: 'hero',
-                  fromLanding: true,
-                })
-              }
+              onClick={() => navigateTo(nextStep.route, `${nextStep.step}단계 이동`)}
             >
               {allChecked ? '전체 흐름 점검으로 이동' : `${nextStep.step}단계 바로가기`}
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
-            >
+            <Button variant="secondary" onClick={() => navigateTo('/guide', '자세한 사용법 이동')}>
               자세한 사용법으로 이동
             </Button>
             <Button variant="secondary" onClick={copySummary}>
@@ -413,7 +693,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               key={item.route}
               type="button"
               className="guide-mini-step"
-              onClick={() => onNavigate(item.route, { source: 'hero', fromLanding: true })}
+              onClick={() => navigateTo(item.route, `${item.title} 빠른 이동`)}
             >
               <span aria-hidden="true">
                 <Icon name={item.icon} size={20} />
@@ -449,7 +729,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => onNavigate(step.route, { source: 'hero', fromLanding: true })}
+                onClick={() => navigateTo(step.route, `${step.title} 이동`)}
               >
                 {step.action}
                 <Icon name="arrow-right" size={15} />
@@ -487,9 +767,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                     </Badge>
                     <Button
                       size="sm"
-                      onClick={() =>
-                        onNavigate(persona.route, { source: 'hero', fromLanding: true })
-                      }
+                      onClick={() => navigateTo(persona.route, `${persona.role} 시작점 이동`)}
                     >
                       {persona.action}
                     </Button>
@@ -515,10 +793,58 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
             <span style={{ width: `${progressRate}%` }} />
           </div>
           {checkedCount > 0 ? (
-            <button type="button" className="card-link guide-progress-reset" onClick={reset}>
+            <button
+              type="button"
+              className="card-link guide-progress-reset"
+              onClick={resetProgressWithLog}
+            >
               진행률 초기화
             </button>
           ) : null}
+        </div>
+        <div
+          className="guide-progress"
+          aria-live="polite"
+          aria-atomic="true"
+          style={{ marginTop: 'var(--space-3)' }}
+        >
+          <div className="guide-progress-head">
+            <span>운영 데모 미션</span>
+            <strong>{tutorialMissionRate}%</strong>
+          </div>
+          <div className="guide-progress-track">
+            <span style={{ width: `${tutorialMissionRate}%` }} />
+          </div>
+          <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-2)' }}>
+            화면 탐색 커버리지 {routeCoverageRate}% · 시나리오 완주율 {scenarioCompletionRate}%
+          </p>
+          <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-1)' }}>
+            현재까지: 방문 화면 {visitedRouteCount}개 · FAQ 상호작용 {faqOpenCount}회 · 요약 복사{' '}
+            {isCopyActionDone ? '완료' : '미완료'} · 단계 체크 {checkedCount}/{tutorialSteps.length}
+          </p>
+          <ul
+            className="guide-checklist"
+            aria-label="주요 화면 탐색 현황"
+            style={{ marginTop: 'var(--space-2)' }}
+          >
+            {routeCoverage.map((item) => (
+              <li key={item.route} className="guide-check-item">
+                <Icon
+                  name={item.isVisited ? 'check' : 'clock'}
+                  size={16}
+                  aria-hidden="true"
+                  style={{
+                    marginTop: '0.15rem',
+                    color: item.isVisited ? 'var(--accent)' : 'var(--fg-muted)',
+                  }}
+                />
+                <span>{item.title}</span>
+                <span className="guide-step-subtitle" style={{ color: 'var(--fg-muted)' }}>
+                  방문 {item.visitCount}회
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
         <ol className="guide-checklist guide-checklist--interactive">
           {tutorialSteps.map((step, index) => (
@@ -528,7 +854,15 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                   type="checkbox"
                   aria-label={`${step.title} 완료`}
                   checked={checkedSteps.includes(index)}
-                  onChange={(event) => toggleStep(index, event.currentTarget.checked)}
+                  onChange={(event) => {
+                    const checked = event.currentTarget.checked
+                    toggleStep(index, checked)
+                    appendActionLog(
+                      'step-check',
+                      `단계 ${step.step} ${checked ? '완료' : '해제'}`,
+                      step.title,
+                    )
+                  }}
                 />
                 <span>{step.step}</span>
                 <div>
@@ -542,12 +876,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                   <button
                     type="button"
                     className="card-link"
-                    onClick={() =>
-                      onNavigate(step.route, {
-                        source: 'hero',
-                        fromLanding: true,
-                      })
-                    }
+                    onClick={() => navigateTo(step.route, `${step.title} 직접 실행`)}
                   >
                     {checkedSteps.includes(index) ? '재확인하기' : '지금 실행'}
                   </button>
@@ -555,12 +884,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                     type="button"
                     className="card-link"
                     style={{ marginLeft: 'var(--space-2)' }}
-                    onClick={() =>
-                      onNavigate(step.route, {
-                        source: 'hero',
-                        fromLanding: true,
-                      })
-                    }
+                    onClick={() => navigateTo(step.route, `${step.title} 바로 이동`)}
                   >
                     데모에서 바로 실행
                   </button>
@@ -595,7 +919,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               <Button
                 variant={scenario.completed ? 'primary' : 'secondary'}
                 size="sm"
-                onClick={() => onNavigate(scenario.target, { source: 'hero', fromLanding: true })}
+                onClick={() => navigateTo(scenario.target, `${scenario.title} 시나리오로 이동`)}
               >
                 {scenario.ctaLabel}
                 <Icon name="arrow-right" size={15} />
@@ -626,7 +950,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => onNavigate(milestone.route, { source: 'hero', fromLanding: true })}
+                onClick={() => navigateTo(milestone.route, `${milestone.title} 체크포인트 이동`)}
               >
                 {milestone.action}
                 <Icon name="arrow-right" size={15} />
@@ -655,7 +979,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                 <Button
                   variant="secondary"
                   size="sm"
-                  onClick={() => onNavigate(goal.route, { source: 'hero', fromLanding: true })}
+                  onClick={() => navigateTo(goal.route, `${goal.title} 확인`)}
                 >
                   {goal.action}
                   <Icon name="arrow-right" size={15} />
@@ -711,7 +1035,16 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                   className={`public-faq-question ${isOpen ? 'is-open' : ''}`}
                   aria-expanded={isOpen}
                   aria-controls={`tutorial-faq-${index}`}
-                  onClick={() => setOpenFaqIndex((current) => (current === index ? -1 : index))}
+                  onClick={() => {
+                    const nextIndex = isOpen ? -1 : index
+                    setOpenFaqIndex(nextIndex)
+                    appendActionLog(
+                      'faq-toggle',
+                      `FAQ ${index + 1}`,
+                      nextIndex === index ? '열기' : '닫기',
+                      undefined,
+                    )
+                  }}
                 >
                   <span>{item.q}</span>
                   <span className={`public-faq-sign ${isOpen ? 'is-open' : ''}`} aria-hidden="true">
@@ -727,6 +1060,47 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               </article>
             )
           })}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="튜토리얼 데모 액션 로그"
+          subtitle="방문, 체크, 요약 복사 같은 동작을 운영 점검용으로 기록합니다."
+        />
+        {actionLogs.length === 0 ? (
+          <p className="public-faq-empty" role="status">
+            아직 기록이 없습니다. 버튼을 눌러 동선을 이동하거나 체크를 진행해 주세요.
+          </p>
+        ) : (
+          <ul className="guide-checklist">
+            {actionLogs
+              .slice()
+              .reverse()
+              .map((item) => (
+                <li key={item.id}>
+                  <p>
+                    <strong>{item.label}</strong>
+                  </p>
+                  <p>
+                    {new Intl.DateTimeFormat('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(item.at))}
+                  </p>
+                  {item.route ? <small>경로: {item.route}</small> : null}
+                  {item.detail ? <small style={{ display: 'block' }}>{item.detail}</small> : null}
+                </li>
+              ))}
+          </ul>
+        )}
+        <div className="public-hero-actions" style={{ marginTop: 'var(--space-3)' }}>
+          <Button variant={actionLogs.length > 0 ? 'secondary' : 'ghost'} onClick={clearActionLogs}>
+            액션 로그 삭제
+          </Button>
         </div>
       </Card>
     </div>

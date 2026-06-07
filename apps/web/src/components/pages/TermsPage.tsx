@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import { Button, Card, CardHeader, Icon, PageHeader } from '../ui'
@@ -24,8 +24,11 @@ type ReadinessCheck = {
 
 const TERMS_STORAGE_KEY = 'terms-consent-status-v1'
 const TERMS_HISTORY_KEY = 'terms-consent-history-v1'
+const TERMS_ACTION_LOG_KEY = 'terms-action-log-v1'
 const TERMS_UPDATE_DATE = '2026-06-08'
 const TERMS_VERSION = 'v2026-06-08'
+const MIN_KEYWORD_LENGTH = 2
+const MAX_LOGS = 12
 
 type TermsConsentRecord = {
   version: string
@@ -33,6 +36,14 @@ type TermsConsentRecord = {
   requiredRate: number
   totalRate: number
   updatedAt: number
+}
+
+type TermsReadinessMission = {
+  id: string
+  title: string
+  required: boolean
+  hint: string
+  details: string
 }
 
 const termsSections: TermsSection[] = [
@@ -92,6 +103,49 @@ const quickGuide = [
   '로그인 없이도 서비스 소개, 튜토리얼, 커뮤니티 데모를 통해 기능 흐름을 먼저 확인할 수 있습니다.',
   '실제 운영 전환 전에는 이용범위·권한·요금 범위를 내부 정책과 함께 점검하세요.',
   '약관 변경은 공지와 함께 적용되며, 민감 변경은 사전 안내 후 동의 요청할 수 있습니다.',
+]
+
+const termsVersionNotes: { date: string; version: string; items: string[] }[] = [
+  {
+    date: TERMS_UPDATE_DATE,
+    version: TERMS_VERSION,
+    items: [
+      '공개 데모 동의 흐름과 동의 로그 분석 블록을 추가해 실제 도입 전 점검 단계까지 연결했습니다.',
+      '커뮤니티/튜토리얼로 이어지는 연동 가이드를 명시해 로그인 전에도 핵심 흐름을 체감할 수 있게 정리했습니다.',
+      '버전 동기화와 검색·필터 사용 점검 미션을 넣어 운영 체크리스트로 바로 연결했습니다.',
+    ],
+  },
+]
+
+const termsReadinessMissions: TermsReadinessMission[] = [
+  {
+    id: 'required-check',
+    title: '필수 조항 동의',
+    required: true,
+    hint: '서비스 시작 전 필수 조항이 누락되면 다음 단계 연동이 불안정해집니다.',
+    details: '서비스 공개 범위·권한·데이터 정책은 필수 동의 기준입니다.',
+  },
+  {
+    id: 'version-sync',
+    title: '최신 버전 정합',
+    required: true,
+    hint: '버전 동기화는 데모에서의 점검 결과 해석 정확도를 보장합니다.',
+    details: '현재 저장 버전이 최신으로 맞춰져야 합니다.',
+  },
+  {
+    id: 'history-check',
+    title: '동의 이력 남기기',
+    required: false,
+    hint: '이력이 없으면 감사성 분석이 어렵고 운영 이력 추적이 단절될 수 있습니다.',
+    details: '동의 변경 시 히스토리가 쌓였는지 확인합니다.',
+  },
+  {
+    id: 'explore-check',
+    title: '조항 탐색 완료',
+    required: false,
+    hint: '검색·필터를 사용하면 필수/선택 항목 구분이 빠르게 정리됩니다.',
+    details: '조항 검색 또는 분류 필터 조작을 했는지 확인합니다.',
+  },
 ]
 
 const readinessChecks: ReadinessCheck[] = [
@@ -230,9 +284,48 @@ const readConsentHistory = (): TermsConsentRecord[] => {
   }
 }
 
+const readTermsActionLog = (): TermsActionLog[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  try {
+    const raw = window.localStorage.getItem(TERMS_ACTION_LOG_KEY)
+    if (!raw) {
+      return []
+    }
+
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    const isValidActionLog = (value: unknown): value is TermsActionLog =>
+      typeof value === 'object' &&
+      value !== null &&
+      typeof (value as TermsActionLog).id === 'string' &&
+      typeof (value as TermsActionLog).at === 'number' &&
+      typeof (value as TermsActionLog).action === 'string' &&
+      typeof (value as TermsActionLog).label === 'string'
+
+    return parsed.filter(isValidActionLog).slice(-MAX_LOGS)
+  } catch {
+    return []
+  }
+}
+
 type TermsPageProps = {
   onNavigate?: (path: AppRoute, state?: PublicNavigateState) => void
 }
+
+type TermsActionLog = {
+  id: string
+  at: number
+  action: string
+  label: string
+}
+
+const makeTermsActionId = () => `tc-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
 const updateConsent = (next: string[]) =>
   typeof window !== 'undefined'
@@ -242,6 +335,14 @@ const updateConsent = (next: string[]) =>
       )
     : undefined
 
+const makeConsentHistoryEntry = (agreedIds: string[], agreeRate: number, requiredRate: number) => ({
+  version: TERMS_VERSION,
+  agreedIds: [...agreedIds],
+  requiredRate,
+  totalRate: agreeRate,
+  updatedAt: Date.now(),
+})
+
 export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   const initialState = parseConsentState()
   const [agreedIds, setAgreedIds] = useState<string[]>(initialState.agreedIds)
@@ -250,11 +351,18 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   const [consentHistory, setConsentHistory] = useState<TermsConsentRecord[]>(readConsentHistory)
   const [copyMessage, setCopyMessage] = useState('')
   const [filter, setFilter] = useState<'all' | 'required' | 'optional'>('all')
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [hasTermsExplored, setHasTermsExplored] = useState(false)
+  const [actionLogs, setActionLogs] = useState<TermsActionLog[]>(readTermsActionLog)
+  const didInitRef = useRef(false)
+  const copyMessageTimer = useRef<number | undefined>(undefined)
 
   const requiredIds = useMemo(
     () => termsSections.filter((section) => section.required).map((section) => section.id),
     [],
   )
+  const requiredSections = useMemo(() => termsSections.filter((section) => section.required), [])
+  const optionalSections = useMemo(() => termsSections.filter((section) => !section.required), [])
 
   const agreeRate = useMemo(
     () => Math.round((agreedIds.length / termsSections.length) * 100),
@@ -270,6 +378,17 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   )
 
   const isOutdated = storedVersion !== TERMS_VERSION
+
+  const sectionSearch = searchKeyword.trim().toLowerCase()
+
+  const requiredCheckedCount = useMemo(
+    () => requiredSections.filter((section) => agreedIds.includes(section.id)).length,
+    [agreedIds, requiredSections],
+  )
+  const optionalCheckedCount = useMemo(
+    () => optionalSections.filter((section) => agreedIds.includes(section.id)).length,
+    [agreedIds, optionalSections],
+  )
 
   const readinessChecksResult = useMemo(
     () =>
@@ -292,21 +411,25 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   )
 
   useEffect(() => {
+    if (!didInitRef.current) {
+      didInitRef.current = true
+      return
+    }
+
     updateConsent(agreedIds)
     const now = Date.now()
+    const nextEntry = {
+      version: TERMS_VERSION,
+      agreedIds: [...agreedIds],
+      requiredRate,
+      totalRate: agreeRate,
+      updatedAt: now,
+    }
+
     setStoredVersion(TERMS_VERSION)
     setAgreedAt(now)
     setConsentHistory((current) => {
-      const next = [
-        ...current,
-        {
-          version: TERMS_VERSION,
-          agreedIds: [...agreedIds],
-          requiredRate,
-          totalRate: agreeRate,
-          updatedAt: now,
-        },
-      ].slice(-12)
+      const next = [...current, nextEntry].slice(-MAX_LOGS)
 
       if (typeof window !== 'undefined') {
         try {
@@ -320,14 +443,44 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
     })
   }, [agreedIds, requiredRate, agreeRate])
 
+  const logAction = (action: string, label: string) => {
+    setActionLogs((current) =>
+      [...current, { id: makeTermsActionId(), at: Date.now(), action, label }].slice(-MAX_LOGS),
+    )
+  }
+
   useEffect(() => {
     if (!copyMessage) {
       return
     }
 
-    const timer = window.setTimeout(() => setCopyMessage(''), 1700)
-    return () => window.clearTimeout(timer)
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    if (copyMessageTimer.current) {
+      window.clearTimeout(copyMessageTimer.current)
+    }
+
+    copyMessageTimer.current = window.setTimeout(() => setCopyMessage(''), 1700)
+    return () => {
+      if (copyMessageTimer.current) {
+        window.clearTimeout(copyMessageTimer.current)
+      }
+    }
   }, [copyMessage])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    try {
+      window.localStorage.setItem(TERMS_ACTION_LOG_KEY, JSON.stringify(actionLogs))
+    } catch {
+      // ignore storage failures
+    }
+  }, [actionLogs])
 
   const allRequiredAgreed = requiredIds.every((id) => agreedIds.includes(id))
   const requiredMissed = requiredIds.filter((id) => !agreedIds.includes(id))
@@ -338,19 +491,85 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   const readinessBlocked = readinessChecksResult.filter((item) => item.required && !item.passed)
   const isReadyToProceed = readinessRate >= 75 && readinessBlocked.length === 0
 
+  const missionProgress = useMemo(
+    () =>
+      termsReadinessMissions.map((mission) => {
+        if (mission.id === 'required-check') {
+          return { ...mission, completed: allRequiredAgreed }
+        }
+        if (mission.id === 'version-sync') {
+          return { ...mission, completed: !isOutdated }
+        }
+        if (mission.id === 'history-check') {
+          return { ...mission, completed: consentHistory.length > 0 }
+        }
+        return { ...mission, completed: hasTermsExplored }
+      }),
+    [allRequiredAgreed, consentHistory.length, hasTermsExplored, isOutdated],
+  )
+
+  const termsMissionRate = useMemo(
+    () =>
+      Math.round(
+        (missionProgress.filter((item) => item.completed).length / missionProgress.length) * 100,
+      ),
+    [missionProgress],
+  )
+
+  const termsActionSummary = useMemo(
+    () => ({
+      agreeCount: actionLogs.filter((item) => item.action === 'agree').length,
+      disagreeCount: actionLogs.filter((item) => item.action === 'disagree').length,
+      resetCount: actionLogs.filter((item) => item.action === 'reset').length,
+      syncCount: actionLogs.filter((item) => item.action === 'sync').length,
+      copySuccessCount: actionLogs.filter((item) => item.action === 'copy-success').length,
+      copyFailCount: actionLogs.filter((item) => item.action === 'copy-failed').length,
+      allActionCount: actionLogs.length,
+    }),
+    [actionLogs],
+  )
+
   const toggleAgree = (id: string, checked: boolean) => {
     if (checked) {
+      logAction('agree', `${id} 동의`)
       setAgreedIds((current) => (current.includes(id) ? current : [...current, id]))
       return
     }
+    logAction('disagree', `${id} 미동의`)
     setAgreedIds((current) => current.filter((item) => item !== id))
   }
 
   const acceptAll = () => {
+    logAction('all', '전체 동의')
     setAgreedIds(termsSections.map((section) => section.id))
   }
 
+  const syncVersion = () => {
+    if (!isOutdated) {
+      logAction('sync', '이미 최신 버전 상태')
+      return
+    }
+    logAction('sync', '최신 약관 버전 반영')
+    updateConsent(agreedIds)
+    setStoredVersion(TERMS_VERSION)
+    setAgreedAt(Date.now())
+    setConsentHistory((current) => {
+      const next = [...current, makeConsentHistoryEntry(agreedIds, agreeRate, requiredRate)].slice(
+        -MAX_LOGS,
+      )
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.setItem(TERMS_HISTORY_KEY, JSON.stringify(next))
+        } catch {
+          // ignore storage failure for history log
+        }
+      }
+      return next
+    })
+  }
+
   const reset = () => {
+    logAction('reset', '동의 항목 초기화')
     setAgreedIds([])
   }
 
@@ -367,6 +586,13 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   const filteredSections = useMemo(
     () =>
       termsSections.filter((section) => {
+        if (sectionSearch.length >= MIN_KEYWORD_LENGTH) {
+          const target = `${section.title} ${section.items.join(' ')}`.toLowerCase()
+          if (!target.includes(sectionSearch)) {
+            return false
+          }
+        }
+
         if (filter === 'required') {
           return section.required
         }
@@ -375,8 +601,21 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
         }
         return true
       }),
-    [filter],
+    [filter, sectionSearch],
   )
+
+  const handleSearchChange = (nextValue: string) => {
+    setSearchKeyword(nextValue)
+    if (!hasTermsExplored && nextValue.trim().length >= MIN_KEYWORD_LENGTH) {
+      setHasTermsExplored(true)
+    }
+  }
+
+  const handleFilterExplore = () => {
+    if (!hasTermsExplored) {
+      setHasTermsExplored(true)
+    }
+  }
 
   const copySummary = async () => {
     const summary = [
@@ -391,16 +630,21 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
 
     if (typeof window === 'undefined' || !window.navigator || !window.navigator.clipboard) {
       setCopyMessage('클립보드를 지원하지 않습니다.')
+      logAction('copy-failed', '동의 요약 복사 실패: 클립보드 미지원')
       return
     }
 
     try {
       await window.navigator.clipboard.writeText(summary)
       setCopyMessage('동의 요약을 복사했습니다.')
+      logAction('copy-success', '동의 요약 복사')
     } catch {
       setCopyMessage('복사에 실패했습니다.')
+      logAction('copy-failed', '동의 요약 복사 실패')
     }
   }
+
+  const clearActionLogs = () => setActionLogs([])
 
   const handleFilterChange = (event: ChangeEvent<HTMLInputElement>) => {
     setFilter(event.target.value as 'all' | 'required' | 'optional')
@@ -455,6 +699,29 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
           본 약관은 가족 돌봄 운영 플랫폼의 공개 범위, 로그인 계정 이용 범위, 데이터 취급 기준, 요금
           및 지원 범위를 규정합니다. 별도 계약이 있는 경우 계약 문서가 우선합니다.
         </p>
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="동의 정합성"
+          subtitle={`필수 ${requiredCheckedCount}/${requiredSections.length} · 선택 ${optionalCheckedCount}/${optionalSections.length}`}
+        />
+        <p
+          style={{
+            margin: 0,
+            color: 'var(--fg-muted)',
+            fontSize: 'var(--text-sm)',
+          }}
+        >
+          현재 저장 버전: {storedVersion}
+          {' · '}
+          마지막 저장: {lastUpdatedText}
+        </p>
+        <div className="public-hero-actions" style={{ marginTop: 'var(--space-3)' }}>
+          <Button variant={isOutdated ? 'primary' : 'secondary'} onClick={syncVersion}>
+            {isOutdated ? '최신 버전으로 갱신' : '버전 동기화 상태 반영'}
+          </Button>
+        </div>
       </Card>
 
       <Card>
@@ -585,7 +852,101 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
       </Card>
 
       <Card>
+        <CardHeader
+          title="약관 데모 체크리스트"
+          subtitle={`완료 ${termsMissionRate}%`}
+        ></CardHeader>
+        <div className="guide-progress" aria-live="polite" aria-atomic="true">
+          <div className="guide-progress-head">
+            <span>도입 점검</span>
+            <strong>{termsMissionRate}%</strong>
+          </div>
+          <div className="guide-progress-track">
+            <span style={{ width: `${termsMissionRate}%` }} />
+          </div>
+        </div>
+        <ul className="guide-checklist" style={{ marginTop: 'var(--space-3)' }}>
+          {missionProgress.map((mission) => (
+            <li className="guide-check-item" key={mission.id}>
+              <Icon
+                name={mission.completed ? 'check' : 'clock'}
+                size={16}
+                aria-hidden="true"
+                style={{
+                  marginTop: '0.15rem',
+                  color: mission.completed ? 'var(--accent)' : 'var(--fg-muted)',
+                }}
+              />
+              <span>{mission.id}</span>
+              <div>
+                <strong>
+                  {mission.title}
+                  {mission.required ? ' (필수)' : ''}
+                </strong>
+                <p
+                  style={{
+                    marginTop: 'var(--space-2)',
+                    marginBottom: 0,
+                    color: 'var(--fg-muted)',
+                    fontSize: 'var(--text-sm)',
+                  }}
+                >
+                  {mission.completed ? '완료' : '미완료'} ·{' '}
+                  {mission.completed ? mission.hint : mission.details}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+        <p
+          style={{
+            marginTop: 'var(--space-2)',
+            color: 'var(--fg-muted)',
+            fontSize: 'var(--text-sm)',
+          }}
+        >
+          액션 로그: 동의 {termsActionSummary.agreeCount}건 · 반대{' '}
+          {termsActionSummary.disagreeCount}건 · 동기화
+          {termsActionSummary.syncCount}건 · 복사 시도 {termsActionSummary.allActionCount}건
+        </p>
+        <div className="public-hero-actions" style={{ marginTop: 'var(--space-3)' }}>
+          <Button variant="secondary" onClick={copySummary}>
+            체크리스트 복사
+          </Button>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="변경 이력" subtitle="최신 버전의 반영 포인트를 확인하세요." />
+        <ul className="guide-checklist">
+          {termsVersionNotes.map((entry) => (
+            <li key={`${entry.version}-${entry.date}`}>
+              <p style={{ marginBottom: 0 }}>
+                <strong>{entry.version}</strong> · {entry.date}
+              </p>
+              <ul className="public-check-list" style={{ marginTop: 'var(--space-2)' }}>
+                {entry.items.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card>
         <CardHeader title="약관 조항" subtitle="항목별로 동의 상태를 기록해보세요." />
+        <label className="public-lead-form" style={{ marginBottom: 'var(--space-3)' }}>
+          조항 검색
+          <input
+            type="search"
+            value={searchKeyword}
+            onChange={(event) => handleSearchChange(event.currentTarget.value)}
+            placeholder="조항명/키워드로 검색"
+            className="public-community-search"
+            aria-label="조항 검색"
+          />
+        </label>
         <div
           className="public-community-filters"
           aria-label="약관 필터"
@@ -597,7 +958,10 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               name="terms-filter"
               value="all"
               checked={filter === 'all'}
-              onChange={handleFilterChange}
+              onChange={(event) => {
+                handleFilterExplore()
+                handleFilterChange(event)
+              }}
             />{' '}
             전체
           </label>
@@ -607,7 +971,10 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               name="terms-filter"
               value="required"
               checked={filter === 'required'}
-              onChange={handleFilterChange}
+              onChange={(event) => {
+                handleFilterExplore()
+                handleFilterChange(event)
+              }}
             />{' '}
             필수
           </label>
@@ -617,7 +984,10 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               name="terms-filter"
               value="optional"
               checked={filter === 'optional'}
-              onChange={handleFilterChange}
+              onChange={(event) => {
+                handleFilterExplore()
+                handleFilterChange(event)
+              }}
             />{' '}
             선택
           </label>
@@ -688,6 +1058,45 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               })}
           </ul>
         )}
+      </Card>
+
+      <Card>
+        <CardHeader
+          title="운영 검토 액션 로그"
+          subtitle="동의 동작을 기준별로 확인해 운영 정책 반영 전 흐름을 점검합니다."
+        />
+        {actionLogs.length === 0 ? (
+          <p className="public-faq-empty" role="status">
+            동의 액션이 남지 않았습니다.
+          </p>
+        ) : (
+          <ul className="guide-checklist">
+            {actionLogs
+              .slice()
+              .reverse()
+              .map((action) => (
+                <li key={action.id}>
+                  <p style={{ margin: 0 }}>
+                    <strong>{action.action}</strong> · {action.label}
+                  </p>
+                  <small style={{ color: 'var(--fg-muted)' }}>
+                    {new Intl.DateTimeFormat('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(action.at))}
+                  </small>
+                </li>
+              ))}
+          </ul>
+        )}
+        <div className="public-hero-actions" style={{ marginTop: 'var(--space-3)' }}>
+          <Button variant={actionLogs.length > 0 ? 'secondary' : 'ghost'} onClick={clearActionLogs}>
+            액션 로그 삭제
+          </Button>
+        </div>
       </Card>
 
       <Card>
