@@ -239,6 +239,7 @@ const tutorialFaq: TutorialFaq[] = [
 
 const TUTORIAL_PROGRESS_KEY = 'tutorial-progress-v1'
 const TUTORIAL_ACTION_LOG_KEY = 'tutorial-action-log-v1'
+const COMMUNITY_ACTIVITY_LOG_STORAGE = 'public-community-activity-log-v1'
 const MAX_TUTORIAL_ACTION_LOG = 40
 const TUTORIAL_ACTION_TYPES: readonly TutorialAction[] = [
   'route',
@@ -412,6 +413,28 @@ const readTutorialActionLog = () => {
   }
 }
 
+const readCommunityBlockedCount = () => {
+  if (typeof window === 'undefined') {
+    return 0
+  }
+
+  try {
+    const raw = window.localStorage.getItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
+    if (!raw) {
+      return 0
+    }
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed)
+      ? parsed.filter(
+          (item) =>
+            item && typeof item === 'object' && (item as { action?: unknown }).action === 'blocked',
+        ).length
+      : 0
+  } catch {
+    return 0
+  }
+}
+
 export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
   const def = routeDefs['/tutorial']
   const {
@@ -431,6 +454,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
 
   const [copyResult, setCopyResult] = useState('')
   const [actionLogs, setActionLogs] = useState<TutorialActionLog[]>(readTutorialActionLog)
+  const [communityBlockedCount, setCommunityBlockedCount] = useState(readCommunityBlockedCount)
   const copyResultTimer = useRef<number | undefined>(undefined)
 
   useEffect(() => {
@@ -443,6 +467,16 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
       // ignore storage failures
     }
   }, [actionLogs])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const refreshCommunityBlocks = () => setCommunityBlockedCount(readCommunityBlockedCount())
+    window.addEventListener('storage', refreshCommunityBlocks)
+    return () => window.removeEventListener('storage', refreshCommunityBlocks)
+  }, [])
 
   const routeVisitCount = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -593,8 +627,23 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
         details: `${faqOpenCount}회`,
         completed: faqOpenCount > 0,
       },
+      {
+        id: 'community-blocked-review',
+        title: '커뮤니티 차단 해소',
+        description: '필수 약관 미동의로 막힌 커뮤니티 동작 재점검',
+        required: false,
+        details: `${communityBlockedCount}건`,
+        completed: communityBlockedCount === 0,
+      },
     ],
-    [checkedCount, requiredRouteVisitCount, isCopyActionDone, faqOpenCount, scenarioCompletionRate],
+    [
+      checkedCount,
+      requiredRouteVisitCount,
+      isCopyActionDone,
+      faqOpenCount,
+      scenarioCompletionRate,
+      communityBlockedCount,
+    ],
   )
 
   const tutorialMissionRate = Math.round(
@@ -820,7 +869,8 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
           </p>
           <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-1)' }}>
             현재까지: 방문 화면 {visitedRouteCount}개 · FAQ 상호작용 {faqOpenCount}회 · 요약 복사{' '}
-            {isCopyActionDone ? '완료' : '미완료'} · 단계 체크 {checkedCount}/{tutorialSteps.length}
+            {isCopyActionDone ? '완료' : '미완료'} · 단계 체크 {checkedCount}/{tutorialSteps.length}{' '}
+            · 커뮤니티 차단 {communityBlockedCount}건
           </p>
           <ul
             className="guide-checklist"

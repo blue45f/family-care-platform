@@ -25,6 +25,7 @@ type ReadinessCheck = {
 const TERMS_STORAGE_KEY = 'terms-consent-status-v1'
 const TERMS_HISTORY_KEY = 'terms-consent-history-v1'
 const TERMS_ACTION_LOG_KEY = 'terms-action-log-v1'
+const COMMUNITY_ACTIVITY_LOG_STORAGE = 'public-community-activity-log-v1'
 const TERMS_UPDATE_DATE = '2026-06-08'
 const TERMS_VERSION = 'v2026-06-08'
 const MIN_KEYWORD_LENGTH = 2
@@ -314,6 +315,51 @@ const readTermsActionLog = (): TermsActionLog[] => {
   }
 }
 
+const readCommunityBlockedActionLog = (): TermsActionLog[] => {
+  if (typeof window === 'undefined') {
+    return []
+  }
+
+  try {
+    const raw = window.localStorage.getItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
+    if (!raw) {
+      return []
+    }
+
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return parsed
+      .filter(
+        (
+          item,
+        ): item is {
+          id: string
+          at: number
+          action: string
+          threadTitle?: string
+          note?: string
+        } =>
+          typeof item === 'object' &&
+          item !== null &&
+          typeof item.id === 'string' &&
+          typeof item.at === 'number' &&
+          item.action === 'blocked',
+      )
+      .slice(-MAX_LOGS)
+      .map((item) => ({
+        id: `community-${item.id}`,
+        at: item.at,
+        action: 'community-blocked',
+        label: `${item.threadTitle ?? '커뮤니티'} · ${item.note ?? '약관 미동의로 차단'}`,
+      }))
+  } catch {
+    return []
+  }
+}
+
 type TermsPageProps = {
   onNavigate?: (path: AppRoute, state?: PublicNavigateState) => void
 }
@@ -354,6 +400,9 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   const [searchKeyword, setSearchKeyword] = useState('')
   const [hasTermsExplored, setHasTermsExplored] = useState(false)
   const [actionLogs, setActionLogs] = useState<TermsActionLog[]>(readTermsActionLog)
+  const [communityBlockedLogs, setCommunityBlockedLogs] = useState<TermsActionLog[]>(
+    readCommunityBlockedActionLog,
+  )
   const didInitRef = useRef(false)
   const copyMessageTimer = useRef<number | undefined>(undefined)
 
@@ -482,6 +531,16 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
     }
   }, [actionLogs])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const refreshCommunityBlocks = () => setCommunityBlockedLogs(readCommunityBlockedActionLog())
+    window.addEventListener('storage', refreshCommunityBlocks)
+    return () => window.removeEventListener('storage', refreshCommunityBlocks)
+  }, [])
+
   const allRequiredAgreed = requiredIds.every((id) => agreedIds.includes(id))
   const requiredMissed = requiredIds.filter((id) => !agreedIds.includes(id))
 
@@ -524,9 +583,14 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
       syncCount: actionLogs.filter((item) => item.action === 'sync').length,
       copySuccessCount: actionLogs.filter((item) => item.action === 'copy-success').length,
       copyFailCount: actionLogs.filter((item) => item.action === 'copy-failed').length,
+      searchCount: actionLogs.filter(
+        (item) => item.action === 'search' || item.action === 'search-reset',
+      ).length,
+      filterCount: actionLogs.filter((item) => item.action === 'filter').length,
+      communityBlockedCount: communityBlockedLogs.length,
       allActionCount: actionLogs.length,
     }),
-    [actionLogs],
+    [actionLogs, communityBlockedLogs.length],
   )
 
   const toggleAgree = (id: string, checked: boolean) => {
@@ -605,16 +669,25 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
   )
 
   const handleSearchChange = (nextValue: string) => {
+    const wasSearchActive = searchKeyword.trim().length >= MIN_KEYWORD_LENGTH
+    const isSearchActive = nextValue.trim().length >= MIN_KEYWORD_LENGTH
+
     setSearchKeyword(nextValue)
-    if (!hasTermsExplored && nextValue.trim().length >= MIN_KEYWORD_LENGTH) {
+    if (!hasTermsExplored && isSearchActive) {
       setHasTermsExplored(true)
+      logAction('search', `조항 검색: ${nextValue.trim()}`)
+      return
+    }
+    if (wasSearchActive && !isSearchActive) {
+      logAction('search-reset', '조항 검색 초기화')
     }
   }
 
-  const handleFilterExplore = () => {
+  const handleFilterExplore = (nextFilter: 'all' | 'required' | 'optional') => {
     if (!hasTermsExplored) {
       setHasTermsExplored(true)
     }
+    logAction('filter', `조항 필터 변경: ${nextFilter}`)
   }
 
   const copySummary = async () => {
@@ -851,6 +924,37 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
         </div>
       </Card>
 
+      {communityBlockedLogs.length > 0 ? (
+        <Card>
+          <CardHeader
+            title="커뮤니티 차단 이력"
+            subtitle="약관 미동의 상태에서 막힌 커뮤니티 동작을 다시 실행할 수 있도록 보여줍니다."
+          />
+          <ul className="guide-checklist">
+            {communityBlockedLogs
+              .slice()
+              .reverse()
+              .slice(0, 5)
+              .map((item) => (
+                <li className="guide-checklist-blocked" key={item.id}>
+                  <p style={{ margin: 0 }}>
+                    <strong>{item.action}</strong> · {item.label}
+                  </p>
+                  <small style={{ color: 'var(--fg-muted)' }}>
+                    {new Intl.DateTimeFormat('ko-KR', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(item.at))}
+                  </small>
+                </li>
+              ))}
+          </ul>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader
           title="약관 데모 체크리스트"
@@ -907,7 +1011,9 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
         >
           액션 로그: 동의 {termsActionSummary.agreeCount}건 · 반대{' '}
           {termsActionSummary.disagreeCount}건 · 동기화
-          {termsActionSummary.syncCount}건 · 복사 시도 {termsActionSummary.allActionCount}건
+          {termsActionSummary.syncCount}건 · 검색 {termsActionSummary.searchCount}건 · 필터{' '}
+          {termsActionSummary.filterCount}건 · 커뮤니티 차단{' '}
+          {termsActionSummary.communityBlockedCount}건
         </p>
         <div className="public-hero-actions" style={{ marginTop: 'var(--space-3)' }}>
           <Button variant="secondary" onClick={copySummary}>
@@ -959,7 +1065,7 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               value="all"
               checked={filter === 'all'}
               onChange={(event) => {
-                handleFilterExplore()
+                handleFilterExplore('all')
                 handleFilterChange(event)
               }}
             />{' '}
@@ -972,7 +1078,7 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               value="required"
               checked={filter === 'required'}
               onChange={(event) => {
-                handleFilterExplore()
+                handleFilterExplore('required')
                 handleFilterChange(event)
               }}
             />{' '}
@@ -985,7 +1091,7 @@ export const TermsPage = ({ onNavigate }: TermsPageProps) => {
               value="optional"
               checked={filter === 'optional'}
               onChange={(event) => {
-                handleFilterExplore()
+                handleFilterExplore('optional')
                 handleFilterChange(event)
               }}
             />{' '}

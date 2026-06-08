@@ -46,6 +46,7 @@ type CommunityThreadActionType =
   | 'delete_comment'
   | 'bookmark'
   | 'unbookmark'
+  | 'blocked'
   | 'search'
   | 'category-filter'
   | 'state-filter'
@@ -82,6 +83,7 @@ const COMMUNITY_DEMO_STORAGE = 'public-community-demo-v1'
 const COMMUNITY_LIKE_STORAGE = 'public-community-liked-threads-v1'
 const COMMUNITY_BOOKMARK_STORAGE = 'public-community-bookmarked-threads-v1'
 const COMMUNITY_ACTIVITY_LOG_STORAGE = 'public-community-activity-log-v1'
+const TERMS_CONSENT_STATUS_STORAGE = 'terms-consent-status-v1'
 const REPORT_WARNING_THRESHOLD = 3
 const MIN_POST_TITLE_LENGTH = 8
 const MIN_POST_TEXT_LENGTH = 120
@@ -93,7 +95,7 @@ const MAX_REPORT_NOTE_LENGTH = 240
 const MAX_LOG_ENTRIES = 64
 const DEFAULT_REPORT_REASON: ReportReason = '스팸'
 const DEMO_COMMENT_AUTHOR = '데모 사용자'
-
+const TERMS_REQUIRED_SECTION_IDS = ['public-scope', 'access-control', 'data-policy'] as const
 const now = Date.now()
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -380,6 +382,7 @@ const normalizeActionType = (value: unknown): CommunityThreadActionType | undefi
     value === 'delete_comment' ||
     value === 'bookmark' ||
     value === 'unbookmark' ||
+    value === 'blocked' ||
     value === 'search' ||
     value === 'category-filter' ||
     value === 'state-filter' ||
@@ -417,6 +420,9 @@ const formatActionLabel = (action: CommunityThreadActionType) => {
   }
   if (action === 'search') {
     return '검색'
+  }
+  if (action === 'blocked') {
+    return '차단'
   }
   if (action === 'category-filter') {
     return '카테고리 필터'
@@ -513,6 +519,35 @@ const normalizeThread = (raw: unknown, index: number): CommunityThread | null =>
     state: normalizeThreadState(candidate.state),
     reportCount: normalizeCount(candidate.reportCount),
     createdAt,
+  }
+}
+
+const isTermsSectionId = (value: unknown): value is string =>
+  typeof value === 'string' && TERMS_REQUIRED_SECTION_IDS.includes(value as any)
+
+type TermsConsentState = {
+  agreedIds: string[]
+}
+
+const readTermsConsentState = (): TermsConsentState => {
+  if (typeof window === 'undefined') {
+    return { agreedIds: [] }
+  }
+
+  try {
+    const raw = window.localStorage.getItem(TERMS_CONSENT_STATUS_STORAGE)
+    if (!raw) {
+      return { agreedIds: [] }
+    }
+
+    const parsed = JSON.parse(raw) as Partial<{ agreedIds: unknown }>
+    const agreedIds = Array.isArray(parsed.agreedIds)
+      ? parsed.agreedIds.filter(isTermsSectionId)
+      : []
+
+    return { agreedIds }
+  } catch {
+    return { agreedIds: [] }
   }
 }
 
@@ -662,6 +697,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const [activeCategory, setActiveCategory] = useState<CommunityThread['category'] | '전체'>('전체')
   const [threadFilterMode, setThreadFilterMode] = useState<ThreadFilterMode>('전체')
   const [sortMode, setSortMode] = useState<SortMode>('latest')
+  const termsConsent = useMemo(() => readTermsConsentState(), [])
 
   const initialThreads = readCommunityThreads()
   const [threads, setThreads] = useState<CommunityThread[]>(initialThreads)
@@ -684,6 +720,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const [replyDraft, setReplyDraft] = useState('')
   const [replyError, setReplyError] = useState('')
   const [feedbackMessage, setFeedbackMessage] = useState('')
+  const isTermsReady = useMemo(
+    () => TERMS_REQUIRED_SECTION_IDS.every((id) => termsConsent.agreedIds.includes(id)),
+    [termsConsent],
+  )
   const missionProgress = useMemo(
     () =>
       communityMissions.map((mission) => ({
@@ -716,6 +756,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
         .length,
       stateFilterCount: threadActionLogs.filter((item) => item.action === 'state-filter').length,
       sortChangeCount: threadActionLogs.filter((item) => item.action === 'sort-change').length,
+      blockedCount: threadActionLogs.filter((item) => item.action === 'blocked').length,
     }),
     [threadActionLogs],
   )
@@ -823,11 +864,25 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     () => [...threadActionLogs].sort((left, right) => right.at - left.at).slice(0, 8),
     [threadActionLogs],
   )
+  const recentBlockedActivity = useMemo(
+    () => recentActivity.filter((item) => item.action === 'blocked'),
+    [recentActivity],
+  )
 
   const selectedThread = useMemo(
     () => threads.find((thread) => thread.id === selectedThreadId) ?? filteredThreads[0],
     [filteredThreads, selectedThreadId, threads],
   )
+
+  const requireTerms = (action: string, thread: CommunityThread | undefined, detail = '') => {
+    if (isTermsReady) {
+      return true
+    }
+
+    appendActionLog(thread, 'blocked', detail || `약관 미동의로 ${action} 차단`)
+    showFeedback(`필수 약관 동의 후에만 ${action}할 수 있어요.`)
+    return false
+  }
 
   useEffect(() => {
     if (selectedThread) {
@@ -969,6 +1024,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
+    if (!requireTerms('좋아요', target)) {
+      return
+    }
+
     const isLiked = likedThreadIds.includes(threadId)
     setLikedThreadIds((current) => {
       const next = isLiked ? current.filter((value) => value !== threadId) : [...current, threadId]
@@ -991,6 +1050,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
+    if (!requireTerms('고정 토글', target)) {
+      return
+    }
+
     updateThread(threadId, (thread) => ({ ...thread, isPinned: !thread.isPinned }))
     appendActionLog(target, 'pin', target.isPinned ? '고정 해제' : '고정 설정')
     showFeedback(target.isPinned ? '상단 고정 해제했습니다.' : '상단 고정을 적용했습니다.')
@@ -999,6 +1062,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const handleToggleClose = (threadId: string) => {
     const target = threads.find((thread) => thread.id === threadId)
     if (!target) {
+      return
+    }
+
+    if (!requireTerms('상태 전환', target)) {
       return
     }
 
@@ -1013,6 +1080,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const handleToggleBookmark = (threadId: string) => {
     const target = threads.find((thread) => thread.id === threadId)
     if (!target) {
+      return
+    }
+
+    if (!requireTerms('북마크', target)) {
       return
     }
 
@@ -1036,6 +1107,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const handleReport = (threadId: string, reason: ReportReason, memo = '') => {
     const target = threads.find((thread) => thread.id === threadId)
     if (!target) {
+      return
+    }
+
+    if (!requireTerms('신고 처리', target)) {
       return
     }
 
@@ -1083,6 +1158,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
+    if (!requireTerms('신고 처리', selectedThread, '신고 폼 제출 차단')) {
+      return
+    }
+
     handleReport(selectedThread.id, reportReason, reportMemo)
   }
 
@@ -1094,6 +1173,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
 
     const targetReply = target.replies.find((reply) => reply.id === commentId)
     if (!targetReply) {
+      return
+    }
+
+    if (!requireTerms('댓글 삭제', target, '댓글 삭제 차단')) {
       return
     }
 
@@ -1120,6 +1203,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
 
     if (selectedThread.state === 'closed') {
       setReplyError('종료 글에는 댓글을 남길 수 없습니다.')
+      return
+    }
+
+    if (!requireTerms('댓글 작성', selectedThread, '댓글 등록 차단')) {
       return
     }
 
@@ -1186,6 +1273,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
 
     if (text.length > MAX_POST_TEXT_LENGTH) {
       setDraftError(`내용은 ${MAX_POST_TEXT_LENGTH}자 이하로 입력해 주세요.`)
+      return
+    }
+
+    if (!requireTerms('글 등록', undefined, '글 등록 차단')) {
       return
     }
 
@@ -1380,8 +1471,17 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
               {threadActionSummary.unbookmarkCount}건 · 검색 {threadActionSummary.searchCount}건 ·
               카테고리 필터 {threadActionSummary.categoryFilterCount}건 · 상태 필터{' '}
               {threadActionSummary.stateFilterCount}건 · 정렬 변경{' '}
-              {threadActionSummary.sortChangeCount}건
+              {threadActionSummary.sortChangeCount}건 · 차단 {threadActionSummary.blockedCount}건
             </p>
+            {recentBlockedActivity.length > 0 ? (
+              <p
+                className="guide-step-subtitle"
+                style={{ marginTop: 'var(--space-1)', color: 'var(--c-warn-fg)' }}
+              >
+                약관 미동의 차단 {recentBlockedActivity.length}건 · 필수 조항 동의 후 같은 동작을
+                다시 실행하세요.
+              </p>
+            ) : null}
           </div>
           <ul className="guide-checklist">
             {missionProgress.map((mission) => (
@@ -1872,7 +1972,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
           ) : (
             <ul className="guide-checklist">
               {recentActivity.map((item) => (
-                <li key={item.id}>
+                <li
+                  key={item.id}
+                  className={item.action === 'blocked' ? 'guide-checklist-blocked' : undefined}
+                >
                   <p>
                     <strong>{item.threadTitle}</strong> · {formatActionLabel(item.action)} ·{' '}
                     {new Intl.DateTimeFormat('ko-KR', {

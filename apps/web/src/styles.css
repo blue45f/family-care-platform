@@ -2476,6 +2476,14 @@ svg {
   color: var(--fg-default);
   font-size: var(--text-sm);
 }
+
+.guide-checklist-blocked {
+  border: 1px solid color-mix(in oklch, var(--c-warn-fg) 32%, var(--border-subtle));
+  border-radius: var(--radius-md);
+  background: color-mix(in oklch, var(--c-warn-bg) 62%, var(--bg-surface));
+  padding: var(--space-3);
+}
+
 .guide-checklist--interactive li {
   padding: 0;
   margin: 0;
