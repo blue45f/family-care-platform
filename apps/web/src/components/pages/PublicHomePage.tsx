@@ -104,6 +104,20 @@ const publicFaqs = [
   },
 ] as const
 
+const publicFooterPages = [
+  { label: '서비스 소개', path: '/overview' },
+  { label: '시작 가이드', path: '/guide' },
+  { label: '튜토리얼', path: '/tutorial' },
+  { label: '커뮤니티 데모', path: '/community' },
+  { label: '요금제', path: '/plans' },
+] as const satisfies readonly { label: string; path: AppRoute }[]
+
+const publicFooterPolicyLinks = [
+  { label: '이용약관', href: TERMS_URL },
+  { label: '개인정보 처리방침', href: PRIVACY_URL },
+  { label: '지원 채널', href: SUPPORT_URL },
+] as const
+
 type DemoLead = {
   centerName: string
   name: string
@@ -257,7 +271,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
       return
     }
 
-    // The sticky nav height varies as its links wrap (≈4.25rem wide, ≈20rem narrow).
+    // The sticky nav height varies as its links wrap (one row wide, brand+actions rows narrow).
     // Expose it so .public-band[id] anchor jumps land below the nav (scroll-margin-top).
     const syncNavHeight = () => {
       page.style.setProperty('--public-nav-height', `${nav.offsetHeight}px`)
@@ -348,58 +362,11 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <a className="public-anchor-link" href="#workflow">
             핵심 기능
           </a>
-          <a className="public-anchor-link" href="#metrics">
-            성과 지표
-          </a>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
-          >
-            시작 가이드
-          </button>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/community', { source: 'hero', fromLanding: true })}
-          >
-            커뮤니티 데모
-          </button>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/tutorial', { source: 'hero', fromLanding: true })}
-          >
-            튜토리얼
-          </button>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/overview', { source: 'hero', fromLanding: true })}
-          >
-            서비스 소개
-          </button>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/plans', { source: 'pricing_button', fromLanding: true })}
-          >
-            요금제
-          </button>
           <a className="public-anchor-link" href="#plans">
             요금 안내
           </a>
-          <a className="public-anchor-link" href="#contact">
-            데모 문의
-          </a>
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
-          </a>
-          <a className="public-anchor-link" href={TERMS_URL} target="_blank" rel="noreferrer">
-            이용약관
-          </a>
-          <a className="public-anchor-link" href={PRIVACY_URL} target="_blank" rel="noreferrer">
-            개인정보 처리방침
           </a>
           <button
             type="button"
@@ -794,6 +761,57 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           </Button>
         </div>
       </section>
+
+      <footer className="public-footer" aria-label="사이트 정보 및 정책 링크">
+        <div className="public-footer-inner">
+          <div className="public-footer-brand">
+            <span className="brand-mark" aria-hidden="true">
+              <Icon name="heart" size={18} />
+            </span>
+            <div className="public-footer-brand-copy">
+              <strong>가족 돌봄 운영 플랫폼</strong>
+              <small>CARE OPERATIONS</small>
+              <p>방문 일정부터 보험청구까지, 센터의 하루 운영을 한곳에서 정리합니다.</p>
+            </div>
+          </div>
+          <nav className="public-footer-group" aria-label="서비스 페이지 바로가기">
+            <p className="public-footer-title">둘러보기</p>
+            <ul>
+              {publicFooterPages.map((page) => (
+                <li key={page.path}>
+                  <button
+                    type="button"
+                    className="public-footer-link"
+                    onClick={() => onNavigate(page.path, { source: 'hero', fromLanding: true })}
+                  >
+                    {page.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav className="public-footer-group" aria-label="약관 및 지원 채널">
+            <p className="public-footer-title">약관·지원</p>
+            <ul>
+              {publicFooterPolicyLinks.map((link) => (
+                <li key={link.href}>
+                  <a
+                    className="public-footer-link"
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+        <p className="public-footer-meta">
+          © {new Date().getFullYear()} 가족 돌봄 운영 플랫폼 · 데모 서비스로 운영 중입니다.
+        </p>
+      </footer>
 
       <aside className="public-sticky-cta" aria-label="빠른 시작">
         <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>

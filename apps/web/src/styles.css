@@ -1516,7 +1516,9 @@ svg {
 }
 .public-nav-actions {
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: var(--space-2);
 }
 .public-anchor-link {
@@ -2329,6 +2331,88 @@ svg {
   width: min(100%, var(--content-max));
   margin-inline: auto;
 }
+.public-footer {
+  padding: var(--space-10) clamp(var(--space-4), 5vw, var(--space-10)) var(--space-12);
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+}
+.public-footer-inner {
+  display: grid;
+  max-width: var(--content-max);
+  gap: var(--space-8);
+  margin: 0 auto;
+}
+@media (min-width: 54rem) {
+  .public-footer-inner {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+}
+.public-footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+.public-footer-brand-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  line-height: var(--leading-tight);
+}
+.public-footer-brand-copy strong {
+  color: var(--fg-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.public-footer-brand-copy small {
+  margin-top: 0.15rem;
+  color: var(--fg-subtle);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.08em;
+}
+.public-footer-brand-copy p {
+  max-width: 34ch;
+  margin-top: var(--space-3);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+.public-footer-title {
+  margin-bottom: var(--space-3);
+  color: var(--fg-strong);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+.public-footer-group ul {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+.public-footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.public-footer-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+.public-footer-meta {
+  max-width: var(--content-max);
+  margin: var(--space-8) auto 0;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-subtle);
+  color: var(--fg-muted);
+  font-size: var(--text-xs);
+}
 .public-sticky-cta {
   position: fixed;
   left: 0;
@@ -2363,7 +2447,13 @@ svg {
     width: 100%;
   }
   .public-nav-actions {
-    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  /* Hide in-page anchor links on mobile so the sticky nav stays at two rows
+     (brand + account). The anchor targets remain reachable by scrolling and
+     via the footer links. */
+  .public-anchor-link {
+    display: none;
   }
   .public-nav-actions .btn,
   .public-hero-actions .btn {

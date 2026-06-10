@@ -78,3 +78,20 @@ describe('public anchor offsets', () => {
     expect(rule).toContain('var(--public-nav-height, 4.25rem)')
   })
 })
+
+describe('public nav mobile diet', () => {
+  it('39rem 이하에서는 앵커 링크를 숨겨 sticky 네비가 히어로를 폴드 밖으로 밀지 않는다', () => {
+    const mobileBlock = stylesCss.match(/@media \(max-width: 39rem\) \{([\s\S]*?)\n\}/)?.[1]
+    if (!mobileBlock) throw new Error('styles.css에서 39rem 모바일 블록을 찾지 못했습니다')
+    const rule = mobileBlock.match(/\.public-anchor-link\s*\{[^}]*\}/)?.[0]
+    if (!rule) throw new Error('모바일 블록에서 .public-anchor-link 규칙을 찾지 못했습니다')
+    expect(rule).toContain('display: none')
+  })
+})
+
+describe('public footer', () => {
+  it('푸터 링크(--fg-muted=sand-600)는 푸터 배경(--bg-surface=sand-50)에서 AA 4.5:1 이상이다', () => {
+    const ratio = contrastRatio(tokenOklch('--c-sand-600'), tokenOklch('--c-sand-50'))
+    expect(ratio).toBeGreaterThanOrEqual(4.5)
+  })
+})
