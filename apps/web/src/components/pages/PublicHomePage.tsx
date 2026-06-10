@@ -8,6 +8,11 @@ type PublicHomePageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
 }
 
+const TERMSDESK_BASE = 'https://termsdesk.vercel.app'
+const TERMS_URL = `${TERMSDESK_BASE}/p/family-care-platform/terms-of-service`
+const PRIVACY_URL = `${TERMSDESK_BASE}/p/family-care-platform/privacy-policy`
+const SUPPORT_URL = `${TERMSDESK_BASE}/support/family-care-platform`
+
 const publicWorkflow = [
   {
     step: '1',
@@ -365,20 +370,12 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <a className="public-anchor-link" href="#faq">
             자주 묻는 질문
           </a>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/terms', { source: 'hero', fromLanding: true })}
-          >
+          <a className="public-anchor-link" href={TERMS_URL} target="_blank" rel="noreferrer">
             이용약관
-          </button>
-          <button
-            type="button"
-            className="public-text-link"
-            onClick={() => onNavigate('/privacy', { source: 'hero', fromLanding: true })}
-          >
+          </a>
+          <a className="public-anchor-link" href={PRIVACY_URL} target="_blank" rel="noreferrer">
             개인정보 처리방침
-          </button>
+          </a>
           <button
             type="button"
             className="public-text-link"
@@ -670,6 +667,32 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             </div>
           </form>
         )}
+        <div className="public-hero-actions" aria-label="TermsDesk 공식 지원 채널">
+          <a
+            className="btn btn-secondary"
+            href={`${SUPPORT_URL}?category=site-inquiry`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            사이트 문의
+          </a>
+          <a
+            className="btn btn-secondary"
+            href={`${SUPPORT_URL}?category=partnership`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            제휴 문의
+          </a>
+          <a
+            className="btn btn-secondary"
+            href={`${SUPPORT_URL}?category=bug`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            버그 제보
+          </a>
+        </div>
       </section>
 
       <section className="public-band public-faq" id="faq" aria-labelledby="public-faq-title">

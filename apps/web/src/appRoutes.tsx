@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react'
 
+import { ExternalRedirect } from './components/common/ExternalRedirect'
 import { AnalyticsPage } from './components/pages/AnalyticsPage'
 import { CarePage } from './components/pages/CarePage'
 import { ClaimsPage } from './components/pages/ClaimsPage'
@@ -10,9 +11,7 @@ import { PublicCommunityPage } from './components/pages/PublicCommunityPage'
 import { PublicTutorialPage } from './components/pages/PublicTutorialPage'
 import { LoginPage } from './components/pages/LoginPage'
 import { PlansPage } from './components/pages/PlansPage'
-import { PrivacyPage } from './components/pages/PrivacyPage'
 import { PublicHomePage } from './components/pages/PublicHomePage'
-import { TermsPage } from './components/pages/TermsPage'
 import { PublicPlansPage } from './components/pages/PublicPlansPage'
 import { RegisterPage } from './components/pages/RegisterPage'
 import { SchedulePage } from './components/pages/SchedulePage'
@@ -30,6 +29,10 @@ export type UnauthenticatedRouteIntent = 'public' | 'auth' | 'protected'
 const AUTH_ROUTES: readonly AuthAppRoute[] = ['/login', '/register']
 export type AuthRouteNavigateState = PublicNavigateState
 
+const TERMSDESK_BASE = 'https://termsdesk.vercel.app'
+const TERMS_URL = `${TERMSDESK_BASE}/p/family-care-platform/terms-of-service`
+const PRIVACY_URL = `${TERMSDESK_BASE}/p/family-care-platform/privacy-policy`
+
 const ROUTE_RENDERERS = {
   public: {
     '/': ({ navigate }: PublicRouteContext) => <PublicHomePage onNavigate={navigate} />,
@@ -40,8 +43,8 @@ const ROUTE_RENDERERS = {
     '/tutorial': ({ navigate }: PublicRouteContext) => <PublicTutorialPage onNavigate={navigate} />,
     '/plans': ({ navigate }: PublicRouteContext) => <PublicPlansPage onNavigate={navigate} />,
     '/overview': ({ navigate }: PublicRouteContext) => <PublicOverviewPage onNavigate={navigate} />,
-    '/terms': ({ navigate }: PublicRouteContext) => <TermsPage onNavigate={navigate} />,
-    '/privacy': ({ navigate }: PublicRouteContext) => <PrivacyPage onNavigate={navigate} />,
+    '/terms': () => <ExternalRedirect to={TERMS_URL} />,
+    '/privacy': () => <ExternalRedirect to={PRIVACY_URL} />,
   },
   auth: {
     '/login': ({ navigate, redirectTo }: AuthRouteContext) => (
@@ -130,11 +133,11 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
   },
   {
     path: '/terms',
-    render: ({ navigate }) => <TermsPage onNavigate={navigate} />,
+    render: () => <ExternalRedirect to={TERMS_URL} />,
   },
   {
     path: '/privacy',
-    render: ({ navigate }) => <PrivacyPage onNavigate={navigate} />,
+    render: () => <ExternalRedirect to={PRIVACY_URL} />,
   },
 ]
 
