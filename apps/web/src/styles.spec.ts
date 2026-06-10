@@ -89,9 +89,40 @@ describe('public nav mobile diet', () => {
   })
 })
 
+describe('public nav mid-band wrap', () => {
+  it('네비 컨테이너는 flex-wrap으로 중간 폭(39–47rem)에서 브랜드를 찌부러뜨리지 않고 줄바꿈한다', () => {
+    const rule = stylesCss.match(/\.public-nav\s*\{[^}]*\}/)?.[0]
+    if (!rule) throw new Error('styles.css에서 .public-nav 규칙을 찾지 못했습니다')
+    expect(rule).toContain('flex-wrap: wrap')
+  })
+
+  it('액션 클러스터는 자기 줄로 내려가도 margin-left:auto로 우측 정렬을 유지한다', () => {
+    const rule = stylesCss.match(/\.public-nav-actions\s*\{[^}]*\}/)?.[0]
+    if (!rule) throw new Error('styles.css에서 .public-nav-actions 규칙을 찾지 못했습니다')
+    expect(rule).toContain('margin-left: auto')
+  })
+})
+
 describe('public footer', () => {
   it('푸터 링크(--fg-muted=sand-600)는 푸터 배경(--bg-surface=sand-50)에서 AA 4.5:1 이상이다', () => {
     const ratio = contrastRatio(tokenOklch('--c-sand-600'), tokenOklch('--c-sand-50'))
     expect(ratio).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('태블릿 중간 구간(48–54rem)은 링크 그룹을 2열로 배치하고 브랜드는 전체 행을 차지한다', () => {
+    const midBlock = stylesCss.match(
+      /@media \(min-width: 48rem\) and \(max-width: 53\.99rem\) \{([\s\S]*?)\n\}/,
+    )?.[1]
+    if (!midBlock) throw new Error('styles.css에서 48–54rem 푸터 중간 구간 블록을 찾지 못했습니다')
+    const inner = midBlock.match(/\.public-footer-inner\s*\{[^}]*\}/)?.[0]
+    const brand = midBlock.match(/\.public-footer-brand\s*\{[^}]*\}/)?.[0]
+    expect(inner).toContain('repeat(2, minmax(0, 1fr))')
+    expect(brand).toContain('grid-column: 1 / -1')
+  })
+
+  it('푸터 한국어 태그라인은 keep-all로 단어 중간 개행을 막는다', () => {
+    const rule = stylesCss.match(/\.public-footer-brand-copy p\s*\{[^}]*\}/)?.[0]
+    if (!rule) throw new Error('styles.css에서 .public-footer-brand-copy p 규칙을 찾지 못했습니다')
+    expect(rule).toContain('word-break: keep-all')
   })
 })

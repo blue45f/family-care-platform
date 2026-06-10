@@ -1479,6 +1479,9 @@ svg {
   top: 0;
   z-index: 20;
   display: flex;
+  /* Mid widths (39–47rem): content exceeds one row — wrap the action cluster
+     below the brand instead of crushing the brand label onto two lines. */
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
@@ -1520,6 +1523,9 @@ svg {
   align-items: center;
   justify-content: flex-end;
   gap: var(--space-2);
+  /* Keep the cluster right-aligned even when it wraps onto its own row
+     (space-between treats a lone item per line as flex-start). */
+  margin-left: auto;
 }
 .public-anchor-link {
   min-height: 2.5rem;
@@ -2342,6 +2348,17 @@ svg {
   gap: var(--space-8);
   margin: 0 auto;
 }
+/* Mid band (48–54rem): the link groups grew to 5+3 items — keep them as two
+   side-by-side columns instead of one long stacked column on tablets. */
+@media (min-width: 48rem) and (max-width: 53.99rem) {
+  .public-footer-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6);
+  }
+  .public-footer-brand {
+    grid-column: 1 / -1;
+  }
+}
 @media (min-width: 54rem) {
   .public-footer-inner {
     grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
@@ -2376,6 +2393,8 @@ svg {
   color: var(--fg-muted);
   font-size: var(--text-sm);
   line-height: var(--leading-normal);
+  /* 34ch column wraps this Korean tagline mid-word without keep-all. */
+  word-break: keep-all;
 }
 .public-footer-title {
   margin-bottom: var(--space-3);
