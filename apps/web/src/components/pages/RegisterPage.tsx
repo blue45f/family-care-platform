@@ -74,29 +74,9 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
   })
 
   return (
-    <main
-      className="auth-page"
-      aria-labelledby="register-title"
-      style={{
-        minHeight: '100dvh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--space-5) var(--space-4)',
-        background: 'var(--bg-app)',
-      }}
-    >
-      <div className="auth-card-wrap" style={{ width: '100%', maxWidth: '26rem' }}>
-        <div
-          className="auth-brand"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-3)',
-            marginBottom: 'var(--space-5)',
-            justifyContent: 'center',
-          }}
-        >
+    <main className="auth-page" aria-labelledby="register-title">
+      <div className="auth-card-wrap">
+        <div className="auth-brand">
           <span className="brand-mark" aria-hidden="true">
             <Icon name="heart" size={20} />
           </span>
@@ -107,11 +87,11 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
         </div>
 
         <Card>
-          <div className="stack-sm" style={{ marginBottom: 'var(--space-5)' }}>
-            <h1 id="register-title" className="card-title" style={{ fontSize: 'var(--text-xl)' }}>
+          <div className="stack-sm auth-card-head">
+            <h1 id="register-title" className="card-title">
               회원가입
             </h1>
-            <p className="card-subtitle" style={{ marginTop: 0 }}>
+            <p className="card-subtitle">
               {locationState.fromLanding
                 ? '데모 문의 흐름으로 왔더라도, 담당자 전용 계정은 바로 만들 수 있습니다.'
                 : locationState.source === 'pricing_button'
@@ -121,12 +101,7 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
           </div>
 
           {formError ? (
-            <p
-              className="feedback feedback-error"
-              role="alert"
-              aria-live="assertive"
-              style={{ marginBottom: 'var(--space-4)' }}
-            >
+            <p className="feedback feedback-error" role="alert" aria-live="assertive">
               {formError}
             </p>
           ) : null}
@@ -195,19 +170,11 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
             </Button>
           </form>
 
-          <p
-            style={{
-              marginTop: 'var(--space-5)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--fg-muted)',
-              textAlign: 'center',
-            }}
-          >
+          <p className="auth-switch">
             이미 계정이 있으신가요?{' '}
             <button
               type="button"
               className="inline-action"
-              style={{ marginLeft: 0 }}
               onClick={() =>
                 onNavigate('/login', {
                   source: locationState.source,

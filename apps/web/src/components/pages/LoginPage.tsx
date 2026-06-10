@@ -85,29 +85,9 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
   const busy = isSubmitting || isDemoLoading
 
   return (
-    <main
-      className="auth-page"
-      aria-labelledby="login-title"
-      style={{
-        minHeight: '100dvh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'var(--space-5) var(--space-4)',
-        background: 'var(--bg-app)',
-      }}
-    >
-      <div className="auth-card-wrap" style={{ width: '100%', maxWidth: '26rem' }}>
-        <div
-          className="auth-brand"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-3)',
-            marginBottom: 'var(--space-5)',
-            justifyContent: 'center',
-          }}
-        >
+    <main className="auth-page" aria-labelledby="login-title">
+      <div className="auth-card-wrap">
+        <div className="auth-brand">
           <span className="brand-mark" aria-hidden="true">
             <Icon name="heart" size={20} />
           </span>
@@ -118,11 +98,11 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
         </div>
 
         <Card>
-          <div className="stack-sm" style={{ marginBottom: 'var(--space-5)' }}>
-            <h1 id="login-title" className="card-title" style={{ fontSize: 'var(--text-xl)' }}>
+          <div className="stack-sm auth-card-head">
+            <h1 id="login-title" className="card-title">
               로그인
             </h1>
-            <p className="card-subtitle" style={{ marginTop: 0 }}>
+            <p className="card-subtitle">
               {locationState.fromLanding
                 ? '데모 문의 후 이어진 사용자님이라면, 담당자 계정으로 바로 로그인해 작업 화면을 확인하세요.'
                 : locationState.source === 'pricing_button'
@@ -132,46 +112,15 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
           </div>
 
           {/* 데모 안내: 자격 증명을 눈에 보이게 노출 + 원클릭 둘러보기 */}
-          <section
-            aria-labelledby={`${demoCredsId}-label`}
-            className="auth-demo"
-            style={{
-              background: 'var(--accent-soft)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
-              padding: 'var(--space-4)',
-              marginBottom: 'var(--space-5)',
-            }}
-          >
-            <p
-              id={`${demoCredsId}-label`}
-              style={{
-                fontSize: 'var(--text-sm)',
-                fontWeight: 'var(--weight-semibold)',
-                color: 'var(--accent-soft-fg)',
-                marginBottom: 'var(--space-2)',
-              }}
-            >
+          <section aria-labelledby={`${demoCredsId}-label`} className="auth-demo">
+            <p id={`${demoCredsId}-label`} className="auth-demo-label">
               처음이신가요? 데모 계정으로 바로 둘러보세요
             </p>
-            <dl
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto 1fr',
-                gap: 'var(--space-1) var(--space-3)',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--fg-default)',
-                margin: '0 0 var(--space-3)',
-              }}
-            >
-              <dt style={{ color: 'var(--fg-muted)' }}>이메일</dt>
-              <dd style={{ margin: 0, fontWeight: 'var(--weight-medium)' }}>
-                {DEMO_CREDENTIALS.email}
-              </dd>
-              <dt style={{ color: 'var(--fg-muted)' }}>비밀번호</dt>
-              <dd style={{ margin: 0, fontWeight: 'var(--weight-medium)' }}>
-                {DEMO_CREDENTIALS.password}
-              </dd>
+            <dl>
+              <dt>이메일</dt>
+              <dd>{DEMO_CREDENTIALS.email}</dd>
+              <dt>비밀번호</dt>
+              <dd>{DEMO_CREDENTIALS.password}</dd>
             </dl>
             <Button block onClick={handleDemoLogin} disabled={busy} aria-busy={isDemoLoading}>
               <Icon name="arrow-right" size={16} />
@@ -180,12 +129,7 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
           </section>
 
           {formError ? (
-            <p
-              className="feedback feedback-error"
-              role="alert"
-              aria-live="assertive"
-              style={{ marginBottom: 'var(--space-4)' }}
-            >
+            <p className="feedback feedback-error" role="alert" aria-live="assertive">
               {formError}
             </p>
           ) : null}
@@ -223,19 +167,11 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
             </Button>
           </form>
 
-          <p
-            style={{
-              marginTop: 'var(--space-5)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--fg-muted)',
-              textAlign: 'center',
-            }}
-          >
+          <p className="auth-switch">
             아직 계정이 없으신가요?{' '}
             <button
               type="button"
               className="inline-action"
-              style={{ marginLeft: 0 }}
               onClick={() =>
                 onNavigate('/register', {
                   source: locationState.source,

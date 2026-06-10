@@ -32,9 +32,11 @@ wellness landing page. The neutrals and copy do the warmth; sage does the trust.
 
 ### Sage accent (hue ~150)
 
-`--accent` = `oklch(0.585 0.09 150)`, hover `0.5`, active `0.42`, soft fill
+`--accent` = `oklch(0.545 0.088 150)`, hover `0.47`, active `0.4`, soft fill
 `--accent-soft` = sage-100, soft fg = sage-700. Focus ring uses
-`oklch(0.585 0.09 150 / 0.45)`.
+`oklch(0.545 0.088 150 / 0.45)`. Accent L is capped at 0.545 so 14px button
+labels in `--fg-on-accent` clear WCAG AA 4.5:1 (≈4.6:1 with rounding headroom;
+guarded by `apps/web/src/styles.spec.ts`).
 
 ### Clay secondary (hue ~45) and status
 

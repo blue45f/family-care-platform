@@ -28,9 +28,9 @@
   --c-sage-200: oklch(0.88 0.052 151);
   --c-sage-300: oklch(0.79 0.072 150);
   --c-sage-400: oklch(0.68 0.085 150);
-  --c-sage-500: oklch(0.585 0.09 150);
-  --c-sage-600: oklch(0.5 0.082 150);
-  --c-sage-700: oklch(0.42 0.068 150);
+  --c-sage-500: oklch(0.545 0.088 150); /* ≥4.5:1 vs --fg-on-accent (AA, 14px labels) */
+  --c-sage-600: oklch(0.47 0.082 150);
+  --c-sage-700: oklch(0.4 0.068 150);
 
   /* --- Clay (secondary warm accent, used sparingly) — hue ~45 --------- */
   --c-clay-100: oklch(0.93 0.03 47);
@@ -71,7 +71,7 @@
   --accent-active: var(--c-sage-700);
   --accent-soft: var(--c-sage-100);
   --accent-soft-fg: var(--c-sage-700);
-  --accent-ring: oklch(0.585 0.09 150 / 0.45);
+  --accent-ring: oklch(0.545 0.088 150 / 0.45);
 
   /* --- Typography ----------------------------------------------------- */
   --font-sans:
@@ -557,6 +557,73 @@ svg {
   .auth-splash-dot {
     animation: none;
   }
+}
+
+/* --- Auth pages (login/register) -------------------------------------- */
+.auth-page {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5) var(--space-4);
+  background: var(--bg-app);
+}
+.auth-card-wrap {
+  width: 100%;
+  max-width: 26rem;
+}
+.auth-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.auth-card-head {
+  margin-bottom: var(--space-5);
+}
+.auth-page .card-title {
+  font-size: var(--text-xl);
+}
+.auth-page .card-subtitle {
+  margin-top: 0;
+}
+.auth-demo {
+  background: var(--accent-soft);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+.auth-demo-label {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-soft-fg);
+  margin-bottom: var(--space-2);
+}
+.auth-demo dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--fg-default);
+}
+.auth-demo dt {
+  color: var(--fg-muted);
+}
+.auth-demo dd {
+  margin: 0;
+  font-weight: var(--weight-medium);
+}
+.auth-switch {
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  text-align: center;
+}
+.auth-switch .inline-action {
+  margin-left: 0;
 }
 
 /* --- Main column ------------------------------------------------------ */
@@ -1516,6 +1583,11 @@ svg {
 }
 .public-band {
   padding: var(--space-10) clamp(var(--space-4), 5vw, var(--space-10));
+}
+.public-band[id] {
+  /* Anchor jumps must clear the sticky nav (wrap-dependent height; PublicHomePage
+     keeps --public-nav-height in sync). Fallback = single-row nav min-height. */
+  scroll-margin-top: calc(var(--public-nav-height, 4.25rem) + var(--space-4));
 }
 .public-section-head {
   display: flex;

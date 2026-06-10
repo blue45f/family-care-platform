@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react'
 
 import type { AppRoute } from '../../routeConfig'
 import type { PublicNavigateState } from '../../routeConfig'
@@ -204,6 +204,8 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
   const [demoLead, setDemoLead] = useState<DemoLead>(readDemoLeadDraft)
   const [leadErrors, setLeadErrors] = useState<DemoLeadValidationError>({})
   const [leadSubmitted, setLeadSubmitted] = useState(false)
+  const pageRef = useRef<HTMLElement | null>(null)
+  const navRef = useRef<HTMLElement | null>(null)
 
   const leadCenterErrorId = `${leadFormId}-center-error`
   const leadNameErrorId = `${leadFormId}-name-error`
@@ -247,6 +249,29 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
       setActiveFaqQuestion(visibleFaqs[0].question)
     }
   }, [activeFaqQuestion, visibleFaqs])
+
+  useEffect(() => {
+    const page = pageRef.current
+    const nav = navRef.current
+    if (!page || !nav || typeof ResizeObserver === 'undefined') {
+      return
+    }
+
+    // The sticky nav height varies as its links wrap (≈4.25rem wide, ≈20rem narrow).
+    // Expose it so .public-band[id] anchor jumps land below the nav (scroll-margin-top).
+    const syncNavHeight = () => {
+      page.style.setProperty('--public-nav-height', `${nav.offsetHeight}px`)
+    }
+
+    syncNavHeight()
+    const observer = new ResizeObserver(syncNavHeight)
+    observer.observe(nav)
+
+    return () => {
+      observer.disconnect()
+      page.style.removeProperty('--public-nav-height')
+    }
+  }, [])
 
   const resetLeadDraft = () => {
     setLeadSubmitted(false)
@@ -308,8 +333,8 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
   }
 
   return (
-    <main className="public-page" aria-labelledby="public-home-title">
-      <header className="public-nav" aria-label="공개 사이트 내비게이션">
+    <main className="public-page" aria-labelledby="public-home-title" ref={pageRef}>
+      <header className="public-nav" aria-label="공개 사이트 내비게이션" ref={navRef}>
         <button type="button" className="public-brand" onClick={() => onNavigate('/')}>
           <span className="brand-mark" aria-hidden="true">
             <Icon name="heart" size={18} />
