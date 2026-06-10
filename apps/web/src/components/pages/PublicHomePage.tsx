@@ -9,8 +9,6 @@ type PublicHomePageProps = {
 }
 
 const TERMSDESK_BASE = 'https://termsdesk.vercel.app'
-const TERMS_URL = `${TERMSDESK_BASE}/p/family-care-platform/terms-of-service`
-const PRIVACY_URL = `${TERMSDESK_BASE}/p/family-care-platform/privacy-policy`
 const SUPPORT_URL = `${TERMSDESK_BASE}/support/family-care-platform`
 
 const publicWorkflow = [
@@ -112,11 +110,13 @@ const publicFooterPages = [
   { label: '요금제', path: '/plans' },
 ] as const satisfies readonly { label: string; path: AppRoute }[]
 
-const publicFooterPolicyLinks = [
-  { label: '이용약관', href: TERMS_URL },
-  { label: '개인정보 처리방침', href: PRIVACY_URL },
-  { label: '지원 채널', href: SUPPORT_URL },
-] as const
+/** 약관·개인정보는 내부 페이지(TermsDesk 게시본 렌더), 지원 보드만 외부 링크. */
+const publicFooterPolicyRoutes = [
+  { label: '이용약관', path: '/terms' },
+  { label: '개인정보 처리방침', path: '/privacy' },
+] as const satisfies readonly { label: string; path: AppRoute }[]
+
+const publicFooterSupportLink = { label: '지원 채널', href: SUPPORT_URL } as const
 
 type DemoLead = {
   centerName: string
@@ -793,18 +793,27 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <nav className="public-footer-group" aria-label="약관 및 지원 채널">
             <p className="public-footer-title">약관·지원</p>
             <ul>
-              {publicFooterPolicyLinks.map((link) => (
-                <li key={link.href}>
-                  <a
+              {publicFooterPolicyRoutes.map((link) => (
+                <li key={link.path}>
+                  <button
+                    type="button"
                     className="public-footer-link"
-                    href={link.href}
-                    target="_blank"
-                    rel="noreferrer"
+                    onClick={() => onNavigate(link.path, { fromLanding: true })}
                   >
                     {link.label}
-                  </a>
+                  </button>
                 </li>
               ))}
+              <li>
+                <a
+                  className="public-footer-link"
+                  href={publicFooterSupportLink.href}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {publicFooterSupportLink.label}
+                </a>
+              </li>
             </ul>
           </nav>
         </div>

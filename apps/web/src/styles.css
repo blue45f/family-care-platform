@@ -2812,3 +2812,90 @@ svg {
   gap: var(--space-2);
   justify-content: center;
 }
+
+/* ================================================ Legal (TermsDesk 게시본) */
+/* /terms·/privacy 내부 렌더. 공개(셸 없음) 모드에선 페이지 패딩을 직접
+   제공하고, 인증 셸(.content) 안에서는 셸 패딩에 맡긴다. */
+.legal-page {
+  width: min(100%, 52rem);
+  margin-inline: auto;
+  padding: var(--space-5) var(--space-4) var(--space-12);
+}
+.content .legal-page {
+  padding: 0;
+}
+.legal-doc-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-5);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+.legal-article {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 68ch;
+}
+.legal-article h2 {
+  margin-top: var(--space-4);
+  font-size: var(--text-lg);
+}
+.legal-article h2:first-child {
+  margin-top: 0;
+}
+.legal-article h3,
+.legal-article h4 {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+}
+.legal-article p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  white-space: pre-line;
+}
+.legal-article ul,
+.legal-article ol {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-6);
+  font-size: var(--text-sm);
+}
+.legal-trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-top: var(--space-8);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+}
+.legal-trust-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.legal-trust-list li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.legal-trust-list strong {
+  color: var(--fg-strong);
+  font-weight: var(--weight-semibold);
+}
+.legal-trust code {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-xs);
+  background: var(--bg-sunken);
+  color: var(--fg-strong);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+}
