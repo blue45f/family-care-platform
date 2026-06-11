@@ -29,13 +29,13 @@ describe('PolicyPage', () => {
     expect(markup).toContain('홈으로')
   })
 
-  it('개인정보 라우트는 routeConfig의 제목·설명을 그대로 쓴다', () => {
+  it('개인정보 라우트는 routeConfig의 제목을 쓰고 설명 문구는 렌더하지 않는다', () => {
     const markup = renderToStaticMarkup(
       createElement(PolicyPage, { route: '/privacy', onNavigate: () => undefined }),
     )
 
     expect(markup).toContain('개인정보 처리방침')
-    expect(markup).toContain('수집·보관·파기 정책')
+    expect(markup).not.toContain('수집·보관·파기 정책')
   })
 })
 

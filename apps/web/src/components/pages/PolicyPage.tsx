@@ -174,7 +174,6 @@ export const PolicyPage = ({ route, onNavigate }: PolicyPageProps) => {
       <PageHeader
         eyebrow={def.eyebrow}
         title={def.title}
-        description={def.description}
         actions={
           <Button variant="secondary" onClick={() => onNavigate('/')}>
             홈으로
