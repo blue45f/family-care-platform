@@ -85,6 +85,7 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
         mainId={ROUTE_MAIN_ID}
         userName={auth.user?.name}
         onLogout={auth.logout}
+        isAdmin={auth.user?.role === 'admin'}
       >
         {isFallback ? (
           <p className="feedback feedback-warning" role="status" aria-live="polite">

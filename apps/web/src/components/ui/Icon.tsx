@@ -25,6 +25,12 @@ export type IconName =
   | 'inbox'
   | 'heart'
   | 'logout'
+  | 'chat'
+  | 'users'
+  | 'shield'
+  | 'paperclip'
+  | 'trash'
+  | 'send'
 
 type IconProps = SVGProps<SVGSVGElement> & {
   name: IconName
@@ -167,6 +173,48 @@ const PATHS: Record<IconName, ReactElement> = {
       <path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4" />
       <path d="M16 17l5-5-5-5" />
       <path d="M21 12H9" />
+    </>
+  ),
+  chat: (
+    <>
+      <path d="M4 5.5h16v11H10l-4 3.5v-3.5H4Z" />
+      <path d="M8 9.5h8" />
+      <path d="M8 12.75h5" />
+    </>
+  ),
+  users: (
+    <>
+      <circle cx="9" cy="8.5" r="3.25" />
+      <path d="M3.5 19.5c.6-3 2.8-4.75 5.5-4.75s4.9 1.75 5.5 4.75" />
+      <path d="M15.5 5.75a3.25 3.25 0 0 1 0 5.9" />
+      <path d="M17 14.9c1.95.55 3.2 2 3.6 4.1" />
+    </>
+  ),
+  shield: (
+    <>
+      <path d="M12 3.5 19 6v5.5c0 4.4-2.9 7.6-7 9-4.1-1.4-7-4.6-7-9V6Z" />
+      <path d="m9 11.8 2.2 2.2 3.8-4" />
+    </>
+  ),
+  paperclip: (
+    <>
+      <path d="m8.5 11.5 6.1-6.1a3 3 0 0 1 4.25 4.25l-7.4 7.4a4.6 4.6 0 0 1-6.5-6.5l7.15-7.15" />
+      <path d="m8.5 11.5 4.4-4.4" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M4.75 6.5h14.5" />
+      <path d="M9 6.5V4.75h6V6.5" />
+      <path d="M6.5 6.5 7.4 19a1.5 1.5 0 0 0 1.5 1.4h6.2a1.5 1.5 0 0 0 1.5-1.4l.9-12.5" />
+      <path d="M10 10.25v6.5" />
+      <path d="M14 10.25v6.5" />
+    </>
+  ),
+  send: (
+    <>
+      <path d="m4 11.5 16-7-5.5 16-2.8-6.4Z" />
+      <path d="M11.7 14.1 20 4.5" />
     </>
   ),
 }

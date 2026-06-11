@@ -7,11 +7,28 @@ import type {
   Claim,
   ClaimDraft,
   ClaimStatus,
+  CommunityComment,
+  CommunityCommentInput,
+  CommunityPostDetail,
+  CommunityPostInput,
+  CommunityPostSummary,
+  ConversationDetail,
+  ConversationSummary,
+  DirectMessage,
+  DirectMessageInput,
+  MemberUser,
+  MessageRecipient,
   ScheduleStatus,
   RevenuePlan,
   RevenuePlanDraft,
   Settlement,
   SettlementDraft,
+  SupportMessage,
+  SupportMessageInput,
+  SupportThreadDetail,
+  SupportThreadInput,
+  SupportThreadStatus,
+  SupportThreadSummary,
 } from './types'
 import { authHeader } from './auth/useAuth'
 
@@ -101,4 +118,79 @@ export const updateAdminPlan = (body: RevenuePlanDraft) =>
   request<RevenuePlan>('/admin/plans', {
     method: 'PATCH',
     body: JSON.stringify(body),
+  })
+
+/* ---- 커뮤니티 게시판 ---- */
+
+export const fetchCommunityPosts = (filter: { category?: string; q?: string } = {}) => {
+  const params = new URLSearchParams()
+  if (filter.category) {
+    params.set('category', filter.category)
+  }
+  if (filter.q) {
+    params.set('q', filter.q)
+  }
+  const query = params.toString()
+  return request<CommunityPostSummary[]>(`/community/posts${query ? `?${query}` : ''}`)
+}
+export const fetchCommunityPost = (postId: number) =>
+  request<CommunityPostDetail>(`/community/posts/${postId}`)
+export const postCommunityPost = (body: CommunityPostInput) =>
+  request<CommunityPostDetail>('/community/posts', { method: 'POST', body: JSON.stringify(body) })
+export const postCommunityComment = (postId: number, body: CommunityCommentInput) =>
+  request<CommunityComment>(`/community/posts/${postId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+// 비가역 삭제는 POST :id/delete 컨벤션(DELETE 메서드는 이 API 표면에서 쓰지 않는다).
+export const deleteCommunityComment = (commentId: number) =>
+  request<CommunityComment>(`/community/comments/${commentId}/delete`, { method: 'POST' })
+export const deleteCommunityPost = (postId: number) =>
+  request<{ deleted: true }>(`/community/posts/${postId}/delete`, { method: 'POST' })
+export const deleteCommunityAttachment = (postId: number, attachmentId: number) =>
+  request<CommunityPostDetail>(`/community/posts/${postId}/attachments/${attachmentId}/delete`, {
+    method: 'POST',
+  })
+export const patchCommunityVisibility = (postId: number, hidden: boolean) =>
+  request<CommunityPostSummary>(`/community/posts/${postId}/visibility`, {
+    method: 'PATCH',
+    body: JSON.stringify({ hidden }),
+  })
+
+/* ---- 1:1 상담(폴링) ---- */
+
+export const fetchSupportThreads = () => request<SupportThreadSummary[]>('/support/threads')
+export const fetchSupportThread = (threadId: number) =>
+  request<SupportThreadDetail>(`/support/threads/${threadId}`)
+export const postSupportThread = (body: SupportThreadInput) =>
+  request<SupportThreadDetail>('/support/threads', { method: 'POST', body: JSON.stringify(body) })
+export const postSupportMessage = (threadId: number, body: SupportMessageInput) =>
+  request<SupportMessage>(`/support/threads/${threadId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+export const patchSupportStatus = (threadId: number, status: SupportThreadStatus) =>
+  request<SupportThreadSummary>(`/support/threads/${threadId}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
+
+/* ---- 쪽지(1:1 비실시간 메시지) ---- */
+
+export const fetchMessageRecipients = () => request<MessageRecipient[]>('/messages/recipients')
+export const fetchConversations = () => request<ConversationSummary[]>('/messages/conversations')
+export const fetchConversation = (partnerId: number) =>
+  request<ConversationDetail>(`/messages/conversations/${partnerId}`)
+export const postDirectMessage = (body: DirectMessageInput) =>
+  request<DirectMessage>('/messages', { method: 'POST', body: JSON.stringify(body) })
+export const postConversationRead = (partnerId: number) =>
+  request<{ updated: number }>(`/messages/conversations/${partnerId}/read`, { method: 'POST' })
+
+/* ---- 어드민 회원 관리 ---- */
+
+export const fetchAdminUsers = () => request<MemberUser[]>('/admin/users')
+export const patchUserSuspension = (userId: number, suspended: boolean) =>
+  request<MemberUser>(`/admin/users/${userId}/suspension`, {
+    method: 'PATCH',
+    body: JSON.stringify({ suspended }),
   })

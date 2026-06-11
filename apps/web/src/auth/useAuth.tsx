@@ -24,6 +24,10 @@ export type AuthUser = {
   id: string | number
   email: string
   name: string
+  /** 서버 역할(operator/admin). 어드민 메뉴/관리 동작 노출 판단에 사용한다. */
+  role?: 'operator' | 'admin'
+  /** 기업/기관 회원의 소속 기관명(선택). */
+  organization?: string
 }
 
 type AuthResponse = {
@@ -40,7 +44,12 @@ type AuthContextValue = {
   /** 부트스트랩(me 확인)이 끝나기 전 true. 라우트 게이트의 깜빡임 방지용. */
   isResolving: boolean
   login: (email: string, password: string) => Promise<AuthUser>
-  register: (email: string, password: string, name: string) => Promise<AuthUser>
+  register: (
+    email: string,
+    password: string,
+    name: string,
+    organization?: string,
+  ) => Promise<AuthUser>
   logout: () => void
 }
 
@@ -200,17 +209,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return nextUser
   }, [])
 
-  const register = useCallback(async (email: string, password: string, name: string) => {
-    const { token, user: nextUser } = await requestAuth(
-      '/auth/register',
-      { email, password, name },
-      '회원가입에 실패했습니다. 입력 내용을 확인해 주세요.',
-    )
-    writeStoredToken(token)
-    setUser(nextUser)
-    setStatus('authenticated')
-    return nextUser
-  }, [])
+  const register = useCallback(
+    async (email: string, password: string, name: string, organization?: string) => {
+      const { token, user: nextUser } = await requestAuth(
+        '/auth/register',
+        // 기관명은 입력했을 때만 보낸다(개인 회원 요청 본문은 기존과 동일).
+        { email, password, name, ...(organization?.trim() ? { organization } : {}) },
+        '회원가입에 실패했습니다. 입력 내용을 확인해 주세요.',
+      )
+      writeStoredToken(token)
+      setUser(nextUser)
+      setStatus('authenticated')
+      return nextUser
+    },
+    [],
+  )
 
   const logout = useCallback(() => {
     writeStoredToken(null)

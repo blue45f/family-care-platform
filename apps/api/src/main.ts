@@ -2,6 +2,7 @@ import 'reflect-metadata'
 
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
+import type { NestExpressApplication } from '@nestjs/platform-express'
 import type { NextFunction, Request, Response } from 'express'
 
 import { AppModule } from './app.module'
@@ -33,7 +34,11 @@ function applySecurityHeaders(_request: Request, response: Response, next: NextF
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule)
+  // 기본 body parser(100kb)를 끄고 직접 등록한다 — 커뮤니티 첨부(파일당 2MB, 최대 4개)를
+  // base64 data URL JSON으로 받으므로 한도를 12mb로 올린다(2MB×4 ≈ base64 10.7MB + 본문).
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false })
+  app.useBodyParser('json', { limit: '12mb' })
+  app.useBodyParser('urlencoded', { extended: true, limit: '12mb' })
   const port = Number(process.env.PORT ?? 3001)
   const logger = new Logger('Bootstrap')
   const allowedOriginPatterns = resolveAllowedOrigins()

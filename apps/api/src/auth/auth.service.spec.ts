@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { AuthService } from './auth.service'
+import type { AuthenticatedUser } from './auth.model'
+
+const adminActor: AuthenticatedUser = {
+  id: 1,
+  email: 'demo@familycare.app',
+  name: '데모 관리자',
+  role: 'admin',
+}
 
 // 테스트 환경(VITEST)에서는 JsonCollectionStore가 인메모리로만 동작하고 save()는 no-op이라
 // 매 인스턴스가 빈 seed에서 출발한다. onModuleInit는 Nest 런타임이 호출하므로 직접 부른다.
@@ -104,5 +112,96 @@ describe('AuthService', () => {
     const profile = service.getProfile(user.id)
     expect(profile.email).toBe('me@example.com')
     expect((profile as Record<string, unknown>).passwordHash).toBeUndefined()
+  })
+
+  it('기업/기관 회원은 소속 기관명을 남길 수 있고, 빈 값은 미지정으로 정규화된다', () => {
+    const corp = service.register({
+      email: 'org@example.com',
+      name: '기관 담당자',
+      password: 'secret123',
+      organization: '  행복요양센터  ',
+    })
+    expect(corp.user.organization).toBe('행복요양센터')
+
+    const personal = service.register({
+      email: 'personal@example.com',
+      name: '개인',
+      password: 'secret123',
+      organization: '   ',
+    })
+    expect(personal.user.organization).toBeUndefined()
+
+    expect(() =>
+      service.register({
+        email: 'long@example.com',
+        name: '김김',
+        password: 'secret123',
+        organization: 'x'.repeat(81),
+      }),
+    ).toThrow('기관명은 80자 이내여야 합니다.')
+  })
+
+  it('회원 목록은 가입 순으로 passwordHash 없이 반환한다', () => {
+    service.register({ email: 'u1@example.com', name: '일번', password: 'secret123' })
+    service.register({ email: 'u2@example.com', name: '이번', password: 'secret123' })
+
+    const users = service.listUsers()
+    expect(users.map((user) => user.id)).toEqual([1, 2, 3])
+    for (const user of users) {
+      expect((user as Record<string, unknown>).passwordHash).toBeUndefined()
+    }
+  })
+
+  it('이용 정지된 계정은 로그인과 기존 토큰 검증이 모두 막힌다', () => {
+    const { token, user } = service.register({
+      email: 'suspend@example.com',
+      name: '정지 대상',
+      password: 'secret123',
+    })
+
+    const suspended = service.setSuspension(user.id, { suspended: true }, adminActor)
+    expect(suspended.suspended).toBe(true)
+
+    expect(() => service.login({ email: 'suspend@example.com', password: 'secret123' })).toThrow(
+      '이용이 정지된 계정입니다. 운영팀에 문의해 주세요.',
+    )
+    expect(service.verifyBearerToken(token)).toBeNull()
+
+    // 해제하면 즉시 복구된다(같은 토큰도 다시 유효).
+    service.setSuspension(user.id, { suspended: false }, adminActor)
+    expect(service.verifyBearerToken(token)?.id).toBe(user.id)
+    expect(() =>
+      service.login({ email: 'suspend@example.com', password: 'secret123' }),
+    ).not.toThrow()
+  })
+
+  it('본인/관리자 계정 정지와 없는 회원 정지는 거부한다', () => {
+    expect(() => service.setSuspension(adminActor.id, { suspended: true }, adminActor)).toThrow(
+      '본인 계정은 정지할 수 없습니다.',
+    )
+
+    const otherAdmin = service.register({
+      email: 'admin2@example.com',
+      name: '부관리자',
+      password: 'secret123',
+      role: 'admin',
+    })
+    // 공개 가입의 role 지정은 무시된다(권한 상승 차단) — 항상 operator 로 생성.
+    expect(otherAdmin.user.role).toBe('operator')
+    // 관리자 정지 거부 분기는 내부 상태 승격으로 검증한다(승격은 관리자 전용 영역).
+    const items = (service as unknown as { state: { items: Array<{ id: number; role: string }> } })
+      .state.items
+    items.find((u) => u.id === otherAdmin.user.id)!.role = 'admin'
+    expect(() =>
+      service.setSuspension(otherAdmin.user.id, { suspended: true }, adminActor),
+    ).toThrow('관리자 계정은 정지할 수 없습니다.')
+
+    expect(() => service.setSuspension(999, { suspended: true }, adminActor)).toThrow(
+      '회원을 찾을 수 없습니다.',
+    )
+    const normal = service.register({ email: 'n@example.com', name: '회원', password: 'secret123' })
+    expect(() =>
+      service.setSuspension(normal.user.id, { suspended: 'yes' } as never, adminActor),
+    ).toThrow('suspended는 true/false여야 합니다.')
   })
 })

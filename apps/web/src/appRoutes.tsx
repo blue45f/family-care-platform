@@ -3,8 +3,11 @@ import type { ReactElement } from 'react'
 import { AnalyticsPage } from './components/pages/AnalyticsPage'
 import { CarePage } from './components/pages/CarePage'
 import { ClaimsPage } from './components/pages/ClaimsPage'
+import { CommunityPage } from './components/pages/CommunityPage'
 import { DashboardPage } from './components/pages/DashboardPage'
 import { GuidePage } from './components/pages/GuidePage'
+import { MembersPage } from './components/pages/MembersPage'
+import { MessagesPage } from './components/pages/MessagesPage'
 import { PublicOverviewPage } from './components/pages/PublicOverviewPage'
 import { PublicCommunityPage } from './components/pages/PublicCommunityPage'
 import { PublicTutorialPage } from './components/pages/PublicTutorialPage'
@@ -16,6 +19,7 @@ import { PublicPlansPage } from './components/pages/PublicPlansPage'
 import { RegisterPage } from './components/pages/RegisterPage'
 import { SchedulePage } from './components/pages/SchedulePage'
 import { SettlementsPage } from './components/pages/SettlementsPage'
+import { SupportPage } from './components/pages/SupportPage'
 import type { AppRoute, AuthRoute, PublicLandingRoute, PublicNavigateState } from './routeConfig'
 import { publicLandingRoutes } from './routeConfig'
 import type { PlatformData } from './state/usePlatformData'
@@ -61,9 +65,16 @@ export type PublicRouteNavigateState = PublicNavigateState
 export type PublicRouteContext = {
   navigate: (path: AppRoute, state?: PublicRouteNavigateState) => void
 }
+/** 보호 라우트 간 이동 시 전달하는 상태(쪽지 프리필 등). */
+export type ProtectedNavigateState = {
+  source?: string
+  /** 쪽지함으로 이동할 때 미리 선택할 상대(커뮤니티 "작성자에게 쪽지" 동선). */
+  recipientId?: number
+  recipientName?: string
+}
 export type ProtectedRouteContext = {
   data: PlatformData
-  navigate: (path: AppRoute, state?: { source?: string }) => void
+  navigate: (path: AppRoute, state?: ProtectedNavigateState) => void
 }
 export type AuthRouteContext = {
   navigate: (path: AppRoute, state?: AuthRouteNavigateState) => void
@@ -108,6 +119,18 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
     render: ({ data, navigate }) => <ClaimsPage data={data} onNavigate={navigate} />,
   },
   {
+    path: '/community',
+    render: ({ navigate }) => <CommunityPage onNavigate={navigate} />,
+  },
+  {
+    path: '/messages',
+    render: ({ navigate }) => <MessagesPage onNavigate={navigate} />,
+  },
+  {
+    path: '/support',
+    render: ({ navigate }) => <SupportPage onNavigate={navigate} />,
+  },
+  {
     path: '/analytics',
     render: ({ data, navigate }) => <AnalyticsPage data={data} onNavigate={navigate} />,
   },
@@ -124,12 +147,12 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
     render: ({ navigate }) => <GuidePage onNavigate={navigate} />,
   },
   {
-    path: '/overview',
-    render: ({ navigate }) => <PublicOverviewPage onNavigate={navigate} />,
+    path: '/members',
+    render: ({ navigate }) => <MembersPage onNavigate={navigate} />,
   },
   {
-    path: '/community',
-    render: ({ navigate }) => <PublicCommunityPage onNavigate={navigate} />,
+    path: '/overview',
+    render: ({ navigate }) => <PublicOverviewPage onNavigate={navigate} />,
   },
   {
     path: '/terms',

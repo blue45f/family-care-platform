@@ -74,6 +74,10 @@ API 서버의 도메인 데이터(`schedules`, `care-logs`, `settlements`, `clai
 
 - 구현: `apps/api/src/common/json-store.ts`의 재사용 헬퍼 `JsonCollectionStore<T>`. 각 서비스(`@Injectable` 싱글톤)가 컬렉션별 JSON 파일 하나를 백킹 스토어로 가집니다.
   - `schedules.json`, `care-logs.json`, `settlements.json`, `claims.json` — 자동 증가 id(`seq`)를 사용하는 컬렉션
+  - `users.json` — 계정(비밀번호는 scrypt 해시, `suspended`/`organization` 선택 필드)
+  - `community-posts.json`, `community-comments.json` — 커뮤니티 게시판(첨부는 게시글 레코드에 data URL로 내장, 데모 시드 포함)
+  - `support-threads.json`, `support-messages.json` — 1:1 운영 상담(폴링 기반, 데모 시드 포함)
+  - `direct-messages.json` — 쪽지(대화는 별도 엔티티 없이 사용자 쌍에서 파생, 데모 시드 포함)
   - `admin-plans.json` — 고정 id(starter/pro/enterprise) 컬렉션(`seq` 없음)
 - 원자적 쓰기: 임시 파일에 기록 후 `rename`으로 교체해 부분 기록을 방지합니다.
 - 시작 시 로드: 파일이 없으면 기존 seed(빈 배열 또는 초기 요금제 3종)로 초기화하므로 dev 경험은 그대로입니다. 파일이 있으면 관용적으로 역직렬화하며, `items` 누락/형식 오류는 빈 배열로, `seq` 누락은 데이터의 `max(id)+1`로 복원합니다(스키마 마이그레이션 내성). 손상된 파일은 seed로 폴백합니다.
@@ -120,3 +124,22 @@ API 서버의 도메인 데이터(`schedules`, `care-logs`, `settlements`, `clai
 - `GET /api/admin/overview`
 - `GET /api/admin/plans`
 - `PATCH /api/admin/plans`
+- `GET /api/admin/users` — 어드민 회원 목록(핸들러에서 `requireAdmin`)
+- `PATCH /api/admin/users/:id/suspension` — 이용 정지/해제(본인·관리자 계정은 거부)
+- `GET /api/community/posts` — 게시판 목록(`?category=`·`?q=` 검색, 숨김 글은 관리자만)
+- `GET /api/community/posts/:id` — 본문+첨부(data URL)+댓글
+- `POST /api/community/posts` — 글 작성(첨부: 이미지 jpeg/png/webp·PDF, 파일당 2MB, 최대 4개)
+- `POST /api/community/posts/:id/comments` — 댓글/1단 답글(`parentId`)
+- `POST /api/community/comments/:id/delete` — 댓글 소프트 삭제("삭제된 댓글" placeholder 보존)
+- `POST /api/community/posts/:id/delete` — 글 삭제(댓글 동반 정리, 작성자/관리자)
+- `POST /api/community/posts/:postId/attachments/:attachmentId/delete` — 첨부 제거(작성자/관리자)
+- `PATCH /api/community/posts/:id/visibility` — 어드민 숨김/복구
+- `GET /api/support/threads` · `GET /api/support/threads/:id` — 1:1 상담(이용자는 본인 것만, 어드민은 전체; `requireUser`)
+- `POST /api/support/threads` · `POST /api/support/threads/:id/messages` · `PATCH /api/support/threads/:id/status`
+- `GET /api/messages/recipients` · `GET /api/messages/conversations` · `GET /api/messages/conversations/:partnerId` — 쪽지(개인 데이터라 GET도 `requireUser`)
+- `POST /api/messages` · `POST /api/messages/conversations/:partnerId/read`
+
+> 커뮤니티/상담/쪽지의 개인·관리 데이터 조회 GET은 전역 가드가 공개로 두는 대신 핸들러에서
+> `requireUser`/`requireAdmin`(`auth/role.util.ts`)으로 직접 보호합니다. 상담·쪽지 화면은 소켓 없이
+> 폴링(6–8초, 탭이 보일 때만)으로 갱신합니다. 첨부는 base64 data URL JSON으로 업로드하므로
+> `main.ts`에서 body 한도를 12mb로 올려 두었습니다(기본 100kb).

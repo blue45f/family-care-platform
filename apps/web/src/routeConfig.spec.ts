@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import {
   type AppRoute,
+  communityRoutes,
   DEFAULT_ROUTE,
   managementRoutes,
+  navGroups,
   publicLandingRoutes,
   todayFirstRoutes,
   isAppRoute,
@@ -78,7 +80,7 @@ describe('상용 서비스 정보 구조', () => {
   })
 
   it('운영 업무와 서비스 관리 화면을 내비게이션 성격별로 분리한다', () => {
-    expect(managementRoutes).toEqual(['/analytics', '/plans', '/tutorial', '/guide'])
+    expect(managementRoutes).toEqual(['/analytics', '/plans', '/tutorial', '/guide', '/members'])
 
     for (const path of todayFirstRoutes) {
       expect(routeDefs[path]).toMatchObject({
@@ -95,6 +97,35 @@ describe('상용 서비스 정보 구조', () => {
         placeholder: false,
       })
     }
+  })
+
+  it('커뮤니티(게시판·쪽지·상담)는 별도 내비게이션 그룹으로 노출된다', () => {
+    expect(communityRoutes).toEqual(['/community', '/messages', '/support'])
+
+    for (const path of communityRoutes) {
+      expect(routeDefs[path]).toMatchObject({
+        section: 'community',
+        inNav: true,
+        placeholder: false,
+      })
+    }
+
+    const communityGroup = navGroups.find((group) => group.section === 'community')
+    expect(communityGroup?.label).toBe('커뮤니티')
+    expect(communityGroup?.items.map((item) => item.path)).toEqual([...communityRoutes])
+  })
+
+  it('회원 관리는 관리자 전용 플래그를 갖는다(일반 회원 사이드바에서 숨김)', () => {
+    expect(routeDefs['/members']).toMatchObject({
+      title: '회원 관리',
+      section: 'manage',
+      inNav: true,
+      adminOnly: true,
+    })
+    // 관리자 전용은 회원 관리 하나뿐이다(의도 밖 확산 방지).
+    expect(routeMap.filter((route) => route.adminOnly).map((route) => route.path)).toEqual([
+      '/members',
+    ])
   })
 
   it('공개 랜딩 라우트는 확장 가능한 별도 목록으로 관리한다', () => {
@@ -117,8 +148,9 @@ describe('상용 서비스 정보 구조', () => {
     expect(publicLandingRoutes).not.toContain('/login')
   })
 
-  it('커뮤니티/약관/개인정보 페이지는 공개 탐색에서 노출되지만 네비게이션에선 제외된다', () => {
-    expect(routeDefs['/community']).toMatchObject({ inNav: false })
+  it('약관/개인정보 페이지는 공개 탐색에서 노출되지만 네비게이션에선 제외된다', () => {
+    // 커뮤니티는 로그인 후 실게시판으로 사이드바에 노출된다(공개 /community는 데모 유지).
+    expect(routeDefs['/community']).toMatchObject({ inNav: true, section: 'community' })
     expect(routeDefs['/terms']).toMatchObject({ inNav: false })
     expect(routeDefs['/privacy']).toMatchObject({ inNav: false })
   })

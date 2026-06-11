@@ -30,6 +30,8 @@ const registerSchema = z
       .string({ error: '비밀번호를 입력해 주세요.' })
       .min(8, '비밀번호는 8자 이상이어야 합니다.'),
     confirmPassword: z.string({ error: '비밀번호를 한 번 더 입력해 주세요.' }),
+    // 기업/기관 회원만 입력하는 선택 필드(빈 값 허용).
+    organization: z.string().trim().max(80, '기관명은 80자 이하로 입력해 주세요.').optional(),
   })
   .refine((values) => values.password === values.confirmPassword, {
     path: ['confirmPassword'],
@@ -60,13 +62,13 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { name: '', email: '', password: '', confirmPassword: '', organization: '' },
   })
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError('')
     try {
-      await registerAccount(values.email, values.password, values.name)
+      await registerAccount(values.email, values.password, values.name, values.organization)
       onNavigate(redirectTo)
     } catch (error) {
       setFormError(normalizeMessage(error))
@@ -161,6 +163,23 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
                   disabled={isSubmitting}
                   {...fieldProps}
                   {...registerField('confirmPassword')}
+                />
+              )}
+            </Field>
+
+            <Field
+              label="소속 기관 (선택)"
+              hint="기업/기관 회원이라면 센터·기관명을 남겨 주세요. 회원 관리 화면에 표시됩니다."
+              error={errors.organization?.message}
+            >
+              {(fieldProps) => (
+                <Input
+                  type="text"
+                  autoComplete="organization"
+                  placeholder="예: 행복요양센터"
+                  disabled={isSubmitting}
+                  {...fieldProps}
+                  {...registerField('organization')}
                 />
               )}
             </Field>

@@ -6,20 +6,25 @@ import {
   protectedRouteEntries,
   publicRouteEntries,
 } from './appRoutes'
-import { managementRoutes, publicLandingRoutes, todayFirstRoutes } from './routeConfig'
+import {
+  communityRoutes,
+  managementRoutes,
+  publicLandingRoutes,
+  todayFirstRoutes,
+} from './routeConfig'
 
 describe('appRoutes', () => {
   it('비로그인 공개 라우트는 홈페이지를 먼저 보여준다', () => {
     expect(publicRouteEntries.map((entry) => entry.path)).toEqual([...publicLandingRoutes])
   })
 
-  it('인증 후 라우트는 오늘 업무 흐름과 관리 화면 순서를 보존한다', () => {
+  it('인증 후 라우트는 오늘 업무 흐름 → 커뮤니티 → 관리 화면 순서를 보존한다', () => {
     expect(protectedRouteEntries.map((entry) => entry.path)).toEqual([
       '/',
       ...todayFirstRoutes,
+      ...communityRoutes,
       ...managementRoutes,
       '/overview',
-      '/community',
       '/terms',
       '/privacy',
     ])
@@ -48,5 +53,9 @@ describe('appRoutes', () => {
     expect(getUnauthenticatedRouteIntent('/register')).toBe('auth')
     expect(getUnauthenticatedRouteIntent('/schedule')).toBe('protected')
     expect(getUnauthenticatedRouteIntent('/claims')).toBe('protected')
+    // 쪽지/상담/회원 관리는 개인·관리 데이터라 미인증 시 로그인 안내로 보낸다.
+    expect(getUnauthenticatedRouteIntent('/messages')).toBe('protected')
+    expect(getUnauthenticatedRouteIntent('/support')).toBe('protected')
+    expect(getUnauthenticatedRouteIntent('/members')).toBe('protected')
   })
 })

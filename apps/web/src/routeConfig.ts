@@ -23,6 +23,9 @@ export type AppRoute =
   | '/guide'
   | '/overview'
   | '/community'
+  | '/messages'
+  | '/support'
+  | '/members'
   | '/terms'
   | '/privacy'
   | '/login'
@@ -31,7 +34,7 @@ export type AppRoute =
 export type NonHomeRoutePath = Exclude<AppRoute, '/'>
 
 /** 사이드바 그룹 구분(접근성 라벨 + 시각적 묶음). */
-export type NavSection = 'main' | 'manage' | 'account'
+export type NavSection = 'main' | 'community' | 'manage' | 'account'
 
 export type RouteDef = {
   path: AppRoute
@@ -47,6 +50,8 @@ export type RouteDef = {
   inNav: boolean
   /** Phase 2에서 본 콘텐츠를 채울 라우트(현재는 placeholder). */
   placeholder: boolean
+  /** 관리자(admin) 전용 라우트. 사이드바에서 일반 회원에게는 숨긴다. */
+  adminOnly?: boolean
 }
 
 export type NavigationSource = 'lead_form' | 'pricing_button' | 'hero'
@@ -174,14 +179,45 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
   },
   '/community': {
     path: '/community',
-    title: '커뮤니티 데모',
+    title: '커뮤니티',
     eyebrow: '커뮤니티',
     description:
-      '게시글 작성, 댓글/좋아요 동선을 통해 실사용자 소통 흐름을 바로 확인할 수 있습니다.',
-    icon: 'inbox',
-    section: 'manage',
-    inNav: false,
+      '보호자와 간병인이 정보공유·질문·간병후기를 나누는 게시판입니다. 검색과 카테고리로 원하는 글을 찾아보세요.',
+    icon: 'users',
+    section: 'community',
+    inNav: true,
     placeholder: false,
+  },
+  '/messages': {
+    path: '/messages',
+    title: '쪽지함',
+    eyebrow: '커뮤니티',
+    description: '다른 회원과 1:1로 주고받은 쪽지를 확인하고 새 쪽지를 보냅니다.',
+    icon: 'inbox',
+    section: 'community',
+    inNav: true,
+    placeholder: false,
+  },
+  '/support': {
+    path: '/support',
+    title: '1:1 상담',
+    eyebrow: '커뮤니티',
+    description: '운영팀과 1:1 상담을 시작하고 답변을 확인합니다. 새 메시지는 자동으로 갱신됩니다.',
+    icon: 'chat',
+    section: 'community',
+    inNav: true,
+    placeholder: false,
+  },
+  '/members': {
+    path: '/members',
+    title: '회원 관리',
+    eyebrow: '서비스 관리',
+    description: '회원 목록을 확인하고 커뮤니티 규칙을 위반한 계정의 이용을 정지하거나 해제합니다.',
+    icon: 'shield',
+    section: 'manage',
+    inNav: true,
+    placeholder: false,
+    adminOnly: true,
   },
   '/terms': {
     path: '/terms',
@@ -247,6 +283,14 @@ export const managementRoutes = [
   '/plans',
   '/tutorial',
   '/guide',
+  '/members',
+] as const satisfies readonly AppRoute[]
+
+/** 커뮤니티(게시판·쪽지·상담) 소통 화면. */
+export const communityRoutes = [
+  '/community',
+  '/messages',
+  '/support',
 ] as const satisfies readonly AppRoute[]
 
 export const publicLandingRoutes = [
@@ -272,6 +316,11 @@ export const navGroups: NavGroup[] = [
     section: 'main',
     label: '돌봄 운영',
     items: routeMap.filter((r) => r.section === 'main' && r.inNav),
+  },
+  {
+    section: 'community',
+    label: '커뮤니티',
+    items: routeMap.filter((r) => r.section === 'community' && r.inNav),
   },
   {
     section: 'manage',

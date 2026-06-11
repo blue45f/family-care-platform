@@ -17,6 +17,8 @@ type AppShellProps = {
   userName?: string
   /** 로그아웃 핸들러(사이드바 푸터). */
   onLogout?: () => void
+  /** 관리자 여부(관리자 전용 메뉴 노출). */
+  isAdmin?: boolean
 }
 
 const DESKTOP_QUERY = '(min-width: 64rem)'
@@ -34,6 +36,7 @@ export const AppShell = ({
   children,
   userName,
   onLogout,
+  isAdmin,
 }: AppShellProps) => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const drawerRef = useRef<HTMLDivElement | null>(null)
@@ -108,6 +111,7 @@ export const AppShell = ({
           isOnline={isOnline}
           userName={userName}
           onLogout={onLogout}
+          isAdmin={isAdmin}
         />
       </aside>
 

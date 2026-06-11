@@ -12,6 +12,8 @@ type SidebarProps = {
   isOnline: boolean
   userName?: string
   onLogout?: () => void
+  /** 관리자 여부. 관리자 전용 메뉴(회원 관리)를 일반 회원에게 숨긴다. */
+  isAdmin?: boolean
 }
 
 /**
@@ -24,6 +26,7 @@ export const Sidebar = ({
   isOnline,
   userName,
   onLogout,
+  isAdmin = false,
 }: SidebarProps) => (
   <>
     <div className="brand">
@@ -40,28 +43,30 @@ export const Sidebar = ({
       {navGroups.map((group) => (
         <div key={group.section}>
           <p className="nav-section-label">{group.label}</p>
-          {group.items.map((item) => {
-            const badge = badges[item.path]
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                className="nav-item"
-                onClick={() => onNavigate(item.path)}
-              >
-                <span className="nav-icon">
-                  <Icon name={item.icon} size={18} />
-                </span>
-                <span>{item.title}</span>
-                {badge ? (
-                  <span className="nav-badge" aria-label={`${badge}건`}>
-                    {badge}
+          {group.items
+            .filter((item) => !item.adminOnly || isAdmin)
+            .map((item) => {
+              const badge = badges[item.path]
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  end={item.path === '/'}
+                  className="nav-item"
+                  onClick={() => onNavigate(item.path)}
+                >
+                  <span className="nav-icon">
+                    <Icon name={item.icon} size={18} />
                   </span>
-                ) : null}
-              </NavLink>
-            )
-          })}
+                  <span>{item.title}</span>
+                  {badge ? (
+                    <span className="nav-badge" aria-label={`${badge}건`}>
+                      {badge}
+                    </span>
+                  ) : null}
+                </NavLink>
+              )
+            })}
         </div>
       ))}
     </nav>

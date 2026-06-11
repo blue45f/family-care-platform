@@ -1,12 +1,23 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  COMMUNITY_ATTACHMENT_MAX_BYTES,
+  COMMUNITY_ATTACHMENT_MAX_COUNT,
+  COMMUNITY_IMAGE_MAX_DIMENSION,
   careLogTypes,
   claimStatusSchema,
   claimStatuses,
+  communityAttachmentKind,
+  communityAttachmentMimeTypes,
+  communityCategories,
+  conversationKey,
+  dataUrlByteSize,
+  MESSAGE_BODY_MAX,
   revenuePlanDraftSchema,
   revenuePlanIds,
   scheduleStatuses,
+  supportSenderRoles,
+  supportThreadStatuses,
 } from './index'
 
 describe('@family-care/shared 도메인 계약', () => {
@@ -15,6 +26,47 @@ describe('@family-care/shared 도메인 계약', () => {
     expect(claimStatuses).toEqual(['요청', '검토중', '승인', '거절'])
     expect(scheduleStatuses).toEqual(['예정', '진행중', '완료', '취소'])
     expect(revenuePlanIds).toEqual(['starter', 'pro', 'enterprise'])
+  })
+
+  it('커뮤니티/상담 리터럴과 첨부 한도가 고정되어 있다', () => {
+    expect(communityCategories).toEqual(['정보공유', '질문', '간병후기'])
+    expect(communityAttachmentMimeTypes).toEqual([
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+    ])
+    expect(COMMUNITY_ATTACHMENT_MAX_BYTES).toBe(2 * 1024 * 1024)
+    expect(COMMUNITY_ATTACHMENT_MAX_COUNT).toBe(4)
+    expect(COMMUNITY_IMAGE_MAX_DIMENSION).toBe(1600)
+    expect(supportThreadStatuses).toEqual(['open', 'closed'])
+    expect(supportSenderRoles).toEqual(['user', 'staff'])
+  })
+
+  it('communityAttachmentKind는 허용 형식만 분류한다', () => {
+    expect(communityAttachmentKind('image/jpeg')).toBe('image')
+    expect(communityAttachmentKind('image/png')).toBe('image')
+    expect(communityAttachmentKind('image/webp')).toBe('image')
+    expect(communityAttachmentKind('application/pdf')).toBe('pdf')
+    expect(communityAttachmentKind('image/gif')).toBeNull()
+    expect(communityAttachmentKind('text/html')).toBeNull()
+  })
+
+  it('dataUrlByteSize는 base64 본문 크기를 추정한다', () => {
+    // 'hi' → aGk= (패딩 1) = 2바이트
+    expect(dataUrlByteSize('data:image/png;base64,aGk=')).toBe(2)
+    // 'hello' → aGVsbG8= = 5바이트
+    expect(dataUrlByteSize('data:application/pdf;base64,aGVsbG8=')).toBe(5)
+    expect(dataUrlByteSize('not-a-data-url')).toBe(0)
+    expect(dataUrlByteSize('data:image/png;base64,')).toBe(0)
+  })
+
+  it('쪽지 본문 한도와 대화 키 규칙이 고정되어 있다', () => {
+    expect(MESSAGE_BODY_MAX).toBe(1000)
+    // 대화 키는 참여자 순서와 무관하게 동일하다(목록 묶기의 단일 소스).
+    expect(conversationKey(3, 7)).toBe('3:7')
+    expect(conversationKey(7, 3)).toBe('3:7')
+    expect(conversationKey(5, 5)).toBe('5:5')
   })
 
   it('claimStatusSchema는 잘못된 상태를 동일 메시지로 거절한다', () => {

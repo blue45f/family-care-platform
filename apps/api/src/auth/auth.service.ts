@@ -1,7 +1,9 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   Logger,
+  NotFoundException,
   UnauthorizedException,
   type OnModuleInit,
 } from '@nestjs/common'
@@ -11,13 +13,14 @@ import { localYmd } from '../common/date.util'
 import { parseWithSchema } from '../common/zod-validation.pipe'
 import { hashPassword, verifyPassword } from './password.util'
 import { signAuthToken, verifyAuthToken } from './auth.token'
-import { loginInputSchema, registerInputSchema } from './auth.schema'
+import { loginInputSchema, registerInputSchema, suspensionInputSchema } from './auth.schema'
 import type {
   AuthResult,
   AuthenticatedUser,
   LoginInput,
   PublicUser,
   RegisterInput,
+  SuspensionInput,
   User,
   UserRole,
 } from './auth.model'
@@ -79,6 +82,7 @@ export class AuthService implements OnModuleInit {
 
   // 공통 삽입 경로. 검증된 입력을 해싱/정규화해 저장하고 저장된 레코드를 반환한다.
   private insertUser(input: RegisterInput): User {
+    const organization = input.organization?.trim()
     const next: User = {
       id: this.state.seq!,
       email: this.normalizeEmail(input.email),
@@ -86,6 +90,8 @@ export class AuthService implements OnModuleInit {
       passwordHash: hashPassword(input.password),
       role: input.role ?? 'operator',
       createdAt: localYmd(),
+      // 기업/기관 회원만 organization 키를 가진다(개인 회원 레코드는 기존 모양 유지).
+      ...(organization ? { organization } : {}),
     }
 
     this.state.items.push(next)
@@ -102,7 +108,9 @@ export class AuthService implements OnModuleInit {
       throw new ConflictException('이미 등록된 이메일입니다.')
     }
 
-    const created = this.insertUser(parsed)
+    // 공개 가입은 절대 권한을 자기 지정할 수 없다 — 클라이언트가 보낸 role 은 버리고
+    // 항상 최소 권한(operator)으로 생성한다. 승격은 관리자 전용 경로로만.
+    const created = this.insertUser({ ...parsed, role: 'operator' })
     return this.buildAuthResult(created)
   }
 
@@ -114,6 +122,11 @@ export class AuthService implements OnModuleInit {
     // 사용자 부재/비밀번호 불일치 모두 동일 메시지로 응답해 계정 존재 여부 누출을 막는다.
     if (!user || !verifyPassword(parsed.password, user.passwordHash)) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.')
+    }
+
+    // 정지 계정은 자격 증명이 맞아도 로그인하지 못한다(안내 메시지는 명시적으로 노출).
+    if (user.suspended) {
+      throw new ForbiddenException('이용이 정지된 계정입니다. 운영팀에 문의해 주세요.')
     }
 
     return this.buildAuthResult(user)
@@ -148,7 +161,40 @@ export class AuthService implements OnModuleInit {
       return null
     }
 
-    return { id: user.id, email: user.email, role: user.role }
+    // 정지 계정의 기존 토큰은 즉시 무효 취급한다(쓰기 401, /auth/me 401 → 클라이언트 로그아웃).
+    if (user.suspended) {
+      return null
+    }
+
+    return { id: user.id, email: user.email, name: user.name, role: user.role }
+  }
+
+  /** GET /api/admin/users — 어드민 회원 목록(가입 순). 비밀번호 해시는 제외한다. */
+  listUsers(): PublicUser[] {
+    return [...this.state.items].sort((a, b) => a.id - b.id).map((user) => this.toPublicUser(user))
+  }
+
+  /**
+   * PATCH /api/admin/users/:id/suspension — 이용 정지/해제.
+   * 본인 계정과 관리자 계정은 정지할 수 없다(운영 잠금 사고 방지).
+   */
+  setSuspension(targetId: number, input: SuspensionInput, actor: AuthenticatedUser): PublicUser {
+    const parsed = parseWithSchema(suspensionInputSchema, input)
+
+    const target = this.state.items.find((candidate) => candidate.id === targetId)
+    if (!target) {
+      throw new NotFoundException('회원을 찾을 수 없습니다.')
+    }
+    if (target.id === actor.id) {
+      throw new ForbiddenException('본인 계정은 정지할 수 없습니다.')
+    }
+    if (target.role === 'admin') {
+      throw new ForbiddenException('관리자 계정은 정지할 수 없습니다.')
+    }
+
+    target.suspended = parsed.suspended
+    this.store.save(this.state)
+    return this.toPublicUser(target)
   }
 
   private buildAuthResult(user: User): AuthResult {
