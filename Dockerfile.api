@@ -7,11 +7,13 @@ RUN corepack enable && corepack prepare pnpm@11.4.0 --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/web/package.json ./apps/web/package.json
+COPY packages/shared/package.json ./packages/shared/package.json
 
 RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN pnpm --dir apps/api run build
+# shared 는 런타임 require 대상(main: dist/index.cjs)이라 api 보다 먼저 빌드해야 한다.
+RUN pnpm --dir packages/shared run build && pnpm --dir apps/api run build
 
 FROM node:22-alpine AS runtime
 
@@ -19,6 +21,7 @@ WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api ./apps/api
+COPY --from=deps /app/packages ./packages
 COPY --from=deps /app/package.json ./package.json
 COPY --from=deps /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=deps /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
