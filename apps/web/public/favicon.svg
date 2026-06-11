@@ -1,28 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="패밀리케어">
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="70" y1="40" x2="442" y2="476" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0f766e"/>
-      <stop offset=".56" stop-color="#083f3b"/>
-      <stop offset="1" stop-color="#0f766e"/>
+    <linearGradient id="careGreen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#047857" />
     </linearGradient>
-    <radialGradient id="glow" cx="72%" cy="23%" r="68%">
-      <stop stop-color="#7dd3c7" stop-opacity=".72"/>
-      <stop offset=".58" stop-color="#f59e7a" stop-opacity=".24"/>
-      <stop offset="1" stop-color="#083f3b" stop-opacity="0"/>
-    </radialGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#083f3b" flood-opacity=".34"/>
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#047857" flood-opacity="0.15" />
     </filter>
   </defs>
-  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="116" fill="url(#glow)"/>
-  <path d="M46 342C154 278 238 414 466 292" fill="none" stroke="#f2fbf8" stroke-opacity=".1" stroke-width="26" stroke-linecap="round"/>
-  <g filter="url(#shadow)">
-        <g transform="translate(0 0) scale(1)">
-          <path d="M256 130c35-54 126-34 126 42 0 66-74 110-126 167-52-57-126-101-126-167 0-76 91-96 126-42z" fill="#7dd3c7"/>
-          <path d="M151 308c44-22 83-19 116 7 29 23 63 27 102 13" fill="none" stroke="#f2fbf8" stroke-width="26" stroke-linecap="round"/>
-          <path d="M256 168v112M200 224h112" stroke="#083f3b" stroke-width="30" stroke-linecap="round"/>
-          <circle cx="366" cy="330" r="45" fill="#f59e7a"/>
-          <path d="M345 330l16 16 31-37" fill="none" stroke="#083f3b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-        </g></g>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#careGreen)" filter="url(#glow)"/>
+  <rect x="5.5" y="5.5" width="53" height="53" rx="16.5" stroke="#ffffff" stroke-opacity="0.25" stroke-width="2.5"/>
+  <!-- Heart with care hands symbol -->
+  <path d="M43.2 20.5C38.9 17.9 34.3 19.5 32 22.6C29.7 19.5 25.1 17.9 20.8 20.5C16.6 23.1 15.6 29.2 19 33.2C22.6 37.5 32 45.4 32 45.4C32 45.4 41.4 37.5 45 33.2C48.4 29.2 47.4 23.1 43.2 20.5Z" stroke="#ffffff" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21 49H43" stroke="#ffffff" stroke-dasharray="2 3" stroke-width="3.5" stroke-linecap="round" opacity="0.8"/>
 </svg>
