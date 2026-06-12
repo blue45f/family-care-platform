@@ -1,4 +1,4 @@
-FROM node:22-alpine AS deps
+FROM node:24-alpine AS deps
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY . .
 # shared 는 런타임 require 대상(main: dist/index.cjs)이라 api 보다 먼저 빌드해야 한다.
 RUN pnpm --dir packages/shared run build && pnpm --dir apps/api run build
 
-FROM node:22-alpine AS runtime
+FROM node:24-alpine AS runtime
 
 WORKDIR /app
 
