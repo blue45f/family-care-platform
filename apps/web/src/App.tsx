@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 
 import {
@@ -8,6 +8,7 @@ import {
   publicRouteEntries,
 } from './appRoutes'
 import { useAuth } from './auth/useAuth'
+import { RouteFallback } from './components/common/RouteFallback'
 import { PlaceholderPage } from './components/pages/PlaceholderPage'
 import { AppShell } from './components/shell/AppShell'
 import { getRouteDef, SITE_NAME, type AppRoute, type RouteDef } from './routeConfig'
@@ -117,14 +118,21 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
           </p>
         ) : null}
 
-        <Routes>
-          {protectedRouteEntries.map((entry) => (
-            <Route key={entry.path} path={entry.path} element={entry.render({ data, navigate })} />
-          ))}
-          <Route path="/login" element={<Navigate to="/" replace />} />
-          <Route path="/register" element={<Navigate to="/" replace />} />
-          <Route path="*" element={fallbackPage} />
-        </Routes>
+        {/* 라우트 청크 로딩 동안 셸은 유지한 채 본문만 폴백을 보여준다. */}
+        <Suspense fallback={<RouteFallback />}>
+          <Routes>
+            {protectedRouteEntries.map((entry) => (
+              <Route
+                key={entry.path}
+                path={entry.path}
+                element={entry.render({ data, navigate })}
+              />
+            ))}
+            <Route path="/login" element={<Navigate to="/" replace />} />
+            <Route path="/register" element={<Navigate to="/" replace />} />
+            <Route path="*" element={fallbackPage} />
+          </Routes>
+        </Suspense>
       </AppShell>
     </>
   )
@@ -206,28 +214,30 @@ const App = () => {
 
   if (!auth.isAuthenticated) {
     return (
-      <Routes>
-        {publicRouteEntries.map((entry) => (
-          <Route key={entry.path} path={entry.path} element={entry.render({ navigate })} />
-        ))}
-        {authRouteEntries.map((entry) => (
-          <Route
-            key={entry.path}
-            path={entry.path}
-            element={entry.render({ navigate, redirectTo })}
-          />
-        ))}
-        {protectedRouteEntries
-          .filter((entry) => entry.path !== '/')
-          .map((entry) => (
+      <Suspense fallback={<RouteFallback />}>
+        <Routes>
+          {publicRouteEntries.map((entry) => (
+            <Route key={entry.path} path={entry.path} element={entry.render({ navigate })} />
+          ))}
+          {authRouteEntries.map((entry) => (
             <Route
               key={entry.path}
               path={entry.path}
-              element={<Navigate to="/login" replace state={{ from: entry.path }} />}
+              element={entry.render({ navigate, redirectTo })}
             />
           ))}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {protectedRouteEntries
+            .filter((entry) => entry.path !== '/')
+            .map((entry) => (
+              <Route
+                key={entry.path}
+                path={entry.path}
+                element={<Navigate to="/login" replace state={{ from: entry.path }} />}
+              />
+            ))}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     )
   }
 

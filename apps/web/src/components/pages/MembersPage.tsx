@@ -74,13 +74,19 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
     const next = !member.suspended
     setUpdatingId(member.id)
     setError('')
+    // 낙관적 뮤테이션: 토글 결과를 먼저 보여주고, 실패하면 스냅샷(member)으로 원복한다.
+    setMembers((prev) =>
+      prev.map((item) => (item.id === member.id ? { ...item, suspended: next } : item)),
+    )
     try {
+      // 성공 재동기화: 서버가 확정한 회원 정보로 교체한다.
       const updated = await patchUserSuspension(member.id, next)
       setMembers((prev) => prev.map((item) => (item.id === updated.id ? updated : item)))
       setNotice(
         next ? `${member.name}님을 이용 정지했습니다.` : `${member.name}님의 정지를 해제했습니다.`,
       )
     } catch (cause) {
+      setMembers((prev) => prev.map((item) => (item.id === member.id ? member : item)))
       setError(normalizeApiErrorMessage(cause, '회원 상태 변경에 실패했습니다.'))
     } finally {
       setUpdatingId(null)

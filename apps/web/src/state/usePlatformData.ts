@@ -646,18 +646,31 @@ export const usePlatformData = (): UsePlatformDataResult => {
 
   const updateScheduleStatus = useCallback(
     async (scheduleId: number, nextStatus: ScheduleStatus) => {
-      const current = schedules.find((item) => item.id === scheduleId)?.status
-      if (!current || current === nextStatus) {
+      // 낙관적 뮤테이션: 이전 행을 스냅샷한 뒤 서버 응답을 기다리지 않고 먼저 반영한다.
+      const snapshot = schedules.find((item) => item.id === scheduleId)
+      if (!snapshot || snapshot.status === nextStatus) {
         return
       }
 
+      setUpdatingScheduleId(scheduleId)
+      setErrorMessage('')
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.id === scheduleId ? { ...schedule, status: nextStatus } : schedule,
+        ),
+      )
+
       try {
-        setUpdatingScheduleId(scheduleId)
+        // 성공 재동기화: 서버가 확정한 엔티티로 교체한다.
         const updated = await patchScheduleStatus(scheduleId, nextStatus)
         setSchedules((prev) =>
           prev.map((schedule) => (schedule.id === updated.id ? updated : schedule)),
         )
       } catch (error) {
+        // 실패 롤백: 스냅샷한 이전 행으로 복원한다.
+        setSchedules((prev) =>
+          prev.map((schedule) => (schedule.id === scheduleId ? snapshot : schedule)),
+        )
         setErrorMessage(
           normalizeErrorMessage(error, '방문 일정 상태 변경 실패. 잠시 후 다시 시도해 주세요.'),
         )
@@ -670,16 +683,25 @@ export const usePlatformData = (): UsePlatformDataResult => {
 
   const updateClaimStatus = useCallback(
     async (claimId: number, nextStatus: ClaimStatus) => {
-      const current = claims.find((item) => item.id === claimId)?.status
-      if (!current || current === nextStatus) {
+      // 낙관적 뮤테이션: 이전 행을 스냅샷한 뒤 서버 응답을 기다리지 않고 먼저 반영한다.
+      const snapshot = claims.find((item) => item.id === claimId)
+      if (!snapshot || snapshot.status === nextStatus) {
         return
       }
 
+      setUpdatingClaimId(claimId)
+      setErrorMessage('')
+      setClaims((prev) =>
+        prev.map((claim) => (claim.id === claimId ? { ...claim, status: nextStatus } : claim)),
+      )
+
       try {
-        setUpdatingClaimId(claimId)
+        // 성공 재동기화: 서버가 확정한 엔티티로 교체한다.
         const updated = await patchClaimStatus(claimId, nextStatus)
         setClaims((prev) => prev.map((claim) => (claim.id === updated.id ? updated : claim)))
       } catch (error) {
+        // 실패 롤백: 스냅샷한 이전 행으로 복원한다.
+        setClaims((prev) => prev.map((claim) => (claim.id === claimId ? snapshot : claim)))
         setErrorMessage(
           normalizeErrorMessage(error, '보험청구 상태 변경 실패. 잠시 후 다시 시도해 주세요.'),
         )
