@@ -13,16 +13,26 @@ import { localYmd } from '../common/date.util'
 import { parseWithSchema } from '../common/zod-validation.pipe'
 import { hashPassword, verifyPassword } from './password.util'
 import { signAuthToken, verifyAuthToken } from './auth.token'
-import { loginInputSchema, registerInputSchema, suspensionInputSchema } from './auth.schema'
+import {
+  loginInputSchema,
+  adminUserUpdateInputSchema,
+  registerInputSchema,
+  suspensionInputSchema,
+  updateProfileInputSchema,
+  withdrawAccountInputSchema,
+} from './auth.schema'
 import type {
+  AdminUserUpdateInput,
   AuthResult,
   AuthenticatedUser,
   LoginInput,
   PublicUser,
   RegisterInput,
   SuspensionInput,
+  UpdateProfileInput,
   User,
   UserRole,
+  WithdrawAccountInput,
 } from './auth.model'
 
 // 시작 시 멱등하게 생성하는 데모 계정. 이미 존재하면(이메일 기준) 건드리지 않는다.
@@ -80,6 +90,27 @@ export class AuthService implements OnModuleInit {
     return rest
   }
 
+  private isWithdrawn(user: User): boolean {
+    return Boolean(user.withdrawnAt)
+  }
+
+  private findRecordById(userId: number): User | undefined {
+    return this.state.items.find((candidate) => candidate.id === userId)
+  }
+
+  private adminCount(): number {
+    return this.state.items.filter(
+      (candidate) => candidate.role === 'admin' && !candidate.withdrawnAt,
+    ).length
+  }
+
+  private activeAdminCount(): number {
+    return this.state.items.filter(
+      (candidate) =>
+        candidate.role === 'admin' && !candidate.withdrawnAt && candidate.suspended !== true,
+    ).length
+  }
+
   // 공통 삽입 경로. 검증된 입력을 해싱/정규화해 저장하고 저장된 레코드를 반환한다.
   private insertUser(input: RegisterInput): User {
     const organization = input.organization?.trim()
@@ -120,7 +151,7 @@ export class AuthService implements OnModuleInit {
 
     const user = this.findRecordByEmail(parsed.email)
     // 사용자 부재/비밀번호 불일치 모두 동일 메시지로 응답해 계정 존재 여부 누출을 막는다.
-    if (!user || !verifyPassword(parsed.password, user.passwordHash)) {
+    if (!user || this.isWithdrawn(user) || !verifyPassword(parsed.password, user.passwordHash)) {
       throw new UnauthorizedException('이메일 또는 비밀번호가 올바르지 않습니다.')
     }
 
@@ -134,10 +165,40 @@ export class AuthService implements OnModuleInit {
 
   /** GET /api/auth/me — Bearer 토큰의 사용자 공개 정보. */
   getProfile(userId: number): PublicUser {
-    const user = this.state.items.find((candidate) => candidate.id === userId)
-    if (!user) {
+    const user = this.findRecordById(userId)
+    if (!user || this.isWithdrawn(user) || user.suspended) {
       throw new UnauthorizedException('인증 정보가 유효하지 않습니다.')
     }
+    return this.toPublicUser(user)
+  }
+
+  /** PATCH /api/auth/me — 이름/기관/비밀번호 수정. 비밀번호 변경에는 현재 비밀번호가 필요하다. */
+  updateProfile(userId: number, input: UpdateProfileInput): PublicUser {
+    const parsed = parseWithSchema(updateProfileInputSchema, input)
+    const user = this.findRecordById(userId)
+    if (!user || this.isWithdrawn(user) || user.suspended) {
+      throw new UnauthorizedException('인증 정보가 유효하지 않습니다.')
+    }
+
+    if (parsed.newPassword) {
+      if (!parsed.currentPassword || !verifyPassword(parsed.currentPassword, user.passwordHash)) {
+        throw new UnauthorizedException('현재 비밀번호가 올바르지 않습니다.')
+      }
+      user.passwordHash = hashPassword(parsed.newPassword)
+    }
+
+    if (parsed.name !== undefined) {
+      user.name = parsed.name
+    }
+    if (Object.hasOwn(parsed, 'organization')) {
+      if (parsed.organization) {
+        user.organization = parsed.organization
+      } else {
+        delete user.organization
+      }
+    }
+
+    this.store.save(this.state)
     return this.toPublicUser(user)
   }
 
@@ -156,8 +217,8 @@ export class AuthService implements OnModuleInit {
       return null
     }
 
-    const user = this.state.items.find((candidate) => candidate.id === userId)
-    if (!user) {
+    const user = this.findRecordById(userId)
+    if (!user || this.isWithdrawn(user)) {
       return null
     }
 
@@ -169,6 +230,34 @@ export class AuthService implements OnModuleInit {
     return { id: user.id, email: user.email, name: user.name, role: user.role }
   }
 
+  /** DELETE /api/auth/me — 본인 계정 탈퇴. 개인정보를 익명화하고 기존 토큰을 무효화한다. */
+  withdrawAccount(userId: number, input: WithdrawAccountInput): PublicUser {
+    const parsed = parseWithSchema(withdrawAccountInputSchema, input)
+    const user = this.findRecordById(userId)
+    if (!user || this.isWithdrawn(user)) {
+      throw new UnauthorizedException('인증 정보가 유효하지 않습니다.')
+    }
+    if (!verifyPassword(parsed.password, user.passwordHash)) {
+      throw new UnauthorizedException('비밀번호가 올바르지 않습니다.')
+    }
+    if (user.role === 'admin' && this.adminCount() <= 1) {
+      throw new ForbiddenException('마지막 관리자 계정은 탈퇴할 수 없습니다.')
+    }
+
+    this.withdrawUserRecord(user)
+    this.store.save(this.state)
+    return this.toPublicUser(user)
+  }
+
+  private withdrawUserRecord(user: User): void {
+    user.withdrawnAt = new Date().toISOString()
+    user.email = `withdrawn-${user.id}@withdrawn.family-care.local`
+    user.name = '탈퇴 회원'
+    user.passwordHash = hashPassword(`withdrawn-${user.id}-${user.withdrawnAt}`)
+    user.suspended = false
+    delete user.organization
+  }
+
   /** GET /api/admin/users — 어드민 회원 목록(가입 순). 비밀번호 해시는 제외한다. */
   listUsers(): PublicUser[] {
     return [...this.state.items].sort((a, b) => a.id - b.id).map((user) => this.toPublicUser(user))
@@ -176,25 +265,91 @@ export class AuthService implements OnModuleInit {
 
   /**
    * PATCH /api/admin/users/:id/suspension — 이용 정지/해제.
-   * 본인 계정과 관리자 계정은 정지할 수 없다(운영 잠금 사고 방지).
+   * 호환용 endpoint이며 실제 정책은 updateUserByAdmin에 모은다.
    */
   setSuspension(targetId: number, input: SuspensionInput, actor: AuthenticatedUser): PublicUser {
     const parsed = parseWithSchema(suspensionInputSchema, input)
+    return this.updateUserByAdmin(
+      targetId,
+      { status: parsed.suspended ? 'suspended' : 'active' },
+      actor,
+    )
+  }
 
-    const target = this.state.items.find((candidate) => candidate.id === targetId)
+  /**
+   * PATCH /api/admin/users/:id — 역할/상태 통합 변경.
+   * 기존 suspension endpoint도 이 경로를 내부적으로 사용해 권한 보호 규칙을 한 곳에 둔다.
+   */
+  updateUserByAdmin(
+    targetId: number,
+    input: AdminUserUpdateInput,
+    actor: AuthenticatedUser,
+  ): PublicUser {
+    const parsed = parseWithSchema(adminUserUpdateInputSchema, input)
+    const target = this.findRecordById(targetId)
     if (!target) {
       throw new NotFoundException('회원을 찾을 수 없습니다.')
     }
-    if (target.id === actor.id) {
-      throw new ForbiddenException('본인 계정은 정지할 수 없습니다.')
-    }
-    if (target.role === 'admin') {
-      throw new ForbiddenException('관리자 계정은 정지할 수 없습니다.')
+    if (this.isWithdrawn(target)) {
+      throw new ForbiddenException('탈퇴한 회원은 변경할 수 없습니다.')
     }
 
-    target.suspended = parsed.suspended
+    const nextRole = parsed.role ?? target.role
+    const nextStatus = parsed.status
+    const willWithdraw = nextStatus === 'withdrawn'
+    const willSuspend = nextStatus === 'suspended'
+
+    this.assertAdminUserChangeAllowed(target, actor, {
+      nextRole,
+      willSuspend,
+      willWithdraw,
+    })
+
+    if (willWithdraw) {
+      this.withdrawUserRecord(target)
+    } else {
+      target.role = nextRole
+      if (nextStatus === 'active') {
+        target.suspended = false
+      }
+      if (nextStatus === 'suspended') {
+        target.suspended = true
+      }
+    }
+
     this.store.save(this.state)
     return this.toPublicUser(target)
+  }
+
+  private assertAdminUserChangeAllowed(
+    target: User,
+    actor: AuthenticatedUser,
+    change: { nextRole: UserRole; willSuspend: boolean; willWithdraw: boolean },
+  ): void {
+    if (target.id === actor.id) {
+      if (change.willWithdraw) {
+        throw new ForbiddenException('본인 계정은 탈퇴 처리할 수 없습니다.')
+      }
+      if (change.willSuspend) {
+        throw new ForbiddenException('본인 계정은 정지할 수 없습니다.')
+      }
+      if (target.role === 'admin' && change.nextRole !== 'admin') {
+        throw new ForbiddenException('본인 관리자 권한은 직접 하향할 수 없습니다.')
+      }
+    }
+
+    if (target.role !== 'admin') {
+      return
+    }
+
+    const willLoseAdminRole = change.nextRole !== 'admin' || change.willWithdraw
+    if (willLoseAdminRole && this.adminCount() <= 1) {
+      throw new ForbiddenException('마지막 관리자 계정은 권한 하향 또는 탈퇴 처리할 수 없습니다.')
+    }
+
+    if (change.willSuspend && target.suspended !== true && this.activeAdminCount() <= 1) {
+      throw new ForbiddenException('마지막 활성 관리자 계정은 정지할 수 없습니다.')
+    }
   }
 
   private buildAuthResult(user: User): AuthResult {

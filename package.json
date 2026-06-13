@@ -27,9 +27,13 @@
     "postinstall": "pnpm --filter @family-care/shared run build",
     "smoke:web": "node scripts/browser-sample-smoke.mjs",
     "validate:architecture": "node scripts/validate-architecture.mjs",
-    "ci": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test && pnpm run build",
+    "ci": "pnpm run format:check && pnpm run lint:ci && pnpm run typecheck && pnpm run test && pnpm run build",
     "verify": "pnpm run validate:architecture && pnpm run ci",
     "verify:push": "pnpm run verify",
+    "sonar": "sonar-scanner",
+    "lint:strict": "eslint . --max-warnings=0",
+    "lint:ci": "pnpm run lint:strict",
+    "sonar:ci": "sonar-scanner -Dsonar.qualitygate.wait=true",
     "clean": "rm -rf node_modules apps/web/node_modules apps/api/node_modules packages/shared/node_modules packages/shared/dist",
     "prepare": "husky"
   },
@@ -49,6 +53,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs}": [
+      "eslint --max-warnings=0 --no-warn-ignored --fix",
       "prettier --write"
     ],
     "*.{json,md,css,yml,yaml}": [

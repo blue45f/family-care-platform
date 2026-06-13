@@ -4,6 +4,9 @@
 export const userRoles = ['operator', 'admin'] as const
 export type UserRole = (typeof userRoles)[number]
 
+export const userStatuses = ['active', 'suspended', 'withdrawn'] as const
+export type UserStatus = (typeof userStatuses)[number]
+
 // JSON 스토어에 저장되는 사용자 레코드. passwordHash는 절대 응답에 포함하지 않는다.
 export interface User {
   id: number
@@ -14,6 +17,8 @@ export interface User {
   createdAt: string
   // 이용 정지 여부. 기존 레코드에는 없을 수 있으므로(관용적 역직렬화) 미존재 = false다.
   suspended?: boolean
+  // 회원 탈퇴 시각. 탈퇴 계정은 로그인/토큰 검증을 거부하고 개인정보는 익명화한다.
+  withdrawnAt?: string
   // 기업/기관 회원이 가입 시 남기는 소속 기관명(선택). 개인 회원은 미존재.
   organization?: string
 }
@@ -21,6 +26,19 @@ export interface User {
 // 어드민 회원 관리 입력: 이용 정지/해제.
 export interface SuspensionInput {
   suspended: boolean
+}
+
+export interface UpdateProfileInput {
+  name?: string
+  organization?: string | null
+  currentPassword?: string
+  newPassword?: string
+}
+
+// 어드민 회원 관리 입력: 역할 변경, 상태 변경(정상/정지/탈퇴)을 하나의 계약으로 다룬다.
+export interface AdminUserUpdateInput {
+  role?: UserRole
+  status?: UserStatus
 }
 
 // API 응답으로 노출 가능한 사용자(비밀번호 해시 제외).
@@ -38,6 +56,10 @@ export interface RegisterInput {
 
 export interface LoginInput {
   email: string
+  password: string
+}
+
+export interface WithdrawAccountInput {
   password: string
 }
 

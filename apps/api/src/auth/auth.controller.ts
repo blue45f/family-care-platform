@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Patch,
   Post,
   UnauthorizedException,
 } from '@nestjs/common'
@@ -17,6 +19,8 @@ import type {
   LoginInput,
   PublicUser,
   RegisterInput,
+  UpdateProfileInput,
+  WithdrawAccountInput,
 } from './auth.model'
 
 @Controller('auth')
@@ -46,5 +50,40 @@ export class AuthController {
       throw new UnauthorizedException('인증이 필요합니다.')
     }
     return this.authService.getProfile(user.id)
+  }
+
+  @Patch('me')
+  updateProfile(
+    @Body() input: UpdateProfileInput,
+    @CurrentUser() user: AuthenticatedUser | undefined,
+  ): PublicUser {
+    if (!user) {
+      throw new UnauthorizedException('인증이 필요합니다.')
+    }
+    return this.authService.updateProfile(user.id, input)
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.OK)
+  withdrawAccount(
+    @Body() input: WithdrawAccountInput,
+    @CurrentUser() user: AuthenticatedUser | undefined,
+  ): PublicUser {
+    if (!user) {
+      throw new UnauthorizedException('인증이 필요합니다.')
+    }
+    return this.authService.withdrawAccount(user.id, input)
+  }
+
+  @Post('me/withdraw')
+  @HttpCode(HttpStatus.OK)
+  withdrawAccountForBrowser(
+    @Body() input: WithdrawAccountInput,
+    @CurrentUser() user: AuthenticatedUser | undefined,
+  ): PublicUser {
+    if (!user) {
+      throw new UnauthorizedException('인증이 필요합니다.')
+    }
+    return this.authService.withdrawAccount(user.id, input)
   }
 }

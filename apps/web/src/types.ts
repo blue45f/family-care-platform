@@ -50,7 +50,26 @@ export type MemberUser = {
   role: 'operator' | 'admin'
   createdAt: string
   suspended?: boolean
+  withdrawnAt?: string
   organization?: string
+}
+
+export type MemberStatus = 'active' | 'suspended' | 'withdrawn'
+
+export type AdminUserUpdateInput = {
+  role?: 'operator' | 'admin'
+  status?: MemberStatus
+}
+
+export type CommunityForbiddenWord = {
+  id: number
+  term: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type CommunityForbiddenWordInput = {
+  term: string
 }
 
 import type {

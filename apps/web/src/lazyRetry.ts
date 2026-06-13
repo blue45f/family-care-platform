@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import type { ComponentType, LazyExoticComponent } from 'react'
+import type { ComponentType } from 'react'
 
 /**
  * 배포 직후 stale 청크(이전 해시 번들이 서버에서 사라진 상태) 로드 실패를
@@ -33,8 +33,10 @@ export const retryImport = async <TModule>(factory: () => Promise<TModule>): Pro
 
 /**
  * React.lazy + retryImport. 제네릭으로 페이지 컴포넌트의 props 타입을 보존한다.
- * React.lazy 자체 제약이 ComponentType<any>라서 동일하게 맞춘다(워닝 허용 수준).
  */
-export const lazyRetry = <T extends ComponentType<any>>(
-  factory: () => Promise<{ default: T }>,
-): LazyExoticComponent<T> => lazy(() => retryImport(factory))
+export const lazyRetry = <TComponent extends ComponentType<never>>(
+  factory: () => Promise<{ default: TComponent }>,
+): TComponent =>
+  lazy(
+    () => retryImport(factory) as unknown as Promise<{ default: ComponentType }>,
+  ) as unknown as TComponent

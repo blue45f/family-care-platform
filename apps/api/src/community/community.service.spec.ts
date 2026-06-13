@@ -231,4 +231,32 @@ describe('CommunityService', () => {
       '댓글 내용을 입력해 주세요.',
     )
   })
+
+  it('관리자 금칙어 CRUD를 제공하고 게시글/댓글 등록을 차단한다', () => {
+    const created = service.createForbiddenWord({ term: '  금지표현  ' })
+    expect(created.term).toBe('금지표현')
+    expect(service.listForbiddenWords()).toHaveLength(1)
+
+    expect(() => service.createForbiddenWord({ term: '금지표현' })).toThrow(
+      '이미 등록된 금칙어입니다.',
+    )
+    expect(() => service.createForbiddenWord({ term: '  ' })).toThrow('금칙어를 입력해 주세요.')
+
+    expect(() =>
+      service.createPost({ ...validPost, title: '금지표현이 들어간 제목' }, writer),
+    ).toThrow('금칙어가 포함되어 등록할 수 없습니다.')
+
+    const post = service.createPost(validPost, writer)
+    expect(() => service.addComment(post.id, { body: '댓글에 금지표현 포함' }, other)).toThrow(
+      '금칙어가 포함되어 등록할 수 없습니다.',
+    )
+
+    const updated = service.updateForbiddenWord(created.id, { term: '다른금칙어' })
+    expect(updated.term).toBe('다른금칙어')
+    expect(service.deleteForbiddenWord(created.id)).toEqual({ deleted: true })
+    expect(
+      service.createPost({ ...validPost, body: '다른금칙어가 있어도 삭제 후 허용' }, writer).id,
+    ).toBeGreaterThan(0)
+    expect(() => service.deleteForbiddenWord(created.id)).toThrow('금칙어를 찾을 수 없습니다.')
+  })
 })

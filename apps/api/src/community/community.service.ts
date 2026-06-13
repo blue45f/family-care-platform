@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 
 import { communityAttachmentKind, dataUrlByteSize } from '@family-care/shared'
 
@@ -6,6 +11,7 @@ import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
 import type { AuthenticatedUser } from '../auth/auth.model'
 import {
+  communityForbiddenWordInputSchema,
   communityCommentInputSchema,
   communityPostInputSchema,
   communityVisibilityInputSchema,
@@ -13,6 +19,8 @@ import {
 import type {
   CommunityComment,
   CommunityCommentInput,
+  CommunityForbiddenWord,
+  CommunityForbiddenWordInput,
   CommunityPost,
   CommunityPostDetail,
   CommunityPostInput,
@@ -22,6 +30,7 @@ import type {
 const EXCERPT_LENGTH = 120
 const POST_NOT_FOUND_MESSAGE = '게시글을 찾을 수 없습니다.'
 const COMMENT_NOT_FOUND_MESSAGE = '댓글을 찾을 수 없습니다.'
+const FORBIDDEN_WORD_NOT_FOUND_MESSAGE = '금칙어를 찾을 수 없습니다.'
 
 export type CommunityListFilter = {
   category?: string
@@ -133,8 +142,13 @@ export class CommunityService {
     'community-comments.json',
     () => ({ items: seedComments(), seq: seedComments().length + 1 }),
   )
+  private readonly forbiddenWordStore = new JsonCollectionStore<CommunityForbiddenWord>(
+    'community-forbidden-words.json',
+    () => ({ items: [], seq: 1 }),
+  )
   private postState = this.postStore.load()
   private commentState = this.commentStore.load()
+  private forbiddenWordState = this.forbiddenWordStore.load()
 
   private isAdmin(actor: AuthenticatedUser | undefined): boolean {
     return actor?.role === 'admin'
@@ -142,6 +156,21 @@ export class CommunityService {
 
   private findPost(postId: number): CommunityPost | undefined {
     return this.postState.items.find((post) => post.id === postId)
+  }
+
+  private normalizeForbiddenTerm(term: string): string {
+    return term.trim().toLowerCase()
+  }
+
+  private assertAllowedCommunityText(...values: string[]): void {
+    const haystack = values.join('\n').toLowerCase()
+    const matched = this.forbiddenWordState.items.find((word) => {
+      const term = this.normalizeForbiddenTerm(word.term)
+      return term.length > 0 && haystack.includes(term)
+    })
+    if (matched) {
+      throw new ForbiddenException('금칙어가 포함되어 등록할 수 없습니다.')
+    }
   }
 
   /** 일반 사용자에게 보이는 글만 통과시키고, 숨김 글은 어드민에게만 노출한다. */
@@ -209,6 +238,7 @@ export class CommunityService {
   /** POST /api/community/posts — 글 작성(첨부 검증 포함). */
   createPost(input: CommunityPostInput, actor: AuthenticatedUser): CommunityPostDetail {
     const parsed = parseWithSchema(communityPostInputSchema, input)
+    this.assertAllowedCommunityText(parsed.title, parsed.body)
 
     const next: CommunityPost = {
       id: this.postState.seq!,
@@ -243,6 +273,7 @@ export class CommunityService {
     actor: AuthenticatedUser,
   ): CommunityComment {
     const parsed = parseWithSchema(communityCommentInputSchema, input)
+    this.assertAllowedCommunityText(parsed.body)
     const post = this.findVisiblePost(postId, actor)
 
     const parentId = parsed.parentId ?? null
@@ -351,6 +382,67 @@ export class CommunityService {
     post.hidden = parsed.hidden
     this.postStore.save(this.postState)
     return this.toSummary(post)
+  }
+
+  /** GET /api/admin/community/forbidden-words — 관리자 금칙어 목록. */
+  listForbiddenWords(): CommunityForbiddenWord[] {
+    return [...this.forbiddenWordState.items].sort(
+      (a, b) => a.term.localeCompare(b.term, 'ko') || a.id - b.id,
+    )
+  }
+
+  /** POST /api/admin/community/forbidden-words — 금칙어 추가. */
+  createForbiddenWord(input: CommunityForbiddenWordInput): CommunityForbiddenWord {
+    const parsed = parseWithSchema(communityForbiddenWordInputSchema, input)
+    this.assertUniqueForbiddenWord(parsed.term)
+
+    const now = new Date().toISOString()
+    const next: CommunityForbiddenWord = {
+      id: this.forbiddenWordState.seq!,
+      term: parsed.term,
+      createdAt: now,
+      updatedAt: now,
+    }
+    this.forbiddenWordState.items.push(next)
+    this.forbiddenWordState.seq = this.forbiddenWordState.seq! + 1
+    this.forbiddenWordStore.save(this.forbiddenWordState)
+    return { ...next }
+  }
+
+  /** PATCH /api/admin/community/forbidden-words/:id — 금칙어 수정. */
+  updateForbiddenWord(id: number, input: CommunityForbiddenWordInput): CommunityForbiddenWord {
+    const parsed = parseWithSchema(communityForbiddenWordInputSchema, input)
+    const target = this.forbiddenWordState.items.find((word) => word.id === id)
+    if (!target) {
+      throw new NotFoundException(FORBIDDEN_WORD_NOT_FOUND_MESSAGE)
+    }
+    this.assertUniqueForbiddenWord(parsed.term, id)
+
+    target.term = parsed.term
+    target.updatedAt = new Date().toISOString()
+    this.forbiddenWordStore.save(this.forbiddenWordState)
+    return { ...target }
+  }
+
+  /** POST /api/admin/community/forbidden-words/:id/delete — 금칙어 삭제. */
+  deleteForbiddenWord(id: number): { deleted: true } {
+    const before = this.forbiddenWordState.items.length
+    this.forbiddenWordState.items = this.forbiddenWordState.items.filter((word) => word.id !== id)
+    if (this.forbiddenWordState.items.length === before) {
+      throw new NotFoundException(FORBIDDEN_WORD_NOT_FOUND_MESSAGE)
+    }
+    this.forbiddenWordStore.save(this.forbiddenWordState)
+    return { deleted: true }
+  }
+
+  private assertUniqueForbiddenWord(term: string, exceptId?: number): void {
+    const normalized = this.normalizeForbiddenTerm(term)
+    const exists = this.forbiddenWordState.items.some(
+      (word) => word.id !== exceptId && this.normalizeForbiddenTerm(word.term) === normalized,
+    )
+    if (exists) {
+      throw new ConflictException('이미 등록된 금칙어입니다.')
+    }
   }
 
   // AuthGuard가 스토어에서 재조회한 이름을 우선 쓰고, 비어 있으면 이메일 로컬 파트로 폴백한다.

@@ -29,9 +29,9 @@ type PolicyPageProps = {
 }
 
 type PolicyViewState =
-  | { status: 'loading' }
-  | { status: 'error' }
-  | { status: 'ready'; policy: TermsdeskPolicy }
+  | { status: 'loading'; slug: PolicySlug }
+  | { status: 'error'; slug: PolicySlug }
+  | { status: 'ready'; slug: PolicySlug; policy: TermsdeskPolicy }
 
 /** 로딩 스켈레톤: 조항 제목 + 본문 줄 구조를 흉내 내 레이아웃 점프를 줄인다. */
 export const PolicySkeletonCard = () => (
@@ -73,7 +73,7 @@ export const PolicyFallbackCard = ({ slug, onRetry }: PolicyFallbackCardProps) =
             className="btn btn-secondary"
             href={policyDocumentUrl(slug)}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             TermsDesk 원문 열기
           </a>
@@ -138,7 +138,12 @@ export const PolicyArticle = ({ slug, policy }: PolicyArticleProps) => {
             <code title={policy.contentHash}>{shortContentHash(policy.contentHash)}</code>
           </li>
         </ul>
-        <a className="card-link" href={policyDocumentUrl(slug)} target="_blank" rel="noreferrer">
+        <a
+          className="card-link"
+          href={policyDocumentUrl(slug)}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           TermsDesk 원문에서 확인
         </a>
       </footer>
@@ -150,24 +155,29 @@ export const PolicyPage = ({ route, onNavigate }: PolicyPageProps) => {
   const def = routeDefs[route]
   const slug = POLICY_SLUG_BY_ROUTE[route]
   const [attempt, setAttempt] = useState(0)
-  const [view, setView] = useState<PolicyViewState>({ status: 'loading' })
+  const [view, setView] = useState<PolicyViewState>({ status: 'loading', slug })
+  const currentView: PolicyViewState = view.slug === slug ? view : { status: 'loading', slug }
 
   useEffect(() => {
     let cancelled = false
-    setView({ status: 'loading' })
 
     fetchTermsdeskPolicy(slug)
       .then((policy) => {
-        if (!cancelled) setView({ status: 'ready', policy })
+        if (!cancelled) setView({ status: 'ready', slug, policy })
       })
       .catch(() => {
-        if (!cancelled) setView({ status: 'error' })
+        if (!cancelled) setView({ status: 'error', slug })
       })
 
     return () => {
       cancelled = true
     }
   }, [slug, attempt])
+
+  const retry = () => {
+    setView({ status: 'loading', slug })
+    setAttempt((count) => count + 1)
+  }
 
   return (
     <div className="stack legal-page">
@@ -181,11 +191,11 @@ export const PolicyPage = ({ route, onNavigate }: PolicyPageProps) => {
         }
       />
 
-      {view.status === 'loading' ? <PolicySkeletonCard /> : null}
-      {view.status === 'error' ? (
-        <PolicyFallbackCard slug={slug} onRetry={() => setAttempt((count) => count + 1)} />
+      {currentView.status === 'loading' ? <PolicySkeletonCard /> : null}
+      {currentView.status === 'error' ? <PolicyFallbackCard slug={slug} onRetry={retry} /> : null}
+      {currentView.status === 'ready' ? (
+        <PolicyArticle slug={slug} policy={currentView.policy} />
       ) : null}
-      {view.status === 'ready' ? <PolicyArticle slug={slug} policy={view.policy} /> : null}
     </div>
   )
 }

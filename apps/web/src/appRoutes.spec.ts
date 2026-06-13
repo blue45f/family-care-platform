@@ -24,6 +24,7 @@ describe('appRoutes', () => {
       ...todayFirstRoutes,
       ...communityRoutes,
       ...managementRoutes,
+      '/account',
       '/overview',
       '/terms',
       '/privacy',
@@ -57,5 +58,6 @@ describe('appRoutes', () => {
     expect(getUnauthenticatedRouteIntent('/messages')).toBe('protected')
     expect(getUnauthenticatedRouteIntent('/support')).toBe('protected')
     expect(getUnauthenticatedRouteIntent('/members')).toBe('protected')
+    expect(getUnauthenticatedRouteIntent('/account')).toBe('protected')
   })
 })

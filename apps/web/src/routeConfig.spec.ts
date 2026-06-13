@@ -176,8 +176,11 @@ describe('상용 서비스 정보 구조', () => {
   })
 
   it('인증 라우트는 본문 내비게이션에 노출하지 않는다', () => {
+    expect(routeDefs['/account']).toMatchObject({ section: 'account', inNav: true })
     expect(routeDefs['/login']).toMatchObject({ section: 'account', inNav: false })
     expect(routeDefs['/register']).toMatchObject({ section: 'account', inNav: false })
+    const accountGroup = navGroups.find((group) => group.section === 'account')
+    expect(accountGroup?.items.map((item) => item.path)).toEqual(['/account'])
   })
 
   it('사용법 가이드는 서비스 관리 내비게이션에 노출된다', () => {

@@ -22,21 +22,19 @@ export default defineConfig([
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, tseslint.configs.recommended],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
-        'warn',
+        'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/no-unsafe-function-type': 'warn',
-      '@typescript-eslint/no-require-imports': 'warn',
-      '@typescript-eslint/no-unused-expressions': 'warn',
-      'no-empty': ['warn', { allowEmptyCatch: true }],
-      'no-useless-escape': 'warn',
-      // Quality/style rules from the recommended preset surface in existing source.
-      // Advisory so the gate fails on real bugs, not on style — matching the sibling
-      // repos' "warn-not-error" posture. (Fixable later via `eslint --fix`.)
-      'prefer-const': 'warn',
-      'no-useless-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-function-type': 'error',
+      '@typescript-eslint/no-require-imports': 'error',
+      '@typescript-eslint/no-unused-expressions': 'error',
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-useless-escape': 'error',
+      // Quality/style rules from the recommended preset are part of the hard gate.
+      'prefer-const': 'error',
+      'no-useless-assignment': 'error',
     },
   },
 
@@ -57,20 +55,17 @@ export default defineConfig([
         { name: 'alert', message: 'toast/인라인 알림을 사용하세요 (window.alert 금지).' },
         { name: 'prompt', message: '브랜드 입력 다이얼로그를 사용하세요 (window.prompt 금지).' },
       ],
-      'react-hooks/exhaustive-deps': 'warn',
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      'react-hooks/rules-of-hooks': 'warn',
-      // react-hooks v7 ships experimental React Compiler diagnostics as errors.
-      // apps/web has the React Compiler enabled (babel-plugin-react-compiler), so we
-      // keep these as advisory warnings (matching sibling repos) — the gate fails on
-      // genuine rules-of-hooks bugs, not on idiomatic effect/render patterns.
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/purity': 'warn',
-      'react-hooks/incompatible-library': 'warn',
-      'react-hooks/immutability': 'warn',
-      'react-hooks/refs': 'warn',
-      'react-hooks/preserve-manual-memoization': 'warn',
-      'react-hooks/static-components': 'warn',
+      'react-hooks/exhaustive-deps': 'error',
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
+      'react-hooks/rules-of-hooks': 'error',
+      // react-hooks v7 ships React Compiler diagnostics; enforce them as errors.
+      'react-hooks/set-state-in-effect': 'error',
+      'react-hooks/purity': 'error',
+      'react-hooks/incompatible-library': 'error',
+      'react-hooks/immutability': 'error',
+      'react-hooks/refs': 'error',
+      'react-hooks/preserve-manual-memoization': 'error',
+      'react-hooks/static-components': 'error',
     },
   },
 

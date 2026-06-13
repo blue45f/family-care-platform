@@ -96,6 +96,7 @@ const MAX_LOG_ENTRIES = 64
 const DEFAULT_REPORT_REASON: ReportReason = '스팸'
 const DEMO_COMMENT_AUTHOR = '데모 사용자'
 const TERMS_REQUIRED_SECTION_IDS = ['public-scope', 'access-control', 'data-policy'] as const
+type TermsRequiredSectionId = (typeof TERMS_REQUIRED_SECTION_IDS)[number]
 const now = Date.now()
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -522,11 +523,11 @@ const normalizeThread = (raw: unknown, index: number): CommunityThread | null =>
   }
 }
 
-const isTermsSectionId = (value: unknown): value is string =>
-  typeof value === 'string' && TERMS_REQUIRED_SECTION_IDS.includes(value as any)
+const isTermsSectionId = (value: unknown): value is TermsRequiredSectionId =>
+  typeof value === 'string' && (TERMS_REQUIRED_SECTION_IDS as readonly string[]).includes(value)
 
 type TermsConsentState = {
-  agreedIds: string[]
+  agreedIds: TermsRequiredSectionId[]
 }
 
 const readTermsConsentState = (): TermsConsentState => {
@@ -699,13 +700,12 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const [sortMode, setSortMode] = useState<SortMode>('latest')
   const termsConsent = useMemo(() => readTermsConsentState(), [])
 
-  const initialThreads = readCommunityThreads()
-  const [threads, setThreads] = useState<CommunityThread[]>(initialThreads)
+  const [threads, setThreads] = useState<CommunityThread[]>(readCommunityThreads)
   const [threadActionLogs, setThreadActionLogs] =
     useState<CommunityActionLog[]>(readCommunityActionLog)
   const [likedThreadIds, setLikedThreadIds] = useState<string[]>(readLikedThreads)
   const [bookmarkedThreadIds, setBookmarkedThreadIds] = useState<string[]>(readBookmarkedThreads)
-  const [selectedThreadId, setSelectedThreadId] = useState<string>(initialThreads[0]?.id ?? '')
+  const [selectedThreadId, setSelectedThreadId] = useState('')
 
   const [reportReason, setReportReason] = useState<ReportReason>(DEFAULT_REPORT_REASON)
   const [reportMemo, setReportMemo] = useState('')
@@ -874,6 +874,12 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     [filteredThreads, selectedThreadId, threads],
   )
 
+  const resetReportDraft = () => {
+    setReportReason(DEFAULT_REPORT_REASON)
+    setReportMemo('')
+    setReportError('')
+  }
+
   const requireTerms = (action: string, thread: CommunityThread | undefined, detail = '') => {
     if (isTermsReady) {
       return true
@@ -883,26 +889,6 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     showFeedback(`필수 약관 동의 후에만 ${action}할 수 있어요.`)
     return false
   }
-
-  useEffect(() => {
-    if (selectedThread) {
-      setSelectedThreadId(selectedThread.id)
-      return
-    }
-
-    if (filteredThreads[0]) {
-      setSelectedThreadId(filteredThreads[0].id)
-    }
-  }, [filteredThreads, selectedThread])
-
-  useEffect(() => {
-    if (!selectedThread) {
-      return
-    }
-    setReportReason(DEFAULT_REPORT_REASON)
-    setReportMemo('')
-    setReportError('')
-  }, [selectedThreadId])
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -961,7 +947,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   }
 
   const appendActionLog = (
-    thread: CommunityThread | undefined,
+    thread: Pick<CommunityThread, 'id' | 'title'> | undefined,
     action: CommunityThreadActionType,
     note?: string,
   ) => {
@@ -1006,6 +992,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     }
 
     setSelectedThreadId(threadId)
+    resetReportDraft()
     updateThread(threadId, (thread) => ({
       ...thread,
       views: thread.views + 1,
@@ -1226,18 +1213,28 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
-    const next = {
-      id: makeReplyId(),
-      author: DEMO_COMMENT_AUTHOR,
-      text,
-      at: formatRelativeTime(Date.now()),
-      createdAt: Date.now(),
-    }
-
-    updateThread(selectedThread.id, (thread) => ({
-      ...thread,
-      replies: [...thread.replies, next],
-    }))
+    const replyId = makeReplyId()
+    setThreads((current) =>
+      current.map((thread) => {
+        if (thread.id !== selectedThread.id) {
+          return thread
+        }
+        const createdAt = Date.now()
+        return {
+          ...thread,
+          replies: [
+            ...thread.replies,
+            {
+              id: replyId,
+              author: DEMO_COMMENT_AUTHOR,
+              text,
+              at: '방금 전',
+              createdAt,
+            },
+          ],
+        }
+      }),
+    )
 
     appendActionLog(selectedThread, 'comment', `입력 길이 ${text.length}`)
     setReplyDraft('')
@@ -1280,30 +1277,33 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
 
-    const createdAt = Date.now()
-    const newThread: CommunityThread = {
-      id: makeThreadId(),
-      title,
-      category: draft.category,
-      author: DEMO_COMMENT_AUTHOR,
-      at: '방금 전',
-      summary: trimBodySummary(text),
-      body: text,
-      likes: 0,
-      views: 0,
-      tags: [draft.category === '운영 팁' ? '운영팁' : draft.category],
-      replies: [],
-      createdAt,
-      state: 'open',
-      isPinned: false,
-      reportCount: 0,
-    }
-
-    setThreads((current) => [newThread, ...current])
-    setSelectedThreadId(newThread.id)
-    appendActionLog(newThread, 'publish')
+    const threadId = makeThreadId()
+    setThreads((current) => {
+      const createdAt = Date.now()
+      const newThread: CommunityThread = {
+        id: threadId,
+        title,
+        category: draft.category,
+        author: DEMO_COMMENT_AUTHOR,
+        at: '방금 전',
+        summary: trimBodySummary(text),
+        body: text,
+        likes: 0,
+        views: 0,
+        tags: [draft.category === '운영 팁' ? '운영팁' : draft.category],
+        replies: [],
+        createdAt,
+        state: 'open',
+        isPinned: false,
+        reportCount: 0,
+      }
+      return [newThread, ...current]
+    })
+    setSelectedThreadId(threadId)
+    appendActionLog({ id: threadId, title }, 'publish')
     setDraft((current) => ({ ...current, title: '', text: '' }))
     setDraftError('')
+    resetReportDraft()
     showFeedback('게시글이 등록되었습니다.')
   }
 
@@ -1331,6 +1331,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     setBookmarkedThreadIds([])
     persistLikedThreads([])
     persistBookmarkedThreads([])
+    resetReportDraft()
     setDraft({
       title: '',
       category: '운영 팁',
@@ -1353,15 +1354,6 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     }
     showFeedback('데모를 기본 샘플 데이터로 초기화했습니다.')
   }
-
-  useEffect(() => {
-    if (threads[0]) {
-      const hasSelection = threads.some((thread) => thread.id === selectedThreadId)
-      if (!hasSelection) {
-        setSelectedThreadId(threads[0].id)
-      }
-    }
-  }, [selectedThreadId, threads])
 
   useEffect(() => {
     if (feedbackMessage === '') {

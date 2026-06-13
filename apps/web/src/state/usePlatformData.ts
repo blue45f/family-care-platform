@@ -490,10 +490,8 @@ export const usePlatformData = (): UsePlatformDataResult => {
     scenarioRevenue.goalRate,
   ])
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const refreshData = useCallback(async () => {
     try {
-      setErrorMessage('')
       const [
         schedulesResult,
         logsResult,
@@ -516,6 +514,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
       setClaims(claimsResult)
       setAdminOverview(overviewResult)
       setPlans(plansResult)
+      setErrorMessage('')
     } catch (error) {
       const message = normalizeErrorMessage(
         error,
@@ -527,9 +526,62 @@ export const usePlatformData = (): UsePlatformDataResult => {
     }
   }, [])
 
+  const load = useCallback(async () => {
+    setLoading(true)
+    setErrorMessage('')
+    await refreshData()
+  }, [refreshData])
+
   useEffect(() => {
-    void load()
-  }, [load])
+    let cancelled = false
+    Promise.all([
+      fetchSchedules(),
+      fetchCareLogs(),
+      fetchSettlements(),
+      fetchClaims(),
+      fetchAdminOverview(),
+      fetchAdminPlans(),
+    ])
+      .then(
+        ([
+          schedulesResult,
+          logsResult,
+          settlementsResult,
+          claimsResult,
+          overviewResult,
+          plansResult,
+        ]) => {
+          if (cancelled) {
+            return
+          }
+          setSchedules(schedulesResult)
+          setCareLogs(logsResult)
+          setSettlements(settlementsResult)
+          setClaims(claimsResult)
+          setAdminOverview(overviewResult)
+          setPlans(plansResult)
+          setErrorMessage('')
+        },
+      )
+      .catch((error) => {
+        if (cancelled) {
+          return
+        }
+        const message = normalizeErrorMessage(
+          error,
+          '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.',
+        )
+        setErrorMessage(message)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // 검증은 폼(zodResolver)에서 끝난 뒤 검증된 값을 받는다. 여기서는 제출 부수효과만 처리한다.
   const submitSchedule = useCallback(

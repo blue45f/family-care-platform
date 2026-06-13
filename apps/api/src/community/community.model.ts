@@ -12,3 +12,14 @@ export type {
   CommunityPostInput,
   CommunityCommentInput,
 } from '@family-care/shared'
+
+export interface CommunityForbiddenWord {
+  id: number
+  term: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CommunityForbiddenWordInput {
+  term: string
+}

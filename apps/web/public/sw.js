@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const CACHE_NAME = 'family-care-platform-pwa-v2'
 
 self.addEventListener('install', () => {

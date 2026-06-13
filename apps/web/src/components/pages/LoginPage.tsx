@@ -5,7 +5,8 @@ import { z } from 'zod'
 import { useLocation } from 'react-router-dom'
 
 import type { AppRoute, PublicNavigateState } from '../../routeConfig'
-import { DEMO_CREDENTIALS, useAuth } from '../../auth/useAuth'
+import { DEMO_CREDENTIALS } from '../../auth/authSession'
+import { useAuth } from '../../auth/useAuth'
 import { Button, Card, Field, Icon, Input } from '../ui'
 
 type LoginPageProps = {

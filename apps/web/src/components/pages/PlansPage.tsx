@@ -1,5 +1,5 @@
 import { type CSSProperties, type ReactNode, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import type { PlatformData } from '../../state/usePlatformData'
@@ -91,7 +91,7 @@ const PlanCard = ({ plan, submitPlan, isSaving, isReadOnly }: PlanCardProps): Re
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     formState: { errors, isValid },
   } = useForm<RevenuePlanFormValues>({
@@ -108,9 +108,9 @@ const PlanCard = ({ plan, submitPlan, isSaving, isReadOnly }: PlanCardProps): Re
 
   const isBusy = isReadOnly || isSaving
 
-  const monthlyPrice = watch('monthlyPrice')
-  const annualDiscountRate = watch('annualDiscountRate')
-  const activeClients = watch('activeClients')
+  const monthlyPrice = useWatch({ control, name: 'monthlyPrice' })
+  const annualDiscountRate = useWatch({ control, name: 'annualDiscountRate' })
+  const activeClients = useWatch({ control, name: 'activeClients' })
 
   const safeMonthly = Number.isFinite(monthlyPrice) ? monthlyPrice : 0
   const safeClients = Number.isFinite(activeClients) ? activeClients : 0

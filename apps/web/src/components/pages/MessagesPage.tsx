@@ -48,7 +48,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
   const [recipients, setRecipients] = useState<MessageRecipient[]>([])
   const [activePartnerId, setActivePartnerId] = useState<number | null>(prefill.recipientId ?? null)
   const [conversation, setConversation] = useState<ConversationDetail | null>(null)
-  const [conversationLoading, setConversationLoading] = useState(false)
+  const [conversationLoading, setConversationLoading] = useState(() => Boolean(prefill.recipientId))
   const [draft, setDraft] = useState('')
   const [newRecipientId, setNewRecipientId] = useState('')
   const [sending, setSending] = useState(false)
@@ -56,10 +56,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
   const [pollFailed, setPollFailed] = useState(false)
   const logRef = useRef<HTMLDivElement | null>(null)
 
-  const loadConversations = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (!options.silent) {
-      setListLoading(true)
-    }
+  const refreshConversations = useCallback(async (options: { silent?: boolean } = {}) => {
     try {
       setConversations(await fetchConversations())
       setPollFailed(false)
@@ -77,12 +74,18 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
     }
   }, [])
 
-  const openConversation = useCallback(
-    async (partnerId: number, options: { silent?: boolean } = {}) => {
+  const loadConversations = useCallback(
+    async (options: { silent?: boolean } = {}) => {
       if (!options.silent) {
-        setConversationLoading(true)
-        setActivePartnerId(partnerId)
+        setListLoading(true)
       }
+      return refreshConversations(options)
+    },
+    [refreshConversations],
+  )
+
+  const refreshConversation = useCallback(
+    async (partnerId: number, options: { silent?: boolean } = {}) => {
       try {
         const detail = await fetchConversation(partnerId)
         setConversation(detail)
@@ -93,7 +96,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
         )
         if (unread) {
           await postConversationRead(partnerId)
-          await loadConversations({ silent: true })
+          await refreshConversations({ silent: true })
         }
       } catch (cause) {
         if (!options.silent) {
@@ -108,17 +111,89 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
         }
       }
     },
-    [loadConversations, myId],
+    [myId, refreshConversations],
+  )
+
+  const openConversation = useCallback(
+    async (partnerId: number, options: { silent?: boolean } = {}) => {
+      if (!options.silent) {
+        setConversationLoading(true)
+        setActivePartnerId(partnerId)
+      }
+      await refreshConversation(partnerId, options)
+    },
+    [refreshConversation],
   )
 
   // 초기 로드: 목록 + 받는 사람 후보 + (커뮤니티에서 넘어온) 프리필 대화.
   useEffect(() => {
-    void loadConversations()
+    let cancelled = false
+    fetchConversations()
+      .then((next) => {
+        if (cancelled) {
+          return
+        }
+        setConversations(next)
+        setPollFailed(false)
+      })
+      .catch((cause) => {
+        if (cancelled) {
+          return
+        }
+        setError(normalizeApiErrorMessage(cause, '쪽지함을 불러오지 못했습니다.'))
+        setPollFailed(true)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setListLoading(false)
+        }
+      })
     fetchMessageRecipients()
-      .then(setRecipients)
-      .catch(() => setRecipients([]))
-    if (prefill.recipientId) {
-      void openConversation(prefill.recipientId)
+      .then((next) => {
+        if (!cancelled) {
+          setRecipients(next)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRecipients([])
+        }
+      })
+    const prefillRecipientId = prefill.recipientId
+    if (prefillRecipientId !== undefined) {
+      fetchConversation(prefillRecipientId)
+        .then(async (detail) => {
+          if (cancelled) {
+            return
+          }
+          setConversation(detail)
+          setPollFailed(false)
+          const unread = detail.messages.some(
+            (message) => myId !== null && message.recipientId === myId && message.readAt === null,
+          )
+          if (unread) {
+            await postConversationRead(prefillRecipientId)
+            const nextConversations = await fetchConversations()
+            if (!cancelled) {
+              setConversations(nextConversations)
+            }
+          }
+        })
+        .catch((cause) => {
+          if (cancelled) {
+            return
+          }
+          setConversation(null)
+          setError(normalizeApiErrorMessage(cause, '대화를 불러오지 못했습니다.'))
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setConversationLoading(false)
+          }
+        })
+    }
+    return () => {
+      cancelled = true
     }
     // location.state 프리필은 마운트 시 한 번만 반영한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps

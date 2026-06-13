@@ -110,32 +110,75 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
     mode: 'onChange',
   })
 
-  const loadPosts = useCallback(
-    async (filter: { category: CategoryFilter; q: string }, options: { silent?: boolean } = {}) => {
-      if (!options.silent) {
-        setListLoading(true)
-      }
+  const fetchPostList = useCallback(
+    async (
+      filter: { category: CategoryFilter; q: string },
+      options: { isCancelled?: () => boolean } = {},
+    ) => {
       try {
         const next = await fetchCommunityPosts({
           category: filter.category === '전체' ? undefined : filter.category,
           q: filter.q || undefined,
         })
+        if (options.isCancelled?.()) {
+          return null
+        }
         setPosts(next)
         setError('')
         return next
       } catch (cause) {
+        if (options.isCancelled?.()) {
+          return null
+        }
         setError(normalizeApiErrorMessage(cause, '게시글을 불러오지 못했습니다.'))
         return null
       } finally {
-        setListLoading(false)
+        if (!options.isCancelled?.()) {
+          setListLoading(false)
+        }
       }
     },
     [],
   )
 
+  const loadPosts = useCallback(
+    async (filter: { category: CategoryFilter; q: string }, options: { silent?: boolean } = {}) => {
+      if (!options.silent) {
+        setListLoading(true)
+      }
+      return fetchPostList(filter)
+    },
+    [fetchPostList],
+  )
+
   useEffect(() => {
-    void loadPosts({ category, q: appliedQuery })
-  }, [appliedQuery, category, loadPosts])
+    let cancelled = false
+    fetchCommunityPosts({
+      category: category === '전체' ? undefined : category,
+      q: appliedQuery || undefined,
+    })
+      .then((next) => {
+        if (cancelled) {
+          return
+        }
+        setPosts(next)
+        setError('')
+      })
+      .catch((cause) => {
+        if (cancelled) {
+          return
+        }
+        setError(normalizeApiErrorMessage(cause, '게시글을 불러오지 못했습니다.'))
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setListLoading(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [appliedQuery, category])
 
   const openPost = useCallback(async (postId: number) => {
     setSelectedId(postId)
@@ -172,7 +215,18 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setAppliedQuery(searchInput.trim())
+    const nextQuery = searchInput.trim()
+    if (nextQuery !== appliedQuery) {
+      setListLoading(true)
+    }
+    setAppliedQuery(nextQuery)
+  }
+
+  const applyCategory = (nextCategory: CategoryFilter) => {
+    if (nextCategory !== category) {
+      setListLoading(true)
+    }
+    setCategory(nextCategory)
   }
 
   /* ---- 첨부 선택 ---- */
@@ -742,7 +796,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                 type="button"
                 className={`board-filter ${category === option ? 'is-active' : ''}`}
                 aria-pressed={category === option}
-                onClick={() => setCategory(option)}
+                onClick={() => applyCategory(option)}
               >
                 {option}
               </button>

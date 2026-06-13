@@ -253,15 +253,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
     )
   }, [faqSearch])
 
-  useEffect(() => {
+  const activeVisibleFaqQuestion = useMemo(() => {
     if (!visibleFaqs.length) {
-      setActiveFaqQuestion('')
-      return
+      return ''
     }
-
-    if (!activeFaqQuestion || !visibleFaqs.some((faq) => faq.question === activeFaqQuestion)) {
-      setActiveFaqQuestion(visibleFaqs[0].question)
-    }
+    return visibleFaqs.some((faq) => faq.question === activeFaqQuestion)
+      ? activeFaqQuestion
+      : visibleFaqs[0].question
   }, [activeFaqQuestion, visibleFaqs])
 
   useEffect(() => {
@@ -664,7 +662,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             className="btn btn-secondary"
             href={`${SUPPORT_URL}?category=site-inquiry`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             사이트 문의
           </a>
@@ -672,7 +670,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             className="btn btn-secondary"
             href={`${SUPPORT_URL}?category=partnership`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             제휴 문의
           </a>
@@ -680,7 +678,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             className="btn btn-secondary"
             href={`${SUPPORT_URL}?category=bug`}
             target="_blank"
-            rel="noreferrer"
+            rel="noopener noreferrer"
           >
             버그 제보
           </a>
@@ -713,7 +711,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         ) : (
           <div className="public-faq-list">
             {visibleFaqs.map((faq) => {
-              const isOpen = activeFaqQuestion === faq.question
+              const isOpen = activeVisibleFaqQuestion === faq.question
 
               return (
                 <article className="public-faq-item" key={faq.question}>
@@ -809,7 +807,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
                   className="public-footer-link"
                   href={publicFooterSupportLink.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                 >
                   {publicFooterSupportLink.label}
                 </a>

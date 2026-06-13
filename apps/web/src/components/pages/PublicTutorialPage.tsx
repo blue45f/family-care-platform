@@ -639,6 +639,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
     [
       checkedCount,
       requiredRouteVisitCount,
+      scenarioSummaries,
       isCopyActionDone,
       faqOpenCount,
       scenarioCompletionRate,

@@ -52,10 +52,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
   const [pollFailed, setPollFailed] = useState(false)
   const logRef = useRef<HTMLDivElement | null>(null)
 
-  const loadThreads = useCallback(async (options: { silent?: boolean } = {}) => {
-    if (!options.silent) {
-      setListLoading(true)
-    }
+  const refreshThreads = useCallback(async (options: { silent?: boolean } = {}) => {
     try {
       setThreads(await fetchSupportThreads())
       setPollFailed(false)
@@ -70,6 +67,16 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
       }
     }
   }, [])
+
+  const loadThreads = useCallback(
+    async (options: { silent?: boolean } = {}) => {
+      if (!options.silent) {
+        setListLoading(true)
+      }
+      await refreshThreads(options)
+    },
+    [refreshThreads],
+  )
 
   const openThread = useCallback(async (threadId: number, options: { silent?: boolean } = {}) => {
     if (!options.silent) {
@@ -94,8 +101,31 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
   }, [])
 
   useEffect(() => {
-    void loadThreads()
-  }, [loadThreads])
+    let cancelled = false
+    fetchSupportThreads()
+      .then((next) => {
+        if (cancelled) {
+          return
+        }
+        setThreads(next)
+        setPollFailed(false)
+      })
+      .catch((cause) => {
+        if (cancelled) {
+          return
+        }
+        setError(normalizeApiErrorMessage(cause, '상담 목록을 불러오지 못했습니다.'))
+        setPollFailed(true)
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setListLoading(false)
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // 폴링: 탭이 보일 때만 목록·활성 상담을 조용히 갱신한다(실패해도 기존 화면 유지).
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
 import type { AppRoute } from '../../routeConfig'
 import { Icon } from '../ui/Icon'
@@ -42,6 +42,15 @@ export const AppShell = ({
   const drawerRef = useRef<HTMLDivElement | null>(null)
   const toggleRef = useRef<HTMLButtonElement | null>(null)
 
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false)
+    toggleRef.current?.focus()
+  }, [])
+
+  const handleNavigate = useCallback(() => {
+    closeDrawer()
+  }, [closeDrawer])
+
   // 드로어가 열리면 본문 스크롤을 잠그고 첫 포커스를 드로어로 옮긴다.
   useEffect(() => {
     if (!drawerOpen) {
@@ -62,7 +71,7 @@ export const AppShell = ({
       body.style.overflow = prevOverflow
       window.removeEventListener('keydown', onKey)
     }
-  }, [drawerOpen])
+  }, [closeDrawer, drawerOpen])
 
   // 데스크톱으로 넓어지면 드로어 상태를 정리한다(잔여 스크롤 락 방지).
   useEffect(() => {
@@ -78,15 +87,6 @@ export const AppShell = ({
     mq.addEventListener('change', sync)
     return () => mq.removeEventListener('change', sync)
   }, [])
-
-  const closeDrawer = () => {
-    setDrawerOpen(false)
-    toggleRef.current?.focus()
-  }
-
-  const handleNavigate = () => {
-    closeDrawer()
-  }
 
   return (
     <div className="app">

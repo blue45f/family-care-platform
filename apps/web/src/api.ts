@@ -1,4 +1,5 @@
 import type {
+  AdminUserUpdateInput,
   AdminOverview,
   CareLog,
   CareLogDraft,
@@ -8,6 +9,8 @@ import type {
   ClaimDraft,
   ClaimStatus,
   CommunityComment,
+  CommunityForbiddenWord,
+  CommunityForbiddenWordInput,
   CommunityCommentInput,
   CommunityPostDetail,
   CommunityPostInput,
@@ -30,7 +33,8 @@ import type {
   SupportThreadStatus,
   SupportThreadSummary,
 } from './types'
-import { authHeader } from './auth/useAuth'
+import type { AuthUser, UpdateProfileInput } from './auth/authContext'
+import { authHeader } from './auth/authSession'
 
 const DEFAULT_API_URL = import.meta.env.DEV ? 'http://127.0.0.1:3001/api' : '/api'
 const BASE_URL = import.meta.env.VITE_API_URL ?? DEFAULT_API_URL
@@ -120,6 +124,19 @@ export const updateAdminPlan = (body: RevenuePlanDraft) =>
     body: JSON.stringify(body),
   })
 
+/* ---- 내 계정 ---- */
+
+export const patchMyProfile = (body: UpdateProfileInput) =>
+  request<AuthUser>('/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+export const deleteMyAccount = (password: string) =>
+  request<AuthUser>('/auth/me/withdraw', {
+    method: 'POST',
+    body: JSON.stringify({ password }),
+  })
+
 /* ---- 커뮤니티 게시판 ---- */
 
 export const fetchCommunityPosts = (filter: { category?: string; q?: string } = {}) => {
@@ -189,8 +206,30 @@ export const postConversationRead = (partnerId: number) =>
 /* ---- 어드민 회원 관리 ---- */
 
 export const fetchAdminUsers = () => request<MemberUser[]>('/admin/users')
+export const patchAdminUser = (userId: number, body: AdminUserUpdateInput) =>
+  request<MemberUser>(`/admin/users/${userId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
 export const patchUserSuspension = (userId: number, suspended: boolean) =>
   request<MemberUser>(`/admin/users/${userId}/suspension`, {
     method: 'PATCH',
     body: JSON.stringify({ suspended }),
+  })
+
+export const fetchCommunityForbiddenWords = () =>
+  request<CommunityForbiddenWord[]>('/admin/community/forbidden-words')
+export const postCommunityForbiddenWord = (body: CommunityForbiddenWordInput) =>
+  request<CommunityForbiddenWord>('/admin/community/forbidden-words', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+export const patchCommunityForbiddenWord = (wordId: number, body: CommunityForbiddenWordInput) =>
+  request<CommunityForbiddenWord>(`/admin/community/forbidden-words/${wordId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  })
+export const deleteCommunityForbiddenWord = (wordId: number) =>
+  request<{ deleted: true }>(`/admin/community/forbidden-words/${wordId}/delete`, {
+    method: 'POST',
   })

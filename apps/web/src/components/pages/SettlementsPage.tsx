@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import type { AppRoute } from '../../routeConfig'
@@ -39,7 +39,7 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { isValid, errors },
   } = useForm<SettlementFormValues>({
     resolver: zodResolver(settlementFormSchema),
@@ -51,8 +51,8 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
   const canSubmit = isValid
 
   // 실시간 미리보기: 입력 중인 시간·단가로 합계를 즉시 보여준다.
-  const watchedHours = watch('careHours')
-  const watchedRate = watch('baseRate')
+  const watchedHours = useWatch({ control, name: 'careHours' })
+  const watchedRate = useWatch({ control, name: 'baseRate' })
   const livePreview = previewTotal(watchedHours, watchedRate)
 
   const onValid = handleSubmit(async (values) => {

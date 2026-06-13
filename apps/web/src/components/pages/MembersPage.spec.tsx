@@ -2,7 +2,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import { AuthProvider } from '../../auth/useAuth'
+import { AuthProvider } from '../../auth/AuthProvider'
 import { MembersPage } from './MembersPage'
 
 const render = () =>

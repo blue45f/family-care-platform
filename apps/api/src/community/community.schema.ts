@@ -75,6 +75,15 @@ export const communityVisibilityInputSchema = z.object({
   hidden: z.boolean({ error: 'hidden은 true/false여야 합니다.' }),
 })
 
+export const communityForbiddenWordInputSchema = z.object({
+  term: z
+    .string({ error: '금칙어를 입력해 주세요.' })
+    .transform((value) => value.trim())
+    .refine((value) => value.length > 0, { message: '금칙어를 입력해 주세요.' })
+    .refine((value) => value.length <= 60, { message: '금칙어는 60자 이내여야 합니다.' }),
+})
+
 export type CommunityPostInputParsed = z.infer<typeof communityPostInputSchema>
 export type CommunityCommentInputParsed = z.infer<typeof communityCommentInputSchema>
 export type CommunityVisibilityInputParsed = z.infer<typeof communityVisibilityInputSchema>
+export type CommunityForbiddenWordInputParsed = z.infer<typeof communityForbiddenWordInputSchema>

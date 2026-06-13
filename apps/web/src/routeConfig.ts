@@ -28,6 +28,7 @@ export type AppRoute =
   | '/members'
   | '/terms'
   | '/privacy'
+  | '/account'
   | '/login'
   | '/register'
 
@@ -241,6 +242,16 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     inNav: false,
     placeholder: false,
   },
+  '/account': {
+    path: '/account',
+    title: '계정 설정',
+    eyebrow: '계정',
+    description: '담당자 이름, 소속 기관, 비밀번호와 계정 탈퇴를 관리합니다.',
+    icon: 'shield',
+    section: 'account',
+    inNav: true,
+    placeholder: false,
+  },
   '/login': {
     path: '/login',
     title: '로그인',
@@ -326,6 +337,11 @@ export const navGroups: NavGroup[] = [
     section: 'manage',
     label: '서비스 관리',
     items: routeMap.filter((r) => r.section === 'manage' && r.inNav),
+  },
+  {
+    section: 'account',
+    label: '계정',
+    items: routeMap.filter((r) => r.section === 'account' && r.inNav),
   },
 ]
 

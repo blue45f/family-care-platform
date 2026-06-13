@@ -10,6 +10,11 @@ import type { PlatformData } from './state/usePlatformData'
 const AnalyticsPage = lazyRetry(() =>
   import('./components/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
 )
+const AccountSettingsPage = lazyRetry(() =>
+  import('./components/pages/AccountSettingsPage').then((m) => ({
+    default: m.AccountSettingsPage,
+  })),
+)
 const CarePage = lazyRetry(() =>
   import('./components/pages/CarePage').then((m) => ({ default: m.CarePage })),
 )
@@ -195,6 +200,10 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
   {
     path: '/members',
     render: ({ navigate }) => <MembersPage onNavigate={navigate} />,
+  },
+  {
+    path: '/account',
+    render: ({ navigate }) => <AccountSettingsPage onNavigate={navigate} />,
   },
   {
     path: '/overview',
