@@ -35,6 +35,7 @@ import {
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import type { ProtectedNavigateState } from '../../appRoutes'
 import type { CommunityComment, CommunityPostDetail, CommunityPostSummary } from '../../types'
+import { cn } from '../../utils/cn'
 import {
   Badge,
   Button,
@@ -755,18 +756,19 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
         </p>
       ) : null}
 
-      <div className="board-layout">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <Card>
           <CardHeader title="게시글" subtitle="보호자·간병인이 함께 쓰는 공간입니다." />
 
           <form
-            className="board-toolbar"
+            className="mb-3 flex gap-2"
             role="search"
             aria-label="게시글 검색"
             onSubmit={submitSearch}
           >
             <Input
               type="search"
+              className="min-w-0 flex-1"
               placeholder="제목·내용·작성자 검색"
               aria-label="게시글 검색어"
               value={searchInput}
@@ -777,12 +779,16 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
             </Button>
           </form>
 
-          <div className="board-filters" role="group" aria-label="카테고리 필터">
+          <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="카테고리 필터">
             {CATEGORY_FILTERS.map((option) => (
               <button
                 key={option}
                 type="button"
-                className={`board-filter ${category === option ? 'is-active' : ''}`}
+                className={cn(
+                  'cursor-pointer rounded-full border border-border bg-bg-surface px-3 py-1 text-sm text-fg-muted hover:bg-[var(--bg-hover)]',
+                  category === option &&
+                    'border-accent bg-accent-soft font-semibold! text-accent-soft-fg',
+                )}
                 aria-pressed={category === option}
                 onClick={() => applyCategory(option)}
               >
@@ -817,16 +823,20 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
               }
             />
           ) : (
-            <ul className="board-list" aria-label="게시글 목록">
+            <ul className="grid gap-2" aria-label="게시글 목록">
               {posts.map((post) => (
                 <li key={post.id}>
                   <button
                     type="button"
-                    className={`board-item ${selectedId === post.id ? 'is-active' : ''} ${post.hidden ? 'is-hidden' : ''}`}
+                    className={cn(
+                      'grid w-full cursor-pointer gap-1 rounded-md border border-border-subtle bg-bg-surface p-3 text-left hover:bg-[var(--bg-hover)]',
+                      selectedId === post.id && 'border-accent bg-accent-soft',
+                      post.hidden && 'opacity-[0.62]',
+                    )}
                     aria-current={selectedId === post.id ? 'true' : undefined}
                     onClick={() => void openPost(post.id)}
                   >
-                    <span className="board-item-meta">
+                    <span className="flex flex-wrap items-center gap-2">
                       <Badge tone="accent" plain>
                         {post.category}
                       </Badge>
@@ -835,11 +845,13 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                           숨김
                         </Badge>
                       ) : null}
-                      <span className="board-item-time">{formatRelativeIso(post.createdAt)}</span>
+                      <span className="ml-auto text-xs text-fg-subtle">
+                        {formatRelativeIso(post.createdAt)}
+                      </span>
                     </span>
-                    <strong className="board-item-title">{post.title}</strong>
-                    <span className="board-item-excerpt">{post.excerpt}</span>
-                    <span className="board-item-foot">
+                    <strong className="text-base text-fg-strong break-keep">{post.title}</strong>
+                    <span className="line-clamp-2 text-sm text-fg-muted">{post.excerpt}</span>
+                    <span className="text-xs text-fg-subtle">
                       {post.authorName} · 댓글 {post.commentCount}
                       {post.attachmentCount > 0 ? ` · 첨부 ${post.attachmentCount}` : ''}
                     </span>

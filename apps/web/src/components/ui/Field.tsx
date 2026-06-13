@@ -6,6 +6,8 @@ import type {
   TextareaHTMLAttributes,
 } from 'react'
 
+import { cn } from '../../utils/cn'
+
 type FieldShellProps = {
   label: ReactNode
   required?: boolean
@@ -59,16 +61,20 @@ export const Field = ({ label, required, hint, error, children }: FieldShellProp
   )
 }
 
-export const Input = (props: InputHTMLAttributes<HTMLInputElement>) => (
-  <input className="input" {...props} />
+export const Input = ({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) => (
+  <input className={cn('input', className)} {...props} />
 )
 
-export const Textarea = (props: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
-  <textarea className="textarea" {...props} />
+export const Textarea = ({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea className={cn('textarea', className)} {...props} />
 )
 
-export const Select = ({ children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) => (
-  <select className="select" {...props}>
+export const Select = ({
+  children,
+  className,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement>) => (
+  <select className={cn('select', className)} {...props}>
     {children}
   </select>
 )
