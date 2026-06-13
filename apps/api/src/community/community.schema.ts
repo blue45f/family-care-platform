@@ -61,7 +61,7 @@ export const communityCommentInputSchema = z.object({
   body: requiredText(
     COMMENT_REQUIRED_MESSAGE,
     COMMUNITY_COMMENT_MAX,
-    '댓글은 1000자 이내여야 합니다.',
+    '댓글은 1000자 이내여야 합니다.'
   ),
   parentId: z
     .number({ error: '답글 대상이 올바르지 않습니다.' })

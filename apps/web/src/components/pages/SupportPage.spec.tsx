@@ -9,7 +9,7 @@ const render = () =>
   renderToStaticMarkup(
     createElement(AuthProvider, {
       children: createElement(SupportPage, { onNavigate: () => undefined }),
-    }),
+    })
   )
 
 describe('SupportPage', () => {

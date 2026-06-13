@@ -7,7 +7,7 @@ import { PublicHomePage } from './PublicHomePage'
 describe('PublicHomePage', () => {
   it('비로그인 방문자에게 제품 정체성과 시작 동선을 먼저 설명한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicHomePage, { onNavigate: () => undefined }),
+      createElement(PublicHomePage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('가족 돌봄 운영 플랫폼')
@@ -21,7 +21,7 @@ describe('PublicHomePage', () => {
 
   it('상세 사용 가이드 페이지로 바로갈 수 있는 요소를 노출한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicHomePage, { onNavigate: () => undefined }),
+      createElement(PublicHomePage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('FAQ 검색')
@@ -32,7 +32,7 @@ describe('PublicHomePage', () => {
 
   it('상단 네비게이션은 핵심 동선 5개(앵커 3 + 로그인/회원가입)로 제한한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicHomePage, { onNavigate: () => undefined }),
+      createElement(PublicHomePage, { onNavigate: () => undefined })
     )
 
     const nav = markup.match(/<nav class="public-nav-actions"[^>]*>([\s\S]*?)<\/nav>/)?.[1]
@@ -48,7 +48,7 @@ describe('PublicHomePage', () => {
 
   it('푸터가 약관·개인정보(내부 페이지)와 지원 채널(외부)·페이지 링크 묶음을 제공한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicHomePage, { onNavigate: () => undefined }),
+      createElement(PublicHomePage, { onNavigate: () => undefined })
     )
 
     const footer = markup.match(/<footer[\s\S]*?<\/footer>/)?.[0]

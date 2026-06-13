@@ -16,7 +16,7 @@ export class ScheduleService {
   findAll(): CareSchedule[] {
     return [...this.state.items].sort(
       (a, b) =>
-        b.date.localeCompare(a.date) || a.startTime.localeCompare(b.startTime) || b.id - a.id,
+        b.date.localeCompare(a.date) || a.startTime.localeCompare(b.startTime) || b.id - a.id
     )
   }
 

@@ -100,14 +100,14 @@ export class AuthService implements OnModuleInit {
 
   private adminCount(): number {
     return this.state.items.filter(
-      (candidate) => candidate.role === 'admin' && !candidate.withdrawnAt,
+      (candidate) => candidate.role === 'admin' && !candidate.withdrawnAt
     ).length
   }
 
   private activeAdminCount(): number {
     return this.state.items.filter(
       (candidate) =>
-        candidate.role === 'admin' && !candidate.withdrawnAt && candidate.suspended !== true,
+        candidate.role === 'admin' && !candidate.withdrawnAt && candidate.suspended !== true
     ).length
   }
 
@@ -272,7 +272,7 @@ export class AuthService implements OnModuleInit {
     return this.updateUserByAdmin(
       targetId,
       { status: parsed.suspended ? 'suspended' : 'active' },
-      actor,
+      actor
     )
   }
 
@@ -283,7 +283,7 @@ export class AuthService implements OnModuleInit {
   updateUserByAdmin(
     targetId: number,
     input: AdminUserUpdateInput,
-    actor: AuthenticatedUser,
+    actor: AuthenticatedUser
   ): PublicUser {
     const parsed = parseWithSchema(adminUserUpdateInputSchema, input)
     const target = this.findRecordById(targetId)
@@ -324,7 +324,7 @@ export class AuthService implements OnModuleInit {
   private assertAdminUserChangeAllowed(
     target: User,
     actor: AuthenticatedUser,
-    change: { nextRole: UserRole; willSuspend: boolean; willWithdraw: boolean },
+    change: { nextRole: UserRole; willSuspend: boolean; willWithdraw: boolean }
   ): void {
     if (target.id === actor.id) {
       if (change.willWithdraw) {

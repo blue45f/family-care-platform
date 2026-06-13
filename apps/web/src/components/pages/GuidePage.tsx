@@ -305,7 +305,7 @@ export const GuidePage = ({ onNavigate }: GuidePageProps) => {
   const checkedCount = checkedSteps.length
   const completionRate = useMemo(
     () => Math.round((checkedCount / firstDayTutorial.length) * 100),
-    [checkedCount],
+    [checkedCount]
   )
 
   return (

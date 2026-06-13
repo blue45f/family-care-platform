@@ -44,7 +44,7 @@ export const canonicalizeLocation = (location: {
  */
 export const applyRouteEntrySideEffects = (
   mainEl: HTMLElement | null,
-  win: Pick<Window, 'scrollTo'> | undefined = typeof window !== 'undefined' ? window : undefined,
+  win: Pick<Window, 'scrollTo'> | undefined = typeof window !== 'undefined' ? window : undefined
 ): void => {
   if (win && typeof win.scrollTo === 'function') {
     win.scrollTo({ top: 0, left: 0, behavior: 'auto' })
@@ -62,7 +62,7 @@ export const applyRouteEntrySideEffects = (
  */
 export const reconcileLocationToRoute = (
   history: HistoryLike,
-  location: { pathname: string; search?: string; hash?: string },
+  location: { pathname: string; search?: string; hash?: string }
 ): AppRoute => {
   const { route, nextUrl, shouldReplace } = canonicalizeLocation(location)
   if (shouldReplace) {

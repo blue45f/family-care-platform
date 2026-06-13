@@ -66,11 +66,11 @@ const seedMessages = (): SupportMessage[] => [
 export class SupportService {
   private readonly threadStore = new JsonCollectionStore<SupportThread>(
     'support-threads.json',
-    () => ({ items: seedThreads(), seq: seedThreads().length + 1 }),
+    () => ({ items: seedThreads(), seq: seedThreads().length + 1 })
   )
   private readonly messageStore = new JsonCollectionStore<SupportMessage>(
     'support-messages.json',
-    () => ({ items: seedMessages(), seq: seedMessages().length + 1 }),
+    () => ({ items: seedMessages(), seq: seedMessages().length + 1 })
   )
   private threadState = this.threadStore.load()
   private messageState = this.messageStore.load()
@@ -154,7 +154,7 @@ export class SupportService {
   addMessage(
     threadId: number,
     input: SupportMessageInput,
-    actor: AuthenticatedUser,
+    actor: AuthenticatedUser
   ): SupportMessage {
     const parsed = parseWithSchema(supportMessageInputSchema, input)
     const thread = this.findAccessibleThread(threadId, actor)
@@ -183,7 +183,7 @@ export class SupportService {
   private appendMessage(
     thread: SupportThread,
     body: string,
-    actor: AuthenticatedUser,
+    actor: AuthenticatedUser
   ): SupportMessage {
     const next: SupportMessage = {
       id: this.messageState.seq!,

@@ -7,7 +7,7 @@ import { PublicPlansPage } from './PublicPlansPage'
 describe('PublicPlansPage', () => {
   it('요금제 페이지는 도입 단계와 전환 동선을 같이 제시한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicPlansPage, { onNavigate: () => undefined }),
+      createElement(PublicPlansPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('요금제와 도입 단계를 한 번에 보여줍니다')
@@ -18,7 +18,7 @@ describe('PublicPlansPage', () => {
 
   it('무료 시범형 플랜부터 문의형 플랜까지 안내한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicPlansPage, { onNavigate: () => undefined }),
+      createElement(PublicPlansPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('소규모 센터, 시범 운영에 적합합니다.')

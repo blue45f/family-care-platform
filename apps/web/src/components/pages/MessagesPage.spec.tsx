@@ -13,7 +13,7 @@ const render = () =>
       children: createElement(AuthProvider, {
         children: createElement(MessagesPage, { onNavigate: () => undefined }),
       }),
-    }),
+    })
   )
 
 describe('MessagesPage', () => {

@@ -29,7 +29,7 @@ const MUTATING_METHODS = new Set(['POST', 'PATCH', 'PUT', 'DELETE'])
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly authService: AuthService,
-    private readonly reflector: Reflector,
+    private readonly reflector: Reflector
   ) {}
 
   canActivate(context: ExecutionContext): boolean {

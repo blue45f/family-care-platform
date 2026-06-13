@@ -56,7 +56,7 @@ export class JsonCollectionStore<T> {
   constructor(
     private readonly fileName: string,
     private readonly seed: () => StoredCollection<T>,
-    dataDir: string = resolveDataDir(),
+    dataDir: string = resolveDataDir()
   ) {
     this.filePath = join(dataDir, fileName)
     this.testMode = isTestEnv()

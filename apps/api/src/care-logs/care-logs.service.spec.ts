@@ -29,7 +29,7 @@ describe('CareLogService', () => {
         type: '방문',
         date: '2025-01-01',
         note: 'note',
-      }),
+      })
     ).toThrow('recipient/caregiver/note는 필수입니다.')
   })
 
@@ -43,7 +43,7 @@ describe('CareLogService', () => {
         type: '식단' as unknown as CareLogType,
         date: '2025-01-01',
         note: '메모',
-      }),
+      })
     ).toThrow('유효하지 않은 돌봄 활동 유형입니다.')
   })
 })

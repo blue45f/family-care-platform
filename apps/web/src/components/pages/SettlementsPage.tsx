@@ -65,12 +65,12 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
 
   const totalSettlement = useMemo(
     () => settlements.reduce((sum, item) => sum + item.totalAmount, 0),
-    [settlements],
+    [settlements]
   )
 
   const averageSettlement = useMemo(
     () => (settlements.length > 0 ? roundMoney(totalSettlement / settlements.length) : 0),
-    [settlements.length, totalSettlement],
+    [settlements.length, totalSettlement]
   )
 
   const isInitialLoading = data.loading && settlements.length === 0

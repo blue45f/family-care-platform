@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "가족 돌봄 운영 플랫폼 (Vite + NestJS + pnpm monorepo)",
+  "prettier": "@heejun/prettier-config",
   "packageManager": "pnpm@11.4.0",
   "engines": {
     "node": ">=24.16.0",
@@ -41,6 +42,7 @@
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^10.0.1",
+    "@heejun/prettier-config": "^3.0.0",
     "eslint": "^10.4.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

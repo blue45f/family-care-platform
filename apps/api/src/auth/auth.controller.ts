@@ -55,7 +55,7 @@ export class AuthController {
   @Patch('me')
   updateProfile(
     @Body() input: UpdateProfileInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): PublicUser {
     if (!user) {
       throw new UnauthorizedException('인증이 필요합니다.')
@@ -67,7 +67,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   withdrawAccount(
     @Body() input: WithdrawAccountInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): PublicUser {
     if (!user) {
       throw new UnauthorizedException('인증이 필요합니다.')
@@ -79,7 +79,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   withdrawAccountForBrowser(
     @Body() input: WithdrawAccountInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): PublicUser {
     if (!user) {
       throw new UnauthorizedException('인증이 필요합니다.')

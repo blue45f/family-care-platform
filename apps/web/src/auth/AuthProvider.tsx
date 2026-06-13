@@ -48,7 +48,7 @@ const parseError = async (response: Response, fallback: string): Promise<string>
 const requestAuth = async (
   path: string,
   body: Record<string, unknown>,
-  fallbackError: string,
+  fallbackError: string
 ): Promise<AuthResponse> => {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
@@ -76,7 +76,7 @@ const fetchMe = async (token: string): Promise<AuthUser> => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [status, setStatus] = useState<AuthStatus>(() =>
-    readStoredToken() ? 'loading' : 'unauthenticated',
+    readStoredToken() ? 'loading' : 'unauthenticated'
   )
 
   // 마운트 시 저장된 토큰이 있으면 /auth/me로 사용자를 복원한다.
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { token, user: nextUser } = await requestAuth(
       '/auth/login',
       { email, password },
-      '로그인에 실패했습니다. 이메일과 비밀번호를 확인해 주세요.',
+      '로그인에 실패했습니다. 이메일과 비밀번호를 확인해 주세요.'
     )
     writeStoredToken(token)
     setUser(nextUser)
@@ -130,14 +130,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         '/auth/register',
         // 기관명은 입력했을 때만 보낸다(개인 회원 요청 본문은 기존과 동일).
         { email, password, name, ...(organization?.trim() ? { organization } : {}) },
-        '회원가입에 실패했습니다. 입력 내용을 확인해 주세요.',
+        '회원가입에 실패했습니다. 입력 내용을 확인해 주세요.'
       )
       writeStoredToken(token)
       setUser(nextUser)
       setStatus('authenticated')
       return nextUser
     },
-    [],
+    []
   )
 
   const updateProfile = useCallback(async (input: Parameters<typeof patchMyProfile>[0]) => {
@@ -172,7 +172,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       withdrawAccount,
       logout,
     }),
-    [user, status, login, register, updateProfile, withdrawAccount, logout],
+    [user, status, login, register, updateProfile, withdrawAccount, logout]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

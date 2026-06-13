@@ -258,7 +258,7 @@ const normalizeTutorialSteps = (values: number[]) =>
 const parseTutorialAction = (
   value: unknown,
   fallbackRoute: unknown,
-  fallbackDetail: unknown,
+  fallbackDetail: unknown
 ):
   | {
       action: TutorialAction
@@ -293,7 +293,7 @@ const parseProgress = () => {
     const parsed = JSON.parse(raw)
     return Array.isArray(parsed)
       ? normalizeTutorialSteps(
-          parsed.filter((value: unknown): value is number => Number.isInteger(value as number)),
+          parsed.filter((value: unknown): value is number => Number.isInteger(value as number))
         )
       : []
   } catch {
@@ -334,11 +334,11 @@ const useTutorialProgress = () => {
   const checkedCount = checkedSteps.length
   const progressRate = useMemo(
     () => Math.round((checkedCount / tutorialSteps.length) * 100),
-    [checkedCount],
+    [checkedCount]
   )
   const nextUnfinishedStep = useMemo(
     () => tutorialSteps.findIndex((_, index) => !checkedSteps.includes(index)),
-    [checkedSteps],
+    [checkedSteps]
   )
   const nextStep = nextUnfinishedStep >= 0 ? tutorialSteps[nextUnfinishedStep] : tutorialSteps[0]
   const allChecked = checkedSteps.length === tutorialSteps.length
@@ -427,7 +427,7 @@ const readCommunityBlockedCount = () => {
     return Array.isArray(parsed)
       ? parsed.filter(
           (item) =>
-            item && typeof item === 'object' && (item as { action?: unknown }).action === 'blocked',
+            item && typeof item === 'object' && (item as { action?: unknown }).action === 'blocked'
         ).length
       : 0
   } catch {
@@ -497,9 +497,9 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
   const requiredRouteVisitCount = useMemo(
     () =>
       operationalWorkflowRoutes.filter(
-        (route) => routeVisitCount[route] && routeVisitCount[route] > 0,
+        (route) => routeVisitCount[route] && routeVisitCount[route] > 0
       ).length,
-    [routeVisitCount],
+    [routeVisitCount]
   )
 
   const scenarioSummaries = useMemo(
@@ -514,7 +514,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
           rate,
         }
       }),
-    [checkedSteps],
+    [checkedSteps]
   )
 
   const routeCoverage = useMemo(
@@ -525,7 +525,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
         visitCount: routeVisitCount[route] || 0,
         isVisited: Boolean(routeVisitCount[route] && routeVisitCount[route] > 0),
       })),
-    [routeVisitCount],
+    [routeVisitCount]
   )
 
   const scenarioCompletionRate = useMemo(
@@ -534,22 +534,22 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
         ? Math.round(
             (scenarioSummaries.filter((scenario) => scenario.completed).length /
               scenarioSummaries.length) *
-              100,
+              100
           )
         : 0,
-    [scenarioSummaries],
+    [scenarioSummaries]
   )
 
   const routeCoverageRate = useMemo(
     () => Math.round((requiredRouteVisitCount / operationalWorkflowRoutes.length) * 100),
-    [requiredRouteVisitCount],
+    [requiredRouteVisitCount]
   )
 
   const appendActionLog = (
     action: TutorialAction,
     label: string,
     detail?: string,
-    route?: AppRoute,
+    route?: AppRoute
   ) => {
     setActionLogs((current) => {
       const next = [
@@ -579,11 +579,11 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
 
   const isCopyActionDone = useMemo(
     () => actionLogs.some((item) => item.action === 'copy-summary'),
-    [actionLogs],
+    [actionLogs]
   )
   const faqOpenCount = useMemo(
     () => actionLogs.filter((item) => item.action === 'faq-toggle').length,
-    [actionLogs],
+    [actionLogs]
   )
   const tutorialMissions = useMemo<TutorialMission[]>(
     () => [
@@ -644,12 +644,11 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
       faqOpenCount,
       scenarioCompletionRate,
       communityBlockedCount,
-    ],
+    ]
   )
 
   const tutorialMissionRate = Math.round(
-    (tutorialMissions.filter((mission) => mission.completed).length / tutorialMissions.length) *
-      100,
+    (tutorialMissions.filter((mission) => mission.completed).length / tutorialMissions.length) * 100
   )
 
   const summaryText = useMemo(
@@ -658,10 +657,10 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
         `튜토리얼 진행률: ${progressLabel}`,
         ...scenarioSummaries.map(
           (scenario) =>
-            `${scenario.title} (${scenario.duration}) - ${scenario.completed ? '완료' : `${scenario.rate}%`}: ${scenario.summary}`,
+            `${scenario.title} (${scenario.duration}) - ${scenario.completed ? '완료' : `${scenario.rate}%`}: ${scenario.summary}`
         ),
       ].join('\n'),
-    [progressLabel, scenarioSummaries],
+    [progressLabel, scenarioSummaries]
   )
 
   const copySummary = async () => {
@@ -911,7 +910,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                     appendActionLog(
                       'step-check',
                       `단계 ${step.step} ${checked ? '완료' : '해제'}`,
-                      step.title,
+                      step.title
                     )
                   }}
                 />
@@ -1093,7 +1092,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                       'faq-toggle',
                       `FAQ ${index + 1}`,
                       nextIndex === index ? '열기' : '닫기',
-                      undefined,
+                      undefined
                     )
                   }}
                 >

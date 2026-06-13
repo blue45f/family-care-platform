@@ -22,7 +22,7 @@ export class AdminController {
   constructor(
     private readonly adminService: AdminService,
     private readonly authService: AuthService,
-    private readonly communityService: CommunityService,
+    private readonly communityService: CommunityService
   ) {}
 
   @Get('overview')
@@ -51,7 +51,7 @@ export class AdminController {
   setSuspension(
     @Param('id') id: string,
     @Body() input: SuspensionInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): PublicUser {
     return this.authService.setSuspension(Number(id), input, requireAdmin(user))
   }
@@ -60,7 +60,7 @@ export class AdminController {
   updateUser(
     @Param('id') id: string,
     @Body() input: AdminUserUpdateInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): PublicUser {
     return this.authService.updateUserByAdmin(Number(id), input, requireAdmin(user))
   }
@@ -75,7 +75,7 @@ export class AdminController {
   @HttpCode(HttpStatus.CREATED)
   createForbiddenWord(
     @Body() input: CommunityForbiddenWordInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityForbiddenWord {
     requireAdmin(user)
     return this.communityService.createForbiddenWord(input)
@@ -85,7 +85,7 @@ export class AdminController {
   updateForbiddenWord(
     @Param('id') id: string,
     @Body() input: CommunityForbiddenWordInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityForbiddenWord {
     requireAdmin(user)
     return this.communityService.updateForbiddenWord(Number(id), input)
@@ -95,7 +95,7 @@ export class AdminController {
   @HttpCode(HttpStatus.OK)
   deleteForbiddenWord(
     @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): { deleted: true } {
     requireAdmin(user)
     return this.communityService.deleteForbiddenWord(Number(id))

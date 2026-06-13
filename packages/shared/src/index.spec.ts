@@ -97,7 +97,7 @@ describe('@family-care/shared 도메인 계약', () => {
         activeClients: 12,
         description: '',
         featureFlags: [],
-      }).error?.issues[0]?.message,
+      }).error?.issues[0]?.message
     ).toBe('요금제 이름은 필수입니다.')
 
     expect(
@@ -109,7 +109,7 @@ describe('@family-care/shared 도메인 계약', () => {
         activeClients: 12,
         description: '',
         featureFlags: [],
-      }).error?.issues[0]?.message,
+      }).error?.issues[0]?.message
     ).toBe('월 요금은 0보다 커야 합니다.')
 
     expect(
@@ -121,7 +121,7 @@ describe('@family-care/shared 도메인 계약', () => {
         activeClients: 12,
         description: '',
         featureFlags: [],
-      }).error?.issues[0]?.message,
+      }).error?.issues[0]?.message
     ).toBe('연 할인율은 0~0.95 범위여야 합니다.')
 
     expect(
@@ -133,7 +133,7 @@ describe('@family-care/shared 도메인 계약', () => {
         activeClients: 1.5,
         description: '',
         featureFlags: [],
-      }).error?.issues[0]?.message,
+      }).error?.issues[0]?.message
     ).toBe('활성 고객 수는 0 이상의 정수여야 합니다.')
   })
 })

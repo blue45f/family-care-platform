@@ -115,7 +115,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
   const fetchPostList = useCallback(
     async (
       filter: { category: CategoryFilter; q: string },
-      options: { isCancelled?: () => boolean } = {},
+      options: { isCancelled?: () => boolean } = {}
     ) => {
       try {
         const next = await fetchCommunityPosts({
@@ -140,7 +140,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
         }
       }
     },
-    [],
+    []
   )
 
   const loadPosts = useCallback(
@@ -150,7 +150,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
       }
       return fetchPostList(filter)
     },
-    [fetchPostList],
+    [fetchPostList]
   )
 
   useEffect(() => {
@@ -212,7 +212,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
         }
       }
     },
-    [appliedQuery, category, loadPosts],
+    [appliedQuery, category, loadPosts]
   )
 
   const submitSearch = (event: FormEvent<HTMLFormElement>) => {
@@ -315,7 +315,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
   const runAction = async (
     action: () => Promise<unknown>,
     doneMessage: string,
-    postIdForRefresh: number | null,
+    postIdForRefresh: number | null
   ): Promise<boolean> => {
     if (actionBusy) {
       return false
@@ -337,7 +337,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
 
   const commentThreads = useMemo(
     () => (detail ? buildCommentThreads(detail.comments) : []),
-    [detail],
+    [detail]
   )
 
   const canModerate = (authorId: number) => isAdmin || (myId !== null && authorId === myId)
@@ -546,7 +546,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                         void runAction(
                           () => deleteCommunityAttachment(detail.id, attachment.id),
                           '첨부를 삭제했습니다.',
-                          detail.id,
+                          detail.id
                         )
                       }
                     >
@@ -583,7 +583,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                 void runAction(
                   () => patchCommunityVisibility(detail.id, !detail.hidden),
                   detail.hidden ? '게시글을 복구했습니다.' : '게시글을 숨겼습니다.',
-                  detail.id,
+                  detail.id
                 )
               }
             >
@@ -616,7 +616,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
               const deleted = await runAction(
                 () => deleteCommunityPost(detail.id),
                 '게시글을 삭제했습니다.',
-                null,
+                null
               )
               if (deleted) {
                 setSelectedId(null)
@@ -666,7 +666,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                         void runAction(
                           () => deleteCommunityComment(comment.id),
                           '댓글을 삭제했습니다.',
-                          detail.id,
+                          detail.id
                         )
                       }
                     >
@@ -699,7 +699,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                                 void runAction(
                                   () => deleteCommunityComment(reply.id),
                                   '답글을 삭제했습니다.',
-                                  detail.id,
+                                  detail.id
                                 )
                               }
                             >
@@ -812,7 +812,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                 className={cn(
                   'cursor-pointer rounded-full border border-border bg-bg-surface px-3 py-1 text-sm text-fg-muted hover:bg-[var(--bg-hover)]',
                   category === option &&
-                    'border-accent bg-accent-soft font-semibold! text-accent-soft-fg',
+                    'border-accent bg-accent-soft font-semibold! text-accent-soft-fg'
                 )}
                 aria-pressed={category === option}
                 onClick={() => applyCategory(option)}
@@ -856,7 +856,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                     className={cn(
                       'grid w-full cursor-pointer gap-1 rounded-md border border-border-subtle bg-bg-surface p-3 text-left hover:bg-[var(--bg-hover)]',
                       selectedId === post.id && 'border-accent bg-accent-soft',
-                      post.hidden && 'opacity-[0.62]',
+                      post.hidden && 'opacity-[0.62]'
                     )}
                     aria-current={selectedId === post.id ? 'true' : undefined}
                     onClick={() => void openPost(post.id)}

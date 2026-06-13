@@ -43,7 +43,7 @@ describe('MessagesService', () => {
       recipients
         .map((r) => Object.keys(r))
         .flat()
-        .every((k) => k === 'id' || k === 'name'),
+        .every((k) => k === 'id' || k === 'name')
     ).toBe(true)
 
     ctx.auth.setSuspension(ctx.b.id, { suspended: true }, ctx.admin)
@@ -80,35 +80,35 @@ describe('MessagesService', () => {
     expect(ctx.service.markRead(ctx.a.id, ctx.b)).toEqual({ updated: 2 })
     expect(ctx.service.markRead(ctx.a.id, ctx.b)).toEqual({ updated: 0 })
     expect(
-      ctx.service.listConversations(ctx.b).find((c) => c.partnerId === ctx.a.id)?.unreadCount,
+      ctx.service.listConversations(ctx.b).find((c) => c.partnerId === ctx.a.id)?.unreadCount
     ).toBe(0)
 
     // 상대가 보낸 분만 읽음 처리됐는지 확인(본인 발신분 readAt은 그대로 null).
     const after = ctx.service.getConversation(ctx.a.id, ctx.b)
     expect(
-      after.messages.filter((m) => m.senderId === ctx.b.id).every((m) => m.readAt === null),
+      after.messages.filter((m) => m.senderId === ctx.b.id).every((m) => m.readAt === null)
     ).toBe(true)
   })
 
   it('본인/없는 사람/정지 계정에게는 보낼 수 없다', () => {
     expect(() => ctx.service.send({ recipientId: ctx.a.id, body: 'x' }, ctx.a)).toThrow(
-      '본인에게는 쪽지를 보낼 수 없습니다.',
+      '본인에게는 쪽지를 보낼 수 없습니다.'
     )
     expect(() => ctx.service.send({ recipientId: 999, body: 'x' }, ctx.a)).toThrow(
-      '받는 사람을 찾을 수 없습니다.',
+      '받는 사람을 찾을 수 없습니다.'
     )
     ctx.auth.setSuspension(ctx.b.id, { suspended: true }, ctx.admin)
     expect(() => ctx.service.send({ recipientId: ctx.b.id, body: 'x' }, ctx.a)).toThrow(
-      '받는 사람을 찾을 수 없습니다.',
+      '받는 사람을 찾을 수 없습니다.'
     )
   })
 
   it('입력 검증: 본문 필수·1000자 한도, 대화 없는 상대 상세는 404', () => {
     expect(() => ctx.service.send({ recipientId: ctx.b.id, body: '  ' }, ctx.a)).toThrow(
-      '쪽지 내용을 입력해 주세요.',
+      '쪽지 내용을 입력해 주세요.'
     )
     expect(() =>
-      ctx.service.send({ recipientId: ctx.b.id, body: 'a'.repeat(1001) }, ctx.a),
+      ctx.service.send({ recipientId: ctx.b.id, body: 'a'.repeat(1001) }, ctx.a)
     ).toThrow('쪽지는 1000자 이내여야 합니다.')
 
     // 대화가 없어도 실재 사용자는 이름을 해석해 빈 대화를 연다(쪽지 보내기 진입 동선).

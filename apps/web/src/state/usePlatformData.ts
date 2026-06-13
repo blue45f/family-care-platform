@@ -276,7 +276,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
     () =>
       schedules.filter((schedule) => schedule.status === '예정' || schedule.status === '진행중')
         .length,
-    [schedules],
+    [schedules]
   )
 
   const totalSettlement = useMemo(() => {
@@ -285,20 +285,20 @@ export const usePlatformData = (): UsePlatformDataResult => {
 
   const approvedClaims = useMemo(
     () => claims.filter((item) => item.status === '승인').length,
-    [claims],
+    [claims]
   )
   const pendingClaims = useMemo(
     () => claims.filter((item) => item.status !== '승인').length,
-    [claims],
+    [claims]
   )
   const approvalRate = useMemo(
     () => (claims.length > 0 ? (approvedClaims / claims.length) * 100 : 0),
-    [approvedClaims, claims],
+    [approvedClaims, claims]
   )
 
   const totalClaimExpected = useMemo(
     () => claims.reduce((sum, claim) => sum + claim.expectedAmount, 0),
-    [claims],
+    [claims]
   )
 
   const kpiMonthlyRevenue = useMemo(() => {
@@ -317,7 +317,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
     return buildMonthKeys(3).map((month) => {
       const claimsByMonth = claims.filter((claim) => claim.issueDate.startsWith(month))
       const settlementsByMonth = settlements.filter((settlement) =>
-        settlement.date.startsWith(month),
+        settlement.date.startsWith(month)
       )
       const approvedClaimsByMonth = claimsByMonth.filter((claim) => claim.status === '승인').length
       const claimCount = claimsByMonth.length
@@ -326,7 +326,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
         month,
         settlementTotal: settlementsByMonth.reduce(
           (sum, settlement) => sum + settlement.totalAmount,
-          0,
+          0
         ),
         claimCount,
         approvedClaimCount: approvedClaimsByMonth,
@@ -342,7 +342,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
       adminOverview.monthlyTrend.length > 0
         ? adminOverview.monthlyTrend
         : monthlyTrendFallback,
-    [adminOverview.monthlyTrend, adminOverview.monthlyTrendSource, monthlyTrendFallback],
+    [adminOverview.monthlyTrend, adminOverview.monthlyTrendSource, monthlyTrendFallback]
   )
 
   const monthlyTrendWithDelta = useMemo<AdminMonthlyTrendWithDelta[]>(() => {
@@ -386,7 +386,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
 
   const isUsingServerTrend = useMemo(
     () => adminOverview.monthlyTrendSource === TREND_SOURCE_SERVER,
-    [adminOverview.monthlyTrendSource],
+    [adminOverview.monthlyTrendSource]
   )
 
   const trendSourceMeta = useMemo(
@@ -402,7 +402,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
             sourceClass: 'trend-source-fallback',
             sourceText: '클라이언트 폴백',
           },
-    [isUsingServerTrend],
+    [isUsingServerTrend]
   )
 
   const scenarioRevenue = useMemo<ScenarioRevenue>(() => {
@@ -426,9 +426,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
     const newEnterpriseCount = enterpriseCount + proToEnterprise
 
     const scenarioMRR = Math.round(
-      newStarterCount * starterPrice +
-        newProCount * proPrice +
-        newEnterpriseCount * enterprisePrice,
+      newStarterCount * starterPrice + newProCount * proPrice + newEnterpriseCount * enterprisePrice
     )
     const scenarioAnnualMRR = scenarioMRR * 12
     const conversionEffect = claims.length > 0 ? (approvedClaims / claims.length) * 100 : 0
@@ -465,7 +463,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
     }
     if (upgradePushPercent < 12) {
       recommendations.push(
-        'Starter 이용 가구에 Pro 안내를 추가해 상위 요금제 변경 기회를 만드세요.',
+        'Starter 이용 가구에 Pro 안내를 추가해 상위 요금제 변경 기회를 만드세요.'
       )
     }
     if (scenarioRevenue.conversionRate < 70) {
@@ -473,12 +471,12 @@ export const usePlatformData = (): UsePlatformDataResult => {
     }
     if (scenarioRevenue.goalRate < 80) {
       recommendations.push(
-        '월 목표보다 낮습니다. 이용 가구를 늘리거나 상위 요금제 안내를 강화하세요.',
+        '월 목표보다 낮습니다. 이용 가구를 늘리거나 상위 요금제 안내를 강화하세요.'
       )
     }
     if (recommendations.length === 0) {
       recommendations.push(
-        '현재 상태는 양호합니다. 할인 정책/프로모션 운영을 병행해 개선 여지를 넓혀 보세요.',
+        '현재 상태는 양호합니다. 할인 정책/프로모션 운영을 병행해 개선 여지를 넓혀 보세요.'
       )
     }
 
@@ -518,7 +516,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
     } catch (error) {
       const message = normalizeErrorMessage(
         error,
-        '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.',
+        '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.'
       )
       setErrorMessage(message)
     } finally {
@@ -561,7 +559,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
           setAdminOverview(overviewResult)
           setPlans(plansResult)
           setErrorMessage('')
-        },
+        }
       )
       .catch((error) => {
         if (cancelled) {
@@ -569,7 +567,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
         }
         const message = normalizeErrorMessage(
           error,
-          '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.',
+          '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.'
         )
         setErrorMessage(message)
       })
@@ -598,16 +596,13 @@ export const usePlatformData = (): UsePlatformDataResult => {
         await load()
       } catch (error) {
         setErrorMessage(
-          normalizeErrorMessage(
-            error,
-            '방문 일정 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.',
-          ),
+          normalizeErrorMessage(error, '방문 일정 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setIsSubmittingSchedule(false)
       }
     },
-    [isSubmittingSchedule, load],
+    [isSubmittingSchedule, load]
   )
 
   const submitCareLog = useCallback(
@@ -624,16 +619,13 @@ export const usePlatformData = (): UsePlatformDataResult => {
         await load()
       } catch (error) {
         setErrorMessage(
-          normalizeErrorMessage(
-            error,
-            '돌봄 기록 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.',
-          ),
+          normalizeErrorMessage(error, '돌봄 기록 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setIsSubmittingCareLog(false)
       }
     },
-    [load, isSubmittingCareLog],
+    [load, isSubmittingCareLog]
   )
 
   const submitSettlement = useCallback(
@@ -650,13 +642,13 @@ export const usePlatformData = (): UsePlatformDataResult => {
         await load()
       } catch (error) {
         setErrorMessage(
-          normalizeErrorMessage(error, '정산 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.'),
+          normalizeErrorMessage(error, '정산 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setIsSubmittingSettlement(false)
       }
     },
-    [load, isSubmittingSettlement],
+    [load, isSubmittingSettlement]
   )
 
   const submitClaim = useCallback(
@@ -673,13 +665,13 @@ export const usePlatformData = (): UsePlatformDataResult => {
         await load()
       } catch (error) {
         setErrorMessage(
-          normalizeErrorMessage(error, '보험청구 등록 실패. 잠시 후 다시 시도해 주세요.'),
+          normalizeErrorMessage(error, '보험청구 등록 실패. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setIsSubmittingClaim(false)
       }
     },
-    [load, isSubmittingClaim],
+    [load, isSubmittingClaim]
   )
 
   const submitPlan = useCallback(async (draft: RevenuePlanDraft) => {
@@ -689,7 +681,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
       setPlans((prev) => prev.map((plan) => (plan.id === next.id ? next : plan)))
     } catch (error) {
       setErrorMessage(
-        normalizeErrorMessage(error, '요금제 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.'),
+        normalizeErrorMessage(error, '요금제 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
       )
     } finally {
       setSavingPlanId(null)
@@ -708,29 +700,29 @@ export const usePlatformData = (): UsePlatformDataResult => {
       setErrorMessage('')
       setSchedules((prev) =>
         prev.map((schedule) =>
-          schedule.id === scheduleId ? { ...schedule, status: nextStatus } : schedule,
-        ),
+          schedule.id === scheduleId ? { ...schedule, status: nextStatus } : schedule
+        )
       )
 
       try {
         // 성공 재동기화: 서버가 확정한 엔티티로 교체한다.
         const updated = await patchScheduleStatus(scheduleId, nextStatus)
         setSchedules((prev) =>
-          prev.map((schedule) => (schedule.id === updated.id ? updated : schedule)),
+          prev.map((schedule) => (schedule.id === updated.id ? updated : schedule))
         )
       } catch (error) {
         // 실패 롤백: 스냅샷한 이전 행으로 복원한다.
         setSchedules((prev) =>
-          prev.map((schedule) => (schedule.id === scheduleId ? snapshot : schedule)),
+          prev.map((schedule) => (schedule.id === scheduleId ? snapshot : schedule))
         )
         setErrorMessage(
-          normalizeErrorMessage(error, '방문 일정 상태 변경 실패. 잠시 후 다시 시도해 주세요.'),
+          normalizeErrorMessage(error, '방문 일정 상태 변경 실패. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setUpdatingScheduleId(null)
       }
     },
-    [schedules],
+    [schedules]
   )
 
   const updateClaimStatus = useCallback(
@@ -744,7 +736,7 @@ export const usePlatformData = (): UsePlatformDataResult => {
       setUpdatingClaimId(claimId)
       setErrorMessage('')
       setClaims((prev) =>
-        prev.map((claim) => (claim.id === claimId ? { ...claim, status: nextStatus } : claim)),
+        prev.map((claim) => (claim.id === claimId ? { ...claim, status: nextStatus } : claim))
       )
 
       try {
@@ -755,13 +747,13 @@ export const usePlatformData = (): UsePlatformDataResult => {
         // 실패 롤백: 스냅샷한 이전 행으로 복원한다.
         setClaims((prev) => prev.map((claim) => (claim.id === claimId ? snapshot : claim)))
         setErrorMessage(
-          normalizeErrorMessage(error, '보험청구 상태 변경 실패. 잠시 후 다시 시도해 주세요.'),
+          normalizeErrorMessage(error, '보험청구 상태 변경 실패. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setUpdatingClaimId(null)
       }
     },
-    [claims],
+    [claims]
   )
 
   const onPriceLiftInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {

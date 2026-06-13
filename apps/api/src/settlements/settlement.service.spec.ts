@@ -28,7 +28,7 @@ describe('SettlementService', () => {
         careHours: 0,
         baseRate: 10000,
         note: '',
-      }),
+      })
     ).toThrow('careHours와 baseRate는 0보다 커야 합니다.')
   })
 })

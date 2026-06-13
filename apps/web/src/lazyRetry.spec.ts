@@ -60,7 +60,7 @@ describe('retryImport', () => {
     const outcome = await Promise.race([
       pending.then(
         () => 'settled',
-        () => 'settled',
+        () => 'settled'
       ),
       new Promise<string>((resolve) => {
         setTimeout(() => resolve('pending'), 25)
@@ -76,7 +76,7 @@ describe('retryImport', () => {
     await expect(
       retryImport(async () => {
         throw failure
-      }),
+      })
     ).rejects.toBe(failure)
     expect(reload).not.toHaveBeenCalled()
     // 가드는 성공 로드 시에만 해제한다.

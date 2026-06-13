@@ -63,7 +63,7 @@ describe('CommunityService', () => {
         ...validPost,
         attachments: [{ name: 'a.png', mimeType: 'image/png', dataUrl: pngDataUrl(10) }],
       },
-      writer,
+      writer
     )
     expect(created.authorName).toBe('글쓴이')
     expect(created.attachments[0]).toMatchObject({ id: 1, kind: 'image', size: 10 })
@@ -82,8 +82,8 @@ describe('CommunityService', () => {
             { name: 'x.gif', mimeType: 'image/gif', dataUrl: 'data:image/gif;base64,aGk=' },
           ],
         } as never,
-        writer,
-      ),
+        writer
+      )
     ).toThrow('허용되지 않는 파일 형식입니다. (이미지 jpeg/png/webp 또는 PDF)')
 
     expect(() =>
@@ -94,8 +94,8 @@ describe('CommunityService', () => {
             { name: 'big.png', mimeType: 'image/png', dataUrl: pngDataUrl(2 * 1024 * 1024 + 1) },
           ],
         },
-        writer,
-      ),
+        writer
+      )
     ).toThrow('파일은 2MB 이하만 첨부할 수 있습니다.')
 
     expect(() =>
@@ -108,8 +108,8 @@ describe('CommunityService', () => {
             dataUrl: pngDataUrl(8),
           })),
         },
-        writer,
-      ),
+        writer
+      )
     ).toThrow('첨부는 최대 4개까지 가능합니다.')
 
     // mime과 data URL 프리픽스가 어긋나면 거부한다(타입 위장 방지).
@@ -121,8 +121,8 @@ describe('CommunityService', () => {
             { name: 'x.png', mimeType: 'image/png', dataUrl: 'data:application/pdf;base64,aGk=' },
           ],
         },
-        writer,
-      ),
+        writer
+      )
     ).toThrow('파일 데이터가 올바르지 않습니다.')
   })
 
@@ -133,10 +133,10 @@ describe('CommunityService', () => {
     expect(reply.parentId).toBe(comment.id)
 
     expect(() =>
-      service.addComment(post.id, { body: '답답글', parentId: reply.id }, other),
+      service.addComment(post.id, { body: '답답글', parentId: reply.id }, other)
     ).toThrow('답글에는 다시 답글을 달 수 없습니다.')
     expect(() => service.addComment(post.id, { body: 'x', parentId: 9999 }, other)).toThrow(
-      '답글을 달 댓글을 찾을 수 없습니다.',
+      '답글을 달 댓글을 찾을 수 없습니다.'
     )
   })
 
@@ -146,7 +146,7 @@ describe('CommunityService', () => {
     const reply = service.addComment(post.id, { body: '답글 유지' }, writer)
 
     expect(() => service.deleteComment(comment.id, writer)).toThrow(
-      '본인이 작성한 댓글만 삭제할 수 있습니다.',
+      '본인이 작성한 댓글만 삭제할 수 있습니다.'
     )
 
     const deleted = service.deleteComment(comment.id, other)
@@ -158,7 +158,7 @@ describe('CommunityService', () => {
     expect(detail.comments.map((c) => c.id)).toEqual([comment.id, reply.id])
     // 삭제된 댓글에는 답글을 달 수 없다.
     expect(() => service.addComment(post.id, { body: 'x', parentId: comment.id }, writer)).toThrow(
-      '삭제된 댓글에는 답글을 달 수 없습니다.',
+      '삭제된 댓글에는 답글을 달 수 없습니다.'
     )
     // 노출 댓글 수 집계에서는 제외된다.
     const summary = service.listPosts(undefined).find((p) => p.id === post.id)
@@ -173,7 +173,7 @@ describe('CommunityService', () => {
     service.addComment(post.id, { body: '댓글' }, other)
 
     expect(() => service.deletePost(post.id, other)).toThrow(
-      '본인이 작성한 글만 삭제할 수 있습니다.',
+      '본인이 작성한 글만 삭제할 수 있습니다.'
     )
     expect(service.deletePost(post.id, writer)).toEqual({ deleted: true })
     expect(() => service.getPost(post.id, undefined)).toThrow('게시글을 찾을 수 없습니다.')
@@ -185,22 +185,22 @@ describe('CommunityService', () => {
         ...validPost,
         attachments: [{ name: 'a.png', mimeType: 'image/png', dataUrl: pngDataUrl(9) }],
       },
-      writer,
+      writer
     )
     expect(() => service.deleteAttachment(post.id, 1, other)).toThrow(
-      '본인이 올린 첨부만 삭제할 수 있습니다.',
+      '본인이 올린 첨부만 삭제할 수 있습니다.'
     )
     const updated = service.deleteAttachment(post.id, 1, admin)
     expect(updated.attachments).toHaveLength(0)
     expect(() => service.deleteAttachment(post.id, 1, writer)).toThrow(
-      '첨부 파일을 찾을 수 없습니다.',
+      '첨부 파일을 찾을 수 없습니다.'
     )
   })
 
   it('숨김 처리는 관리자 전용이고, 숨긴 글은 일반 사용자 목록/상세에서 사라진다', () => {
     const post = service.createPost(validPost, writer)
     expect(() => service.setVisibility(post.id, { hidden: true }, writer)).toThrow(
-      '관리자 권한이 필요합니다.',
+      '관리자 권한이 필요합니다.'
     )
 
     const hiddenSummary = service.setVisibility(post.id, { hidden: true }, admin)
@@ -221,14 +221,14 @@ describe('CommunityService', () => {
 
   it('입력 검증: 제목/본문 필수와 길이 한도를 강제한다', () => {
     expect(() => service.createPost({ ...validPost, title: '  ' }, writer)).toThrow(
-      '제목을 입력해 주세요.',
+      '제목을 입력해 주세요.'
     )
     expect(() => service.createPost({ ...validPost, body: 'a'.repeat(4001) }, writer)).toThrow(
-      '내용은 4000자 이내여야 합니다.',
+      '내용은 4000자 이내여야 합니다.'
     )
     const post = service.createPost(validPost, writer)
     expect(() => service.addComment(post.id, { body: '' }, writer)).toThrow(
-      '댓글 내용을 입력해 주세요.',
+      '댓글 내용을 입력해 주세요.'
     )
   })
 
@@ -238,24 +238,24 @@ describe('CommunityService', () => {
     expect(service.listForbiddenWords()).toHaveLength(1)
 
     expect(() => service.createForbiddenWord({ term: '금지표현' })).toThrow(
-      '이미 등록된 금칙어입니다.',
+      '이미 등록된 금칙어입니다.'
     )
     expect(() => service.createForbiddenWord({ term: '  ' })).toThrow('금칙어를 입력해 주세요.')
 
     expect(() =>
-      service.createPost({ ...validPost, title: '금지표현이 들어간 제목' }, writer),
+      service.createPost({ ...validPost, title: '금지표현이 들어간 제목' }, writer)
     ).toThrow('금칙어가 포함되어 등록할 수 없습니다.')
 
     const post = service.createPost(validPost, writer)
     expect(() => service.addComment(post.id, { body: '댓글에 금지표현 포함' }, other)).toThrow(
-      '금칙어가 포함되어 등록할 수 없습니다.',
+      '금칙어가 포함되어 등록할 수 없습니다.'
     )
 
     const updated = service.updateForbiddenWord(created.id, { term: '다른금칙어' })
     expect(updated.term).toBe('다른금칙어')
     expect(service.deleteForbiddenWord(created.id)).toEqual({ deleted: true })
     expect(
-      service.createPost({ ...validPost, body: '다른금칙어가 있어도 삭제 후 허용' }, writer).id,
+      service.createPost({ ...validPost, body: '다른금칙어가 있어도 삭제 후 허용' }, writer).id
     ).toBeGreaterThan(0)
     expect(() => service.deleteForbiddenWord(created.id)).toThrow('금칙어를 찾을 수 없습니다.')
   })

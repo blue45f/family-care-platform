@@ -21,7 +21,7 @@
 
 const API_BASE = (process.env.API_BASE ?? 'https://familycare.3.107.235.143.nip.io/api').replace(
   /\/+$/,
-  '',
+  ''
 )
 const DEMO_EMAIL = process.env.DEMO_EMAIL ?? 'demo@familycare.app'
 const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'demo-1234'
@@ -361,7 +361,7 @@ async function seedSchedules(token) {
       statusLabel = updated.status
     }
     console.log(
-      `  + 일정 #${created.id} ${created.date} ${created.startTime}~${created.endTime} ${created.recipient} (${statusLabel})`,
+      `  + 일정 #${created.id} ${created.date} ${created.startTime}~${created.endTime} ${created.recipient} (${statusLabel})`
     )
   }
 }
@@ -391,7 +391,7 @@ async function seedSettlements(token) {
       body: { ...rest, date: ymd(offset) },
     })
     console.log(
-      `  + 정산 #${created.id} ${created.date} ${created.recipient} ${created.careHours}h × ${created.baseRate.toLocaleString('ko-KR')}원 = ${created.totalAmount.toLocaleString('ko-KR')}원`,
+      `  + 정산 #${created.id} ${created.date} ${created.recipient} ${created.careHours}h × ${created.baseRate.toLocaleString('ko-KR')}원 = ${created.totalAmount.toLocaleString('ko-KR')}원`
     )
   }
 }
@@ -416,7 +416,7 @@ async function seedClaims(token) {
       statusLabel = updated.status
     }
     console.log(
-      `  + 청구 #${created.id} ${created.issueDate} ${created.recipient} ${created.claimType} ${created.expectedAmount.toLocaleString('ko-KR')}원 (${statusLabel})`,
+      `  + 청구 #${created.id} ${created.issueDate} ${created.recipient} ${created.claimType} ${created.expectedAmount.toLocaleString('ko-KR')}원 (${statusLabel})`
     )
   }
 }

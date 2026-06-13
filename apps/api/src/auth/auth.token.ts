@@ -69,7 +69,7 @@ function sign(content: string, secret: string): string {
 export function signAuthToken(
   claims: AuthTokenClaims,
   secret: string = resolveJwtSecret(),
-  nowSeconds: number = Math.floor(Date.now() / 1000),
+  nowSeconds: number = Math.floor(Date.now() / 1000)
 ): string {
   const header = { alg: TOKEN_ALG, typ: TOKEN_TYPE }
   const payload: AuthTokenPayload = {
@@ -89,7 +89,7 @@ export function signAuthToken(
 export function verifyAuthToken(
   token: string,
   secret: string = resolveJwtSecret(),
-  nowSeconds: number = Math.floor(Date.now() / 1000),
+  nowSeconds: number = Math.floor(Date.now() / 1000)
 ): AuthTokenPayload | null {
   const parts = token.split('.')
   if (parts.length !== 3) {

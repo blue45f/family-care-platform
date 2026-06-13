@@ -89,7 +89,7 @@ export class MessagesService {
     return [...byPartner.entries()]
       .map(([partnerId, messages]) => {
         const sorted = [...messages].sort(
-          (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id,
+          (a, b) => a.createdAt.localeCompare(b.createdAt) || a.id - b.id
         )
         const last = sorted[sorted.length - 1]
         const preview = last.body.replace(/\s+/g, ' ').trim()
@@ -100,7 +100,7 @@ export class MessagesService {
           lastMessagePreview:
             preview.length > PREVIEW_LENGTH ? `${preview.slice(0, PREVIEW_LENGTH)}…` : preview,
           unreadCount: sorted.filter(
-            (message) => message.recipientId === actor.id && message.readAt === null,
+            (message) => message.recipientId === actor.id && message.readAt === null
           ).length,
           messageCount: sorted.length,
         }

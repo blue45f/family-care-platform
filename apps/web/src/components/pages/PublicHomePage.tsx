@@ -250,7 +250,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
 
     return publicFaqs.filter(
       ({ question, answer }) =>
-        question.toLowerCase().includes(term) || answer.toLowerCase().includes(term),
+        question.toLowerCase().includes(term) || answer.toLowerCase().includes(term)
     )
   }, [faqSearch])
 
@@ -550,7 +550,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             <article
               className={cn(
                 'public-pricing-item',
-                plan.highlight && 'public-pricing-item--highlight relative',
+                plan.highlight && 'public-pricing-item--highlight relative'
               )}
               key={plan.name}
             >

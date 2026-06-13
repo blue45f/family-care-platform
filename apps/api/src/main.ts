@@ -12,7 +12,7 @@ import { AllExceptionsFilter } from './http-exception.filter'
 
 type OriginCheck = (
   origin: string | undefined,
-  callback: (err: Error | null, allow?: boolean) => void,
+  callback: (err: Error | null, allow?: boolean) => void
 ) => void
 
 function createCorsOriginResolver(): OriginCheck {
@@ -62,10 +62,10 @@ async function bootstrap() {
   app.enableShutdownHooks()
 
   logger.log(
-    `환경 변수 CORS 허용 목록: ${allowedOriginPatterns.length ? allowedOriginPatterns.join(', ') : '<기본 로컬 허용>'} `,
+    `환경 변수 CORS 허용 목록: ${allowedOriginPatterns.length ? allowedOriginPatterns.join(', ') : '<기본 로컬 허용>'} `
   )
   logger.log(
-    `허용 Origin 패턴: ${process.env.NODE_ENV === 'production' ? '명시값 필수' : '로컬 포함'}`,
+    `허용 Origin 패턴: ${process.env.NODE_ENV === 'production' ? '명시값 필수' : '로컬 포함'}`
   )
 
   await app.listen(port, '0.0.0.0')

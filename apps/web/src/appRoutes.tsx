@@ -8,71 +8,71 @@ import type { PlatformData } from './state/usePlatformData'
 // 페이지는 라우트 단위 청크로 분리한다(초기 번들 축소). lazyRetry가 배포 직후
 // stale 청크 로드 실패를 1회 새로고침으로 복구하고, 재실패는 ErrorBoundary로 보낸다.
 const AnalyticsPage = lazyRetry(() =>
-  import('./components/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage })),
+  import('./components/pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsPage }))
 )
 const AccountSettingsPage = lazyRetry(() =>
   import('./components/pages/AccountSettingsPage').then((m) => ({
     default: m.AccountSettingsPage,
-  })),
+  }))
 )
 const CarePage = lazyRetry(() =>
-  import('./components/pages/CarePage').then((m) => ({ default: m.CarePage })),
+  import('./components/pages/CarePage').then((m) => ({ default: m.CarePage }))
 )
 const ClaimsPage = lazyRetry(() =>
-  import('./components/pages/ClaimsPage').then((m) => ({ default: m.ClaimsPage })),
+  import('./components/pages/ClaimsPage').then((m) => ({ default: m.ClaimsPage }))
 )
 const CommunityPage = lazyRetry(() =>
-  import('./components/pages/CommunityPage').then((m) => ({ default: m.CommunityPage })),
+  import('./components/pages/CommunityPage').then((m) => ({ default: m.CommunityPage }))
 )
 const DashboardPage = lazyRetry(() =>
-  import('./components/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })),
+  import('./components/pages/DashboardPage').then((m) => ({ default: m.DashboardPage }))
 )
 const GuidePage = lazyRetry(() =>
-  import('./components/pages/GuidePage').then((m) => ({ default: m.GuidePage })),
+  import('./components/pages/GuidePage').then((m) => ({ default: m.GuidePage }))
 )
 const MembersPage = lazyRetry(() =>
-  import('./components/pages/MembersPage').then((m) => ({ default: m.MembersPage })),
+  import('./components/pages/MembersPage').then((m) => ({ default: m.MembersPage }))
 )
 const MessagesPage = lazyRetry(() =>
-  import('./components/pages/MessagesPage').then((m) => ({ default: m.MessagesPage })),
+  import('./components/pages/MessagesPage').then((m) => ({ default: m.MessagesPage }))
 )
 const PublicOverviewPage = lazyRetry(() =>
-  import('./components/pages/PublicOverviewPage').then((m) => ({ default: m.PublicOverviewPage })),
+  import('./components/pages/PublicOverviewPage').then((m) => ({ default: m.PublicOverviewPage }))
 )
 const PublicCommunityPage = lazyRetry(() =>
   import('./components/pages/PublicCommunityPage').then((m) => ({
     default: m.PublicCommunityPage,
-  })),
+  }))
 )
 const PublicTutorialPage = lazyRetry(() =>
-  import('./components/pages/PublicTutorialPage').then((m) => ({ default: m.PublicTutorialPage })),
+  import('./components/pages/PublicTutorialPage').then((m) => ({ default: m.PublicTutorialPage }))
 )
 const LoginPage = lazyRetry(() =>
-  import('./components/pages/LoginPage').then((m) => ({ default: m.LoginPage })),
+  import('./components/pages/LoginPage').then((m) => ({ default: m.LoginPage }))
 )
 const PlansPage = lazyRetry(() =>
-  import('./components/pages/PlansPage').then((m) => ({ default: m.PlansPage })),
+  import('./components/pages/PlansPage').then((m) => ({ default: m.PlansPage }))
 )
 const PolicyPage = lazyRetry(() =>
-  import('./components/pages/PolicyPage').then((m) => ({ default: m.PolicyPage })),
+  import('./components/pages/PolicyPage').then((m) => ({ default: m.PolicyPage }))
 )
 const PublicHomePage = lazyRetry(() =>
-  import('./components/pages/PublicHomePage').then((m) => ({ default: m.PublicHomePage })),
+  import('./components/pages/PublicHomePage').then((m) => ({ default: m.PublicHomePage }))
 )
 const PublicPlansPage = lazyRetry(() =>
-  import('./components/pages/PublicPlansPage').then((m) => ({ default: m.PublicPlansPage })),
+  import('./components/pages/PublicPlansPage').then((m) => ({ default: m.PublicPlansPage }))
 )
 const RegisterPage = lazyRetry(() =>
-  import('./components/pages/RegisterPage').then((m) => ({ default: m.RegisterPage })),
+  import('./components/pages/RegisterPage').then((m) => ({ default: m.RegisterPage }))
 )
 const SchedulePage = lazyRetry(() =>
-  import('./components/pages/SchedulePage').then((m) => ({ default: m.SchedulePage })),
+  import('./components/pages/SchedulePage').then((m) => ({ default: m.SchedulePage }))
 )
 const SettlementsPage = lazyRetry(() =>
-  import('./components/pages/SettlementsPage').then((m) => ({ default: m.SettlementsPage })),
+  import('./components/pages/SettlementsPage').then((m) => ({ default: m.SettlementsPage }))
 )
 const SupportPage = lazyRetry(() =>
-  import('./components/pages/SupportPage').then((m) => ({ default: m.SupportPage })),
+  import('./components/pages/SupportPage').then((m) => ({ default: m.SupportPage }))
 )
 
 type AuthAppRoute = AuthRoute

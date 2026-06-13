@@ -7,7 +7,7 @@ import { PublicTutorialPage } from './PublicTutorialPage'
 describe('PublicTutorialPage', () => {
   it('초보자에게 전체 동선과 시나리오를 먼저 보여준다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicTutorialPage, { onNavigate: () => undefined }),
+      createElement(PublicTutorialPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('공개 튜토리얼')
@@ -20,7 +20,7 @@ describe('PublicTutorialPage', () => {
 
   it('진행 체크리스트와 FAQ가 노출된다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicTutorialPage, { onNavigate: () => undefined }),
+      createElement(PublicTutorialPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('10분 체크리스트')
@@ -34,7 +34,7 @@ describe('PublicTutorialPage', () => {
 
   it('운영 데모 미션과 시나리오 지표가 노출된다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicTutorialPage, { onNavigate: () => undefined }),
+      createElement(PublicTutorialPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('운영 데모 미션')

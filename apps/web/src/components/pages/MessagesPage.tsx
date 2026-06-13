@@ -82,7 +82,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
       }
       return refreshConversations(options)
     },
-    [refreshConversations],
+    [refreshConversations]
   )
 
   const refreshConversation = useCallback(
@@ -93,7 +93,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
         setPollFailed(false)
         // 받은 쪽지를 읽음 처리하고 목록의 안 읽음 배지를 조용히 갱신한다.
         const unread = detail.messages.some(
-          (message) => myId !== null && message.recipientId === myId && message.readAt === null,
+          (message) => myId !== null && message.recipientId === myId && message.readAt === null
         )
         if (unread) {
           await postConversationRead(partnerId)
@@ -112,7 +112,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
         }
       }
     },
-    [myId, refreshConversations],
+    [myId, refreshConversations]
   )
 
   const openConversation = useCallback(
@@ -123,7 +123,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
       }
       await refreshConversation(partnerId, options)
     },
-    [refreshConversation],
+    [refreshConversation]
   )
 
   // 초기 로드: 목록 + 받는 사람 후보 + (커뮤니티에서 넘어온) 프리필 대화.
@@ -170,7 +170,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
           setConversation(detail)
           setPollFailed(false)
           const unread = detail.messages.some(
-            (message) => myId !== null && message.recipientId === myId && message.readAt === null,
+            (message) => myId !== null && message.recipientId === myId && message.readAt === null
           )
           if (unread) {
             await postConversationRead(prefillRecipientId)
@@ -258,13 +258,13 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
 
   const activeSummary = useMemo(
     () => conversations.find((item) => item.partnerId === activePartnerId),
-    [activePartnerId, conversations],
+    [activePartnerId, conversations]
   )
   const partnerName =
     conversation?.partnerName ?? activeSummary?.partnerName ?? prefill.recipientName ?? ''
   const newRecipientOptions = useMemo(
     () => recipients.filter((recipient) => recipient.id !== myId),
-    [myId, recipients],
+    [myId, recipients]
   )
 
   return (
@@ -349,7 +349,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
                     type="button"
                     className={cn(
                       'grid w-full cursor-pointer gap-1 rounded-md border border-border-subtle bg-bg-surface p-3 text-left hover:bg-[var(--bg-hover)]',
-                      activePartnerId === item.partnerId && 'border-accent bg-accent-soft',
+                      activePartnerId === item.partnerId && 'border-accent bg-accent-soft'
                     )}
                     aria-current={activePartnerId === item.partnerId ? 'true' : undefined}
                     onClick={() => void openConversation(item.partnerId)}
@@ -410,7 +410,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
                           key={message.id}
                           className={cn(
                             'grid max-w-[85%] justify-items-start gap-1',
-                            mine && 'justify-self-end justify-items-end',
+                            mine && 'justify-self-end justify-items-end'
                           )}
                         >
                           <span className="text-xs text-fg-subtle">
@@ -421,7 +421,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
                           <span
                             className={cn(
                               'whitespace-pre-line break-words rounded-md border border-border-subtle bg-bg-surface px-3 py-2 text-sm text-fg-default',
-                              mine && 'border-sage-200 bg-accent-soft text-sage-700',
+                              mine && 'border-sage-200 bg-accent-soft text-sage-700'
                             )}
                           >
                             {message.body}

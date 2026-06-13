@@ -452,14 +452,14 @@ const normalizeStringArray = (value: unknown): string[] => {
   }
 
   return value.filter(
-    (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0,
+    (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0
   )
 }
 
 const normalizeComment = (
   raw: unknown,
   fallbackAt: number,
-  index: number,
+  index: number
 ): CommunityComment | null => {
   if (!raw || typeof raw !== 'object') {
     return null
@@ -505,14 +505,14 @@ const normalizeThread = (raw: unknown, index: number): CommunityThread | null =>
     at: normalizeText(candidate.at, formatRelativeTime(createdAt)),
     summary: normalizeText(
       candidate.summary,
-      normalizeText(candidate.body, '내용을 입력해 주세요.').slice(0, 74),
+      normalizeText(candidate.body, '내용을 입력해 주세요.').slice(0, 74)
     ),
     body: normalizeText(candidate.body, ''),
     likes: normalizeCount(candidate.likes),
     views: normalizeCount(candidate.views),
     tags: Array.isArray(candidate.tags)
       ? candidate.tags.filter((tag): tag is string =>
-          Boolean(typeof tag === 'string' && tag.trim().length > 0),
+          Boolean(typeof tag === 'string' && tag.trim().length > 0)
         )
       : ['운영'],
     replies,
@@ -670,7 +670,7 @@ const threadStateTone = (state: CommunityThreadState) => (state === 'open' ? 'ac
 const getStateFilter = (
   mode: ThreadFilterMode,
   thread: CommunityThread,
-  bookmarkedIds: string[],
+  bookmarkedIds: string[]
 ) => {
   if (mode === '전체') {
     return true
@@ -722,7 +722,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const [feedbackMessage, setFeedbackMessage] = useState('')
   const isTermsReady = useMemo(
     () => TERMS_REQUIRED_SECTION_IDS.every((id) => termsConsent.agreedIds.includes(id)),
-    [termsConsent],
+    [termsConsent]
   )
   const missionProgress = useMemo(
     () =>
@@ -730,15 +730,15 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
         ...mission,
         completed: threadActionLogs.some((entry) => entry.action === mission.requiredAction),
       })),
-    [threadActionLogs],
+    [threadActionLogs]
   )
   const missionRate = useMemo(
     () =>
       Math.round(
         (missionProgress.filter((mission) => mission.completed).length / missionProgress.length) *
-          100,
+          100
       ),
-    [missionProgress],
+    [missionProgress]
   )
   const threadActionSummary = useMemo(
     () => ({
@@ -758,7 +758,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       sortChangeCount: threadActionLogs.filter((item) => item.action === 'sort-change').length,
       blockedCount: threadActionLogs.filter((item) => item.action === 'blocked').length,
     }),
-    [threadActionLogs],
+    [threadActionLogs]
   )
 
   const filteredThreads = useMemo(() => {
@@ -830,7 +830,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       {
         label: '주제 수',
         value: formatNumber(
-          threads.length ? [...new Set(threads.map((thread) => thread.category))].length : 0,
+          threads.length ? [...new Set(threads.map((thread) => thread.category))].length : 0
         ),
       },
       {
@@ -846,7 +846,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
         value: formatNumber(bookmarkedThreadIds.length),
       },
     ],
-    [threads, bookmarkedThreadIds],
+    [threads, bookmarkedThreadIds]
   )
 
   const sortedCategoryCount = useMemo(
@@ -857,21 +857,21 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
           category,
           total: threads.filter((thread) => thread.category === category).length,
         })),
-    [threads],
+    [threads]
   )
 
   const recentActivity = useMemo(
     () => [...threadActionLogs].sort((left, right) => right.at - left.at).slice(0, 8),
-    [threadActionLogs],
+    [threadActionLogs]
   )
   const recentBlockedActivity = useMemo(
     () => recentActivity.filter((item) => item.action === 'blocked'),
-    [recentActivity],
+    [recentActivity]
   )
 
   const selectedThread = useMemo(
     () => threads.find((thread) => thread.id === selectedThreadId) ?? filteredThreads[0],
-    [filteredThreads, selectedThreadId, threads],
+    [filteredThreads, selectedThreadId, threads]
   )
 
   const resetReportDraft = () => {
@@ -949,7 +949,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   const appendActionLog = (
     thread: Pick<CommunityThread, 'id' | 'title'> | undefined,
     action: CommunityThreadActionType,
-    note?: string,
+    note?: string
   ) => {
     const targetThread = thread ?? threads[0]
     if (!targetThread) {
@@ -974,10 +974,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
 
   const updateThread = (
     threadId: string,
-    updater: (thread: CommunityThread) => CommunityThread,
+    updater: (thread: CommunityThread) => CommunityThread
   ) => {
     setThreads((current) =>
-      current.map((thread) => (thread.id === threadId ? updater(thread) : thread)),
+      current.map((thread) => (thread.id === threadId ? updater(thread) : thread))
     )
   }
 
@@ -1086,7 +1086,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     appendActionLog(
       target,
       isBookmarked ? 'unbookmark' : 'bookmark',
-      isBookmarked ? '북마크 해제' : '북마크 등록',
+      isBookmarked ? '북마크 해제' : '북마크 등록'
     )
     showFeedback(isBookmarked ? '북마크를 해제했습니다.' : '북마크를 추가했습니다.')
   }
@@ -1128,7 +1128,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     showFeedback(
       shouldAutoClose
         ? `신고가 접수되었고 임계치(${REPORT_WARNING_THRESHOLD}건)로 자동 종료 처리되었습니다.`
-        : '신고가 접수되어 운영 로그에 남았습니다.',
+        : '신고가 접수되어 운영 로그에 남았습니다.'
     )
   }
 
@@ -1233,7 +1233,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
             },
           ],
         }
-      }),
+      })
     )
 
     appendActionLog(selectedThread, 'comment', `입력 길이 ${text.length}`)
@@ -1312,7 +1312,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     appendActionLog(
       undefined,
       'sort-change',
-      `정렬 변경: ${sortModes.find((mode) => mode.value === value)?.label}`,
+      `정렬 변경: ${sortModes.find((mode) => mode.value === value)?.label}`
     )
     showFeedback(`${sortModes.find((mode) => mode.value === value)?.label}로 정렬했습니다.`)
   }
@@ -1373,7 +1373,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
         window.clearTimeout(toastTimer.current)
       }
     },
-    [],
+    []
   )
 
   const isCurrentSelectionLiked = selectedThread

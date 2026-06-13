@@ -136,15 +136,15 @@ const seedComments = (): CommunityComment[] => [
 export class CommunityService {
   private readonly postStore = new JsonCollectionStore<CommunityPost>(
     'community-posts.json',
-    () => ({ items: seedPosts(), seq: seedPosts().length + 1 }),
+    () => ({ items: seedPosts(), seq: seedPosts().length + 1 })
   )
   private readonly commentStore = new JsonCollectionStore<CommunityComment>(
     'community-comments.json',
-    () => ({ items: seedComments(), seq: seedComments().length + 1 }),
+    () => ({ items: seedComments(), seq: seedComments().length + 1 })
   )
   private readonly forbiddenWordStore = new JsonCollectionStore<CommunityForbiddenWord>(
     'community-forbidden-words.json',
-    () => ({ items: [], seq: 1 }),
+    () => ({ items: [], seq: 1 })
   )
   private postState = this.postStore.load()
   private commentState = this.commentStore.load()
@@ -190,7 +190,7 @@ export class CommunityService {
 
   private visibleCommentCount(postId: number): number {
     return this.commentState.items.filter(
-      (comment) => comment.postId === postId && !comment.deleted,
+      (comment) => comment.postId === postId && !comment.deleted
     ).length
   }
 
@@ -209,7 +209,7 @@ export class CommunityService {
   /** GET /api/community/posts — 검색(q: 제목/본문/작성자)·카테고리 필터, 최신순. */
   listPosts(
     actor: AuthenticatedUser | undefined,
-    filter: CommunityListFilter = {},
+    filter: CommunityListFilter = {}
   ): CommunityPostSummary[] {
     const query = filter.q?.trim().toLowerCase() ?? ''
     const category = filter.category?.trim() ?? ''
@@ -222,7 +222,7 @@ export class CommunityService {
           return true
         }
         return [post.title, post.body, post.authorName].some((text) =>
-          text.toLowerCase().includes(query),
+          text.toLowerCase().includes(query)
         )
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id - a.id)
@@ -270,7 +270,7 @@ export class CommunityService {
   addComment(
     postId: number,
     input: CommunityCommentInput,
-    actor: AuthenticatedUser,
+    actor: AuthenticatedUser
   ): CommunityComment {
     const parsed = parseWithSchema(communityCommentInputSchema, input)
     this.assertAllowedCommunityText(parsed.body)
@@ -339,7 +339,7 @@ export class CommunityService {
 
     const before = this.commentState.items.length
     this.commentState.items = this.commentState.items.filter(
-      (comment) => comment.postId !== post.id,
+      (comment) => comment.postId !== post.id
     )
     if (this.commentState.items.length !== before) {
       this.commentStore.save(this.commentState)
@@ -351,7 +351,7 @@ export class CommunityService {
   deleteAttachment(
     postId: number,
     attachmentId: number,
-    actor: AuthenticatedUser,
+    actor: AuthenticatedUser
   ): CommunityPostDetail {
     const post = this.findVisiblePost(postId, actor)
     if (post.authorId !== actor.id && !this.isAdmin(actor)) {
@@ -387,7 +387,7 @@ export class CommunityService {
   /** GET /api/admin/community/forbidden-words — 관리자 금칙어 목록. */
   listForbiddenWords(): CommunityForbiddenWord[] {
     return [...this.forbiddenWordState.items].sort(
-      (a, b) => a.term.localeCompare(b.term, 'ko') || a.id - b.id,
+      (a, b) => a.term.localeCompare(b.term, 'ko') || a.id - b.id
     )
   }
 
@@ -438,7 +438,7 @@ export class CommunityService {
   private assertUniqueForbiddenWord(term: string, exceptId?: number): void {
     const normalized = this.normalizeForbiddenTerm(term)
     const exists = this.forbiddenWordState.items.some(
-      (word) => word.id !== exceptId && this.normalizeForbiddenTerm(word.term) === normalized,
+      (word) => word.id !== exceptId && this.normalizeForbiddenTerm(word.term) === normalized
     )
     if (exists) {
       throw new ConflictException('이미 등록된 금칙어입니다.')

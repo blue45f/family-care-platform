@@ -21,7 +21,7 @@ export class ScheduleController {
   @Patch(':id/status')
   updateScheduleStatus(
     @Param('id') id: string,
-    @Body('status') status: ScheduleStatus,
+    @Body('status') status: ScheduleStatus
   ): CareSchedule {
     return this.scheduleService.updateStatus(Number(id), status)
   }

@@ -25,7 +25,7 @@ export class SupportController {
   @Get('threads/:id')
   getThread(
     @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): SupportThreadDetail {
     return this.supportService.getThread(Number(id), requireUser(user))
   }
@@ -34,7 +34,7 @@ export class SupportController {
   @HttpCode(HttpStatus.CREATED)
   createThread(
     @Body() input: SupportThreadInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): SupportThreadDetail {
     return this.supportService.createThread(input, requireUser(user))
   }
@@ -44,7 +44,7 @@ export class SupportController {
   addMessage(
     @Param('id') id: string,
     @Body() input: SupportMessageInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): SupportMessage {
     return this.supportService.addMessage(Number(id), input, requireUser(user))
   }
@@ -53,7 +53,7 @@ export class SupportController {
   setStatus(
     @Param('id') id: string,
     @Body() input: unknown,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): SupportThreadSummary {
     return this.supportService.setStatus(Number(id), input, requireUser(user))
   }

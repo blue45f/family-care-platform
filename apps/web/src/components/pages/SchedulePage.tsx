@@ -98,24 +98,24 @@ export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
     () =>
       [...data.schedules].sort(
         (a, b) =>
-          a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime) || b.id - a.id,
+          a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime) || b.id - a.id
       ),
-    [data.schedules],
+    [data.schedules]
   )
 
   const today = data.defaultScheduleValues.date
   const todayList = useMemo(
     () =>
       sortedSchedules.filter((schedule) => schedule.date === today && schedule.status !== '취소'),
-    [sortedSchedules, today],
+    [sortedSchedules, today]
   )
   const completedCount = useMemo(
     () => data.schedules.filter((schedule) => schedule.status === '완료').length,
-    [data.schedules],
+    [data.schedules]
   )
   const caregiverCount = useMemo(
     () => new Set(data.schedules.map((schedule) => schedule.caregiver)).size,
-    [data.schedules],
+    [data.schedules]
   )
 
   const onValid = handleSubmit(async (values) => {

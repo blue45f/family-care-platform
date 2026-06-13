@@ -21,7 +21,7 @@ export const ATTACHMENT_ACCEPT = 'image/jpeg,image/png,image/webp,application/pd
 export const fitWithin = (
   width: number,
   height: number,
-  max: number = COMMUNITY_IMAGE_MAX_DIMENSION,
+  max: number = COMMUNITY_IMAGE_MAX_DIMENSION
 ): { width: number; height: number } => {
   const longest = Math.max(width, height)
   if (longest <= max || longest <= 0) {
@@ -50,7 +50,7 @@ export const formatByteSize = (bytes: number): string => {
  */
 export const attachmentErrorMessage = (
   file: { name: string; type: string; size: number },
-  currentCount: number,
+  currentCount: number
 ): string | null => {
   if (currentCount >= COMMUNITY_ATTACHMENT_MAX_COUNT) {
     return `첨부는 최대 ${COMMUNITY_ATTACHMENT_MAX_COUNT}개까지 가능합니다.`
@@ -91,7 +91,7 @@ const loadImage = (file: File): Promise<HTMLImageElement> =>
 /** 이미지를 긴 변 1600px 이하로 줄여 같은 mime의 data URL로 만든다. */
 const resizeImageToDataUrl = async (
   file: File,
-  mimeType: CommunityAttachmentMimeType,
+  mimeType: CommunityAttachmentMimeType
 ): Promise<string> => {
   const image = await loadImage(file)
   const size = fitWithin(image.naturalWidth, image.naturalHeight)
@@ -132,7 +132,7 @@ export const fileToAttachmentInput = async (file: File): Promise<CommunityAttach
   }
   if (bytes > COMMUNITY_ATTACHMENT_MAX_BYTES) {
     throw new Error(
-      `${file.name}: 파일은 2MB 이하만 첨부할 수 있습니다. (변환 후 ${formatByteSize(bytes)})`,
+      `${file.name}: 파일은 2MB 이하만 첨부할 수 있습니다. (변환 후 ${formatByteSize(bytes)})`
     )
   }
   return { name: file.name, mimeType, dataUrl }

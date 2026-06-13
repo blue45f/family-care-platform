@@ -83,7 +83,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const safeErrorCode = status >= 500 ? '[server]' : '[client]'
     this.logger.error(
       `${safeErrorCode} ${status} ${request?.method ?? ''} ${path} - ${detail}`,
-      exception instanceof Error ? exception.stack : undefined,
+      exception instanceof Error ? exception.stack : undefined
     )
 
     response.status(status).json(body)

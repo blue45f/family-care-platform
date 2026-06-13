@@ -131,13 +131,13 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
       withdrawn: members.filter((member) => memberStatus(member) === 'withdrawn').length,
       organizations: members.filter((member) => member.organization).length,
     }),
-    [members],
+    [members]
   )
 
   const applyMemberUpdate = async (
     member: MemberUser,
     input: AdminUserUpdateInput,
-    message: string,
+    message: string
   ) => {
     if (updatingId !== null) {
       return
@@ -174,7 +174,7 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
     await applyMemberUpdate(
       member,
       { role },
-      `${member.name}님의 역할을 ${role === 'admin' ? '관리자' : '운영자'}로 변경했습니다.`,
+      `${member.name}님의 역할을 ${role === 'admin' ? '관리자' : '운영자'}로 변경했습니다.`
     )
   }
 

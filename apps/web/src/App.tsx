@@ -62,7 +62,7 @@ const AuthedApp = ({ route }: { route: RouteState }) => {
 
   const navBadges = useMemo<Partial<Record<AppRoute, number>>>(
     () => (data.pendingClaims > 0 ? { '/claims': data.pendingClaims } : {}),
-    [data.pendingClaims],
+    [data.pendingClaims]
   )
 
   const fallbackEntry = findProtectedRouteEntry(activeRoute)
@@ -156,7 +156,7 @@ const App = () => {
         search: location.search,
         hash: location.hash,
       }),
-    [location.hash, location.pathname, location.search],
+    [location.hash, location.pathname, location.search]
   )
 
   const activeRoute = canonical.route
@@ -166,7 +166,7 @@ const App = () => {
     (path: AppRoute, state?: unknown) => {
       routerNavigate(path, state ? { state: state as Record<string, unknown> } : undefined)
     },
-    [routerNavigate],
+    [routerNavigate]
   )
 
   useEffect(() => {

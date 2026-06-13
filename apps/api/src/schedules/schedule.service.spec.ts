@@ -41,7 +41,7 @@ describe('ScheduleService', () => {
         endTime: '11:00',
         status: '예정',
         note: '',
-      }),
+      })
     ).toThrow('recipient/caregiver/date/startTime/endTime는 필수입니다.')
   })
 
@@ -57,7 +57,7 @@ describe('ScheduleService', () => {
         endTime: '13:00',
         status: '예정',
         note: '',
-      }),
+      })
     ).toThrow('종료 시간은 시작 시간보다 늦어야 합니다.')
   })
 
@@ -91,7 +91,7 @@ describe('ScheduleService', () => {
         endTime: '11:00',
         status: '대기' as unknown as ScheduleStatus,
         note: '',
-      }),
+      })
     ).toThrow('유효하지 않은 일정 상태입니다.')
   })
 })

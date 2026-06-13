@@ -52,7 +52,7 @@ describe('SupportService', () => {
   it('운영팀 답장은 staff 발신으로 기록되고 lastMessageAt이 갱신된다', () => {
     const created = service.createThread(
       { subject: '교체 문의', message: '요청드립니다' },
-      guardian,
+      guardian
     )
     const before = service.getThread(created.id, guardian).lastMessageAt
 
@@ -70,26 +70,26 @@ describe('SupportService', () => {
     const closed = service.setStatus(created.id, { status: 'closed' }, guardian)
     expect(closed.status).toBe('closed')
     expect(() => service.addMessage(created.id, { body: '추가' }, guardian)).toThrow(
-      '종료된 상담에는 메시지를 보낼 수 없습니다.',
+      '종료된 상담에는 메시지를 보낼 수 없습니다.'
     )
 
     service.setStatus(created.id, { status: 'open' }, staff)
     expect(service.addMessage(created.id, { body: '재개 후' }, guardian).senderRole).toBe('user')
     expect(() => service.setStatus(created.id, { status: 'paused' }, staff)).toThrow(
-      '유효하지 않은 상담 상태입니다.',
+      '유효하지 않은 상담 상태입니다.'
     )
   })
 
   it('입력 검증: 제목/내용 필수와 길이 한도를 강제한다', () => {
     expect(() => service.createThread({ subject: ' ', message: '내용' }, guardian)).toThrow(
-      '상담 제목을 입력해 주세요.',
+      '상담 제목을 입력해 주세요.'
     )
     expect(() =>
-      service.createThread({ subject: '제목', message: 'a'.repeat(2001) }, guardian),
+      service.createThread({ subject: '제목', message: 'a'.repeat(2001) }, guardian)
     ).toThrow('상담 내용은 2000자 이내여야 합니다.')
     const created = service.createThread({ subject: '제목', message: '내용' }, guardian)
     expect(() => service.addMessage(created.id, { body: '  ' }, guardian)).toThrow(
-      '메시지 내용을 입력해 주세요.',
+      '메시지 내용을 입력해 주세요.'
     )
   })
 })

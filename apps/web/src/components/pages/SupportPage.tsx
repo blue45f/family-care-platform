@@ -76,7 +76,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
       }
       await refreshThreads(options)
     },
-    [refreshThreads],
+    [refreshThreads]
   )
 
   const openThread = useCallback(async (threadId: number, options: { silent?: boolean } = {}) => {
@@ -340,7 +340,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
                     type="button"
                     className={cn(
                       'grid w-full cursor-pointer gap-1 rounded-md border border-border-subtle bg-bg-surface p-3 text-left hover:bg-[var(--bg-hover)]',
-                      activeThreadId === item.id && 'border-accent bg-accent-soft',
+                      activeThreadId === item.id && 'border-accent bg-accent-soft'
                     )}
                     aria-current={activeThreadId === item.id ? 'true' : undefined}
                     onClick={() => void openThread(item.id)}
@@ -422,7 +422,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
                         key={message.id}
                         className={cn(
                           'grid max-w-[85%] justify-items-start gap-1',
-                          mine && 'justify-self-end justify-items-end',
+                          mine && 'justify-self-end justify-items-end'
                         )}
                       >
                         <span className="text-xs text-fg-subtle">
@@ -434,7 +434,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
                         <span
                           className={cn(
                             'whitespace-pre-line break-words rounded-md border border-border-subtle bg-bg-surface px-3 py-2 text-sm text-fg-default',
-                            mine && 'border-sage-200 bg-accent-soft text-sage-700',
+                            mine && 'border-sage-200 bg-accent-soft text-sage-700'
                           )}
                         >
                           {message.body}

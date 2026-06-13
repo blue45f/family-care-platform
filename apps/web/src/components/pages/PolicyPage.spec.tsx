@@ -19,7 +19,7 @@ const policyFixture: TermsdeskPolicy = {
 describe('PolicyPage', () => {
   it('첫 렌더에서 페이지 헤더와 로딩 스켈레톤을 보여준다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PolicyPage, { route: '/terms', onNavigate: () => undefined }),
+      createElement(PolicyPage, { route: '/terms', onNavigate: () => undefined })
     )
 
     expect(markup).toContain('법적 고지')
@@ -31,7 +31,7 @@ describe('PolicyPage', () => {
 
   it('개인정보 라우트는 routeConfig의 제목을 쓰고 설명 문구는 렌더하지 않는다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PolicyPage, { route: '/privacy', onNavigate: () => undefined }),
+      createElement(PolicyPage, { route: '/privacy', onNavigate: () => undefined })
     )
 
     expect(markup).toContain('개인정보 처리방침')
@@ -42,7 +42,7 @@ describe('PolicyPage', () => {
 describe('PolicyArticle', () => {
   it('게시본 본문을 조항 헤딩·문단·리스트로 렌더링한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PolicyArticle, { slug: 'terms-of-service', policy: policyFixture }),
+      createElement(PolicyArticle, { slug: 'terms-of-service', policy: policyFixture })
     )
 
     expect(markup).toContain('<h2>제1조 (목적)</h2>')
@@ -53,7 +53,7 @@ describe('PolicyArticle', () => {
 
   it('하단 신뢰 표면에 버전·시행일·해시 축약·원문 링크를 표기한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PolicyArticle, { slug: 'terms-of-service', policy: policyFixture }),
+      createElement(PolicyArticle, { slug: 'terms-of-service', policy: policyFixture })
     )
 
     expect(markup).toContain('v1')
@@ -68,7 +68,7 @@ describe('PolicyArticle', () => {
 describe('PolicyFallbackCard', () => {
   it('재시도 버튼과 TermsDesk 외부 폴백 링크를 함께 제공한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PolicyFallbackCard, { slug: 'privacy-policy', onRetry: () => undefined }),
+      createElement(PolicyFallbackCard, { slug: 'privacy-policy', onRetry: () => undefined })
     )
 
     expect(markup).toContain('정책 문서를 불러오지 못했습니다')

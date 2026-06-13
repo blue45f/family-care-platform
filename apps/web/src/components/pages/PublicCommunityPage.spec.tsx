@@ -7,7 +7,7 @@ import { PublicCommunityPage } from './PublicCommunityPage'
 describe('PublicCommunityPage', () => {
   it('커뮤니티 데모 주요 섹션을 보여준다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicCommunityPage, { onNavigate: () => undefined }),
+      createElement(PublicCommunityPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('커뮤니티 데모')
@@ -19,7 +19,7 @@ describe('PublicCommunityPage', () => {
 
   it('데모 글 작성과 댓글 입력 폼을 모두 제공한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicCommunityPage, { onNavigate: () => undefined }),
+      createElement(PublicCommunityPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('글 등록 (샘플 저장)')
@@ -29,7 +29,7 @@ describe('PublicCommunityPage', () => {
 
   it('소팅 및 카테고리 필터 UI를 노출한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicCommunityPage, { onNavigate: () => undefined }),
+      createElement(PublicCommunityPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('최신순')
@@ -42,7 +42,7 @@ describe('PublicCommunityPage', () => {
 
   it('데모 미션 요약 블록을 노출한다', () => {
     const markup = renderToStaticMarkup(
-      createElement(PublicCommunityPage, { onNavigate: () => undefined }),
+      createElement(PublicCommunityPage, { onNavigate: () => undefined })
     )
 
     expect(markup).toContain('커뮤니티 데모 미션')

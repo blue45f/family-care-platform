@@ -46,7 +46,7 @@ function createMockResponse(): Response & {
 
 function createMockRequest(
   headers: Record<string, string | string[]> = {},
-  ip = '10.0.0.1',
+  ip = '10.0.0.1'
 ): Request {
   return {
     headers,
@@ -115,7 +115,7 @@ describe('resolveRateLimitOptions', () => {
       {
         windowMs: 5000,
         maxRequests: 10,
-      },
+      }
     )
   })
 
@@ -125,7 +125,7 @@ describe('resolveRateLimitOptions', () => {
 
   it('RATE_LIMIT_MAX가 RATE_LIMIT_MAX_REQUESTS보다 우선한다', () => {
     expect(
-      resolveRateLimitOptions({ RATE_LIMIT_MAX: '3', RATE_LIMIT_MAX_REQUESTS: '99' }).maxRequests,
+      resolveRateLimitOptions({ RATE_LIMIT_MAX: '3', RATE_LIMIT_MAX_REQUESTS: '99' }).maxRequests
     ).toBe(3)
   })
 
@@ -141,7 +141,7 @@ describe('resolveRateLimitOptions', () => {
 describe('resolveClientKey', () => {
   it('X-Forwarded-For 첫 IP를 우선 사용한다', () => {
     expect(resolveClientKey(createMockRequest({ 'x-forwarded-for': '1.2.3.4, 5.6.7.8' }))).toBe(
-      '1.2.3.4',
+      '1.2.3.4'
     )
   })
 

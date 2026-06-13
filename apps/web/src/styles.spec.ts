@@ -111,7 +111,7 @@ describe('public footer', () => {
 
   it('태블릿 중간 구간(48–54rem)은 링크 그룹을 2열로 배치하고 브랜드는 전체 행을 차지한다', () => {
     const midBlock = stylesCss.match(
-      /@media \(min-width: 48rem\) and \(max-width: 53\.99rem\) \{([\s\S]*?)\n\}/,
+      /@media \(min-width: 48rem\) and \(max-width: 53\.99rem\) \{([\s\S]*?)\n\}/
     )?.[1]
     if (!midBlock) throw new Error('styles.css에서 48–54rem 푸터 중간 구간 블록을 찾지 못했습니다')
     const inner = midBlock.match(/\.public-footer-inner\s*\{[^}]*\}/)?.[0]

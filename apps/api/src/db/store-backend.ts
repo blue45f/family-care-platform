@@ -39,7 +39,7 @@ class StoreBackend {
       this.failed = true
       console.error(
         '[store-backend] hydrate failed — falling back to file store (run `pnpm db:push`?):',
-        error,
+        error
       )
     }
   }
@@ -65,7 +65,7 @@ class StoreBackend {
           .onConflictDoUpdate({
             target: collections.name,
             set: { data: snapshot, updatedAt: new Date() },
-          }),
+          })
       )
       .catch((error: unknown) => {
         // 동기 계약 유지를 위해 write-behind — 실패는 데이터 손실 위험이라 로그로 가시화.

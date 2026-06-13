@@ -7,13 +7,13 @@ describe('resolveAllowedOrigins', () => {
     expect(
       resolveAllowedOrigins({
         CORS_ALLOWED_ORIGINS: ' https://a.com , , https://b.com ',
-      } as NodeJS.ProcessEnv),
+      } as NodeJS.ProcessEnv)
     ).toEqual(['https://a.com', 'https://b.com'])
   })
 
   it('CORS_ALLOWED_ORIGINS가 없으면 단일 CORS_ALLOWED_ORIGIN을 사용한다', () => {
     expect(
-      resolveAllowedOrigins({ CORS_ALLOWED_ORIGIN: 'https://only.com' } as NodeJS.ProcessEnv),
+      resolveAllowedOrigins({ CORS_ALLOWED_ORIGIN: 'https://only.com' } as NodeJS.ProcessEnv)
     ).toEqual(['https://only.com'])
   })
 
@@ -29,7 +29,7 @@ describe('isCorsOriginAllowed', () => {
 
   it('명시 목록에 포함되면 환경과 무관하게 허용한다', () => {
     expect(
-      isCorsOriginAllowed('https://app.example.com', ['https://app.example.com'], 'production'),
+      isCorsOriginAllowed('https://app.example.com', ['https://app.example.com'], 'production')
     ).toBe(true)
   })
 
@@ -44,10 +44,10 @@ describe('isCorsOriginAllowed', () => {
 
   it('명시 목록에 없는 외부 Origin은 거절한다', () => {
     expect(isCorsOriginAllowed('https://evil.com', ['https://app.example.com'], 'production')).toBe(
-      false,
+      false
     )
     expect(
-      isCorsOriginAllowed('https://evil.com', ['https://app.example.com'], 'development'),
+      isCorsOriginAllowed('https://evil.com', ['https://app.example.com'], 'development')
     ).toBe(false)
   })
 })

@@ -32,7 +32,7 @@ export type AuthContextValue = {
     email: string,
     password: string,
     name: string,
-    organization?: string,
+    organization?: string
   ) => Promise<AuthUser>
   updateProfile: (input: UpdateProfileInput) => Promise<AuthUser>
   withdrawAccount: (password: string) => Promise<void>

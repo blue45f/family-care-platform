@@ -11,7 +11,7 @@ import type { CommunityComment } from '../../types'
 const comment = (
   id: number,
   parentId: number | null,
-  overrides: Partial<CommunityComment> = {},
+  overrides: Partial<CommunityComment> = {}
 ): CommunityComment => ({
   id,
   postId: 1,
@@ -67,7 +67,7 @@ describe('formatRelativeIso', () => {
 describe('normalizeApiErrorMessage', () => {
   it('API 오류 본문(JSON detail)을 사람이 읽을 메시지로 정리한다', () => {
     const apiError = new Error(
-      JSON.stringify({ error: 'BadRequest', detail: '제목을 입력해 주세요.', statusCode: 400 }),
+      JSON.stringify({ error: 'BadRequest', detail: '제목을 입력해 주세요.', statusCode: 400 })
     )
     expect(normalizeApiErrorMessage(apiError, '실패')).toBe('제목을 입력해 주세요.')
     expect(normalizeApiErrorMessage(new Error('Failed to fetch'), '실패')).toContain('연결하지')

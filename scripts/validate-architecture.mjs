@@ -21,13 +21,26 @@ const requiredPaths = [
   'docs/DEVELOPMENT.md',
   'pnpm-workspace.yaml',
   'eslint.config.mjs',
-  '.prettierrc',
   'commitlint.config.cjs',
   '.husky/pre-commit',
   '.husky/commit-msg',
 ]
 for (const file of requiredPaths) {
   if (!exists(file)) issues.push(`missing file: ${file}`)
+}
+
+// Prettier config single-source: prefer the shared published preset referenced
+// from package.json ("prettier": "@heejun/prettier-config"), falling back to a
+// local no-semi .prettierrc. Either is the canonical no-semi house style.
+const prettierField = pkg.prettier
+if (prettierField === '@heejun/prettier-config') {
+  // shared preset (no-semi/es5) — single source across sibling repos.
+} else if (exists('.prettierrc')) {
+  const prettierrc = JSON.parse(read('.prettierrc'))
+  if (prettierrc.semi !== false)
+    issues.push('.prettierrc must set semi:false (no-semi house style)')
+} else {
+  issues.push('missing prettier config (package.json "prettier" or .prettierrc)')
 }
 
 // Required root scripts wired into the verify/CI chain.
@@ -62,7 +75,9 @@ if (exists('pnpm-workspace.yaml')) {
   const ws = read('pnpm-workspace.yaml')
   const globs = [...ws.matchAll(/^\s*-\s*['"]?([^'"\n]+?)['"]?\s*$/gm)]
     .map((m) => m[1].trim())
-    .filter((g) => g.includes('/'))
+    // Workspace dir globs only: must contain '/' and not be a package name
+    // (e.g. minimumReleaseAgeExclude entries like '@heejun/prettier-config').
+    .filter((g) => g.includes('/') && !g.includes('@'))
   for (const glob of globs) {
     const base = glob.replace(/\/\*+$/, '')
     if (!exists(base)) issues.push(`workspace dir missing: ${base} (from "${glob}")`)

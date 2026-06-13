@@ -28,7 +28,7 @@ export class ClaimsController {
   @Patch(':id/status')
   updateStatus(
     @Param('id', new ZodValidationPipe(claimIdParamSchema)) claimId: number,
-    @Body(new ZodValidationPipe(claimStatusUpdateSchema)) input: ClaimStatusUpdate,
+    @Body(new ZodValidationPipe(claimStatusUpdateSchema)) input: ClaimStatusUpdate
   ): Claim {
     return this.claimsService.updateStatus(claimId, input.status)
   }

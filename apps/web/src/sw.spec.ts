@@ -161,7 +161,7 @@ describe('service worker', () => {
     const fetchImpl = vi.fn(async () => makeResponse('외부'))
     const worker = bootWorker(fetchImpl)
     const crossOrigin = await worker.dispatchFetch(
-      makeRequest('https://cdn.example.com/assets/lib.js'),
+      makeRequest('https://cdn.example.com/assets/lib.js')
     )
     const nonGet = await worker.dispatchFetch(makeRequest('/assets/log', { method: 'POST' }))
     expect(crossOrigin).toBeUndefined()

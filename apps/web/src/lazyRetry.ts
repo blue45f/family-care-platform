@@ -35,8 +35,8 @@ export const retryImport = async <TModule>(factory: () => Promise<TModule>): Pro
  * React.lazy + retryImport. 제네릭으로 페이지 컴포넌트의 props 타입을 보존한다.
  */
 export const lazyRetry = <TComponent extends ComponentType<never>>(
-  factory: () => Promise<{ default: TComponent }>,
+  factory: () => Promise<{ default: TComponent }>
 ): TComponent =>
   lazy(
-    () => retryImport(factory) as unknown as Promise<{ default: ComponentType }>,
+    () => retryImport(factory) as unknown as Promise<{ default: ComponentType }>
   ) as unknown as TComponent

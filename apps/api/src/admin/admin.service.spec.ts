@@ -10,7 +10,7 @@ describe('AdminService', () => {
     const service = new AdminService(
       new CareLogService(),
       new SettlementService(),
-      new ClaimsService(),
+      new ClaimsService()
     )
     const overview = service.getOverview()
 
@@ -23,7 +23,7 @@ describe('AdminService', () => {
     const service = new AdminService(
       new CareLogService(),
       new SettlementService(),
-      new ClaimsService(),
+      new ClaimsService()
     )
     const plans = service.getPlans()
 

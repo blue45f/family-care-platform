@@ -38,7 +38,7 @@ export function resolveRateLimitOptions(env: NodeJS.ProcessEnv = process.env): R
     windowMs: toPositiveInt(env.RATE_LIMIT_WINDOW_MS, DEFAULT_WINDOW_MS),
     maxRequests: toPositiveInt(
       env.RATE_LIMIT_MAX ?? env.RATE_LIMIT_MAX_REQUESTS,
-      DEFAULT_MAX_REQUESTS,
+      DEFAULT_MAX_REQUESTS
     ),
   }
 }

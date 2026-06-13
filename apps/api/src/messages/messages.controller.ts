@@ -30,7 +30,7 @@ export class MessagesController {
   @Get('conversations/:partnerId')
   getConversation(
     @Param('partnerId') partnerId: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): ConversationDetail {
     return this.messagesService.getConversation(Number(partnerId), requireUser(user))
   }
@@ -39,7 +39,7 @@ export class MessagesController {
   @HttpCode(HttpStatus.CREATED)
   send(
     @Body() input: DirectMessageInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): DirectMessage {
     return this.messagesService.send(input, requireUser(user))
   }
@@ -49,7 +49,7 @@ export class MessagesController {
   @HttpCode(HttpStatus.OK)
   markRead(
     @Param('partnerId') partnerId: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): { updated: number } {
     return this.messagesService.markRead(Number(partnerId), requireUser(user))
   }

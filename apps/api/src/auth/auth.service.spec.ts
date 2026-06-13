@@ -41,7 +41,7 @@ describe('AuthService', () => {
     // 두 번째 인스턴스도 데모를 중복 생성하지 않는다(멱등).
     const second = createService()
     expect(() =>
-      second.login({ email: 'demo@familycare.app', password: 'demo-1234' }),
+      second.login({ email: 'demo@familycare.app', password: 'demo-1234' })
     ).not.toThrow()
   })
 
@@ -62,13 +62,13 @@ describe('AuthService', () => {
   it('이메일은 대소문자 무관하게 중복을 거부한다', () => {
     service.register({ email: 'dup@example.com', name: '중복', password: 'secret123' })
     expect(() =>
-      service.register({ email: 'DUP@example.com', name: '중복2', password: 'secret123' }),
+      service.register({ email: 'DUP@example.com', name: '중복2', password: 'secret123' })
     ).toThrow('이미 등록된 이메일입니다.')
   })
 
   it('비밀번호가 8자 미만이면 거부한다', () => {
     expect(() =>
-      service.register({ email: 'short@example.com', name: '짧음', password: 'short' }),
+      service.register({ email: 'short@example.com', name: '짧음', password: 'short' })
     ).toThrow('비밀번호는 8자 이상이어야 합니다.')
   })
 
@@ -82,13 +82,13 @@ describe('AuthService', () => {
   it('잘못된 비밀번호는 일반화된 메시지로 거부한다', () => {
     service.register({ email: 'wrong@example.com', name: '오류', password: 'secret123' })
     expect(() => service.login({ email: 'wrong@example.com', password: 'nope-nope' })).toThrow(
-      '이메일 또는 비밀번호가 올바르지 않습니다.',
+      '이메일 또는 비밀번호가 올바르지 않습니다.'
     )
   })
 
   it('존재하지 않는 계정 로그인도 동일 메시지로 거부한다(존재 여부 누출 방지)', () => {
     expect(() => service.login({ email: 'ghost@example.com', password: 'whatever1' })).toThrow(
-      '이메일 또는 비밀번호가 올바르지 않습니다.',
+      '이메일 또는 비밀번호가 올바르지 않습니다.'
     )
   })
 
@@ -140,13 +140,13 @@ describe('AuthService', () => {
     expect(cleared.organization).toBeUndefined()
 
     expect(() => service.updateProfile(user.id, { newPassword: 'newpass123' })).toThrow(
-      '비밀번호를 변경하려면 현재 비밀번호를 입력해 주세요.',
+      '비밀번호를 변경하려면 현재 비밀번호를 입력해 주세요.'
     )
     expect(() =>
       service.updateProfile(user.id, {
         currentPassword: 'wrong',
         newPassword: 'newpass123',
-      }),
+      })
     ).toThrow('현재 비밀번호가 올바르지 않습니다.')
 
     service.updateProfile(user.id, {
@@ -154,10 +154,10 @@ describe('AuthService', () => {
       newPassword: 'newpass123',
     })
     expect(() => service.login({ email: 'profile@example.com', password: 'secret123' })).toThrow(
-      '이메일 또는 비밀번호가 올바르지 않습니다.',
+      '이메일 또는 비밀번호가 올바르지 않습니다.'
     )
     expect(service.login({ email: 'profile@example.com', password: 'newpass123' }).user.id).toBe(
-      user.id,
+      user.id
     )
   })
 
@@ -184,7 +184,7 @@ describe('AuthService', () => {
         name: '김김',
         password: 'secret123',
         organization: 'x'.repeat(81),
-      }),
+      })
     ).toThrow('기관명은 80자 이내여야 합니다.')
   })
 
@@ -210,7 +210,7 @@ describe('AuthService', () => {
     expect(suspended.suspended).toBe(true)
 
     expect(() => service.login({ email: 'suspend@example.com', password: 'secret123' })).toThrow(
-      '이용이 정지된 계정입니다. 운영팀에 문의해 주세요.',
+      '이용이 정지된 계정입니다. 운영팀에 문의해 주세요.'
     )
     expect(service.verifyBearerToken(token)).toBeNull()
     expect(() => service.getProfile(user.id)).toThrow('인증 정보가 유효하지 않습니다.')
@@ -219,7 +219,7 @@ describe('AuthService', () => {
     service.setSuspension(user.id, { suspended: false }, adminActor)
     expect(service.verifyBearerToken(token)?.id).toBe(user.id)
     expect(() =>
-      service.login({ email: 'suspend@example.com', password: 'secret123' }),
+      service.login({ email: 'suspend@example.com', password: 'secret123' })
     ).not.toThrow()
   })
 
@@ -239,7 +239,7 @@ describe('AuthService', () => {
     expect(service.verifyBearerToken(token)).toBeNull()
     expect(() => service.getProfile(user.id)).toThrow('인증 정보가 유효하지 않습니다.')
     expect(() => service.login({ email: 'withdraw@example.com', password: 'secret123' })).toThrow(
-      '이메일 또는 비밀번호가 올바르지 않습니다.',
+      '이메일 또는 비밀번호가 올바르지 않습니다.'
     )
 
     const rejoined = service.register({
@@ -257,21 +257,21 @@ describe('AuthService', () => {
       password: 'secret123',
     })
     expect(() => service.withdrawAccount(user.id, { password: 'wrong' })).toThrow(
-      '비밀번호가 올바르지 않습니다.',
+      '비밀번호가 올바르지 않습니다.'
     )
 
     expect(() => service.withdrawAccount(adminActor.id, { password: 'demo-1234' })).toThrow(
-      '마지막 관리자 계정은 탈퇴할 수 없습니다.',
+      '마지막 관리자 계정은 탈퇴할 수 없습니다.'
     )
   })
 
   it('관리자 회원 변경은 통합 메서드에서 역할/상태와 보호 규칙을 처리한다', () => {
     expect(() => service.setSuspension(adminActor.id, { suspended: true }, adminActor)).toThrow(
-      '본인 계정은 정지할 수 없습니다.',
+      '본인 계정은 정지할 수 없습니다.'
     )
 
     expect(() =>
-      service.updateUserByAdmin(adminActor.id, { role: 'operator' }, adminActor),
+      service.updateUserByAdmin(adminActor.id, { role: 'operator' }, adminActor)
     ).toThrow('본인 관리자 권한은 직접 하향할 수 없습니다.')
 
     const operator = service.register({
@@ -280,35 +280,35 @@ describe('AuthService', () => {
       password: 'secret123',
     })
     expect(service.updateUserByAdmin(operator.user.id, { role: 'admin' }, adminActor).role).toBe(
-      'admin',
+      'admin'
     )
     expect(
-      service.updateUserByAdmin(operator.user.id, { status: 'suspended' }, adminActor).suspended,
+      service.updateUserByAdmin(operator.user.id, { status: 'suspended' }, adminActor).suspended
     ).toBe(true)
     expect(
-      service.updateUserByAdmin(operator.user.id, { status: 'active' }, adminActor).suspended,
+      service.updateUserByAdmin(operator.user.id, { status: 'active' }, adminActor).suspended
     ).toBe(false)
     expect(service.updateUserByAdmin(operator.user.id, { role: 'operator' }, adminActor).role).toBe(
-      'operator',
+      'operator'
     )
 
     const withdrawn = service.updateUserByAdmin(
       operator.user.id,
       { status: 'withdrawn' },
-      adminActor,
+      adminActor
     )
     expect(withdrawn.withdrawnAt).toBeTruthy()
     expect(withdrawn.name).toBe('탈퇴 회원')
     expect(() =>
-      service.updateUserByAdmin(operator.user.id, { status: 'active' }, adminActor),
+      service.updateUserByAdmin(operator.user.id, { status: 'active' }, adminActor)
     ).toThrow('탈퇴한 회원은 변경할 수 없습니다.')
 
     expect(() => service.setSuspension(999, { suspended: true }, adminActor)).toThrow(
-      '회원을 찾을 수 없습니다.',
+      '회원을 찾을 수 없습니다.'
     )
     const normal = service.register({ email: 'n@example.com', name: '회원', password: 'secret123' })
     expect(() =>
-      service.setSuspension(normal.user.id, { suspended: 'yes' } as never, adminActor),
+      service.setSuspension(normal.user.id, { suspended: 'yes' } as never, adminActor)
     ).toThrow('suspended는 true/false여야 합니다.')
   })
 
@@ -321,17 +321,17 @@ describe('AuthService', () => {
     // 공개 가입의 role 지정은 무시되므로 관리자 전용 변경 경로로 승격한다.
     expect(second.user.role).toBe('operator')
     expect(service.updateUserByAdmin(second.user.id, { role: 'admin' }, adminActor).role).toBe(
-      'admin',
+      'admin'
     )
 
     expect(
-      service.updateUserByAdmin(second.user.id, { status: 'suspended' }, adminActor).suspended,
+      service.updateUserByAdmin(second.user.id, { status: 'suspended' }, adminActor).suspended
     ).toBe(true)
     expect(
-      service.updateUserByAdmin(second.user.id, { status: 'active' }, adminActor).suspended,
+      service.updateUserByAdmin(second.user.id, { status: 'active' }, adminActor).suspended
     ).toBe(false)
     expect(service.updateUserByAdmin(second.user.id, { role: 'operator' }, adminActor).role).toBe(
-      'operator',
+      'operator'
     )
 
     const secondActor: AuthenticatedUser = {
@@ -342,15 +342,15 @@ describe('AuthService', () => {
     }
 
     expect(() =>
-      service.updateUserByAdmin(adminActor.id, { status: 'suspended' }, secondActor),
+      service.updateUserByAdmin(adminActor.id, { status: 'suspended' }, secondActor)
     ).toThrow('마지막 활성 관리자 계정은 정지할 수 없습니다.')
 
     forceRole(service, second.user.id, 'admin')
     expect(
-      service.updateUserByAdmin(second.user.id, { status: 'withdrawn' }, adminActor).name,
+      service.updateUserByAdmin(second.user.id, { status: 'withdrawn' }, adminActor).name
     ).toBe('탈퇴 회원')
     expect(() =>
-      service.updateUserByAdmin(adminActor.id, { role: 'operator' }, secondActor),
+      service.updateUserByAdmin(adminActor.id, { role: 'operator' }, secondActor)
     ).toThrow('마지막 관리자 계정은 권한 하향 또는 탈퇴 처리할 수 없습니다.')
   })
 })

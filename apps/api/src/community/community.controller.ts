@@ -33,7 +33,7 @@ export class CommunityController {
   listPosts(
     @CurrentUser() user: AuthenticatedUser | undefined,
     @Query('category') category?: string,
-    @Query('q') q?: string,
+    @Query('q') q?: string
   ): CommunityPostSummary[] {
     return this.communityService.listPosts(user, { category, q })
   }
@@ -41,7 +41,7 @@ export class CommunityController {
   @Get('posts/:id')
   getPost(
     @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityPostDetail {
     return this.communityService.getPost(Number(id), user)
   }
@@ -50,7 +50,7 @@ export class CommunityController {
   @HttpCode(HttpStatus.CREATED)
   createPost(
     @Body() input: CommunityPostInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityPostDetail {
     return this.communityService.createPost(input, requireUser(user))
   }
@@ -60,7 +60,7 @@ export class CommunityController {
   addComment(
     @Param('id') id: string,
     @Body() input: CommunityCommentInput,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityComment {
     return this.communityService.addComment(Number(id), input, requireUser(user))
   }
@@ -69,7 +69,7 @@ export class CommunityController {
   @HttpCode(HttpStatus.OK)
   deleteComment(
     @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityComment {
     return this.communityService.deleteComment(Number(id), requireUser(user))
   }
@@ -78,7 +78,7 @@ export class CommunityController {
   @HttpCode(HttpStatus.OK)
   deletePost(
     @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): { deleted: true } {
     return this.communityService.deletePost(Number(id), requireUser(user))
   }
@@ -88,12 +88,12 @@ export class CommunityController {
   deleteAttachment(
     @Param('postId') postId: string,
     @Param('attachmentId') attachmentId: string,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityPostDetail {
     return this.communityService.deleteAttachment(
       Number(postId),
       Number(attachmentId),
-      requireUser(user),
+      requireUser(user)
     )
   }
 
@@ -101,7 +101,7 @@ export class CommunityController {
   setVisibility(
     @Param('id') id: string,
     @Body() input: unknown,
-    @CurrentUser() user: AuthenticatedUser | undefined,
+    @CurrentUser() user: AuthenticatedUser | undefined
   ): CommunityPostSummary {
     return this.communityService.setVisibility(Number(id), input, requireAdmin(user))
   }

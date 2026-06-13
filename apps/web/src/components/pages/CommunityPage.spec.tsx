@@ -10,7 +10,7 @@ const render = () =>
   renderToStaticMarkup(
     createElement(AuthProvider, {
       children: createElement(CommunityPage, { onNavigate: () => undefined }),
-    }),
+    })
   )
 
 describe('CommunityPage', () => {

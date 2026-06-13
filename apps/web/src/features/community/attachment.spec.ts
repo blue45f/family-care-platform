@@ -19,7 +19,7 @@ describe('community attachment 클라이언트 정책', () => {
     expect(attachmentErrorMessage(png, 0)).toBeNull()
 
     expect(attachmentErrorMessage({ name: 'x.gif', type: 'image/gif', size: 10 }, 0)).toContain(
-      '허용되지 않는 형식',
+      '허용되지 않는 형식'
     )
 
     const bigPdf = { name: 'doc.pdf', type: 'application/pdf', size: 2 * 1024 * 1024 + 1 }

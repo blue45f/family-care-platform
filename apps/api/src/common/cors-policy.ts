@@ -29,7 +29,7 @@ function isLocalOrigin(origin: string): boolean {
 export function isCorsOriginAllowed(
   origin: string | undefined,
   allowedOrigins: string[],
-  nodeEnv: string | undefined = process.env.NODE_ENV,
+  nodeEnv: string | undefined = process.env.NODE_ENV
 ): boolean {
   if (!origin) {
     return true

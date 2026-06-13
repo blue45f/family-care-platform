@@ -66,7 +66,7 @@ export const CarePage = ({ data, onNavigate }: CarePageProps) => {
 
   const sortedLogs = useMemo(
     () => [...data.careLogs].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id),
-    [data.careLogs],
+    [data.careLogs]
   )
 
   // 활동 유형별 건수 요약(상단 지표). 차분한 라벨+값 카드만 사용한다.
@@ -80,11 +80,11 @@ export const CarePage = ({ data, onNavigate }: CarePageProps) => {
 
   const caregiverCount = useMemo(
     () => new Set(data.careLogs.map((log) => log.caregiver)).size,
-    [data.careLogs],
+    [data.careLogs]
   )
   const recipientCount = useMemo(
     () => new Set(data.careLogs.map((log) => log.recipient)).size,
-    [data.careLogs],
+    [data.careLogs]
   )
 
   const onValid = handleSubmit(async (values) => {

@@ -120,7 +120,7 @@ const TrendBar = ({
 
 const deltaText = (
   entry: AdminMonthlyTrendWithDelta,
-  kind: 'settlement' | 'claim' | 'approval',
+  kind: 'settlement' | 'claim' | 'approval'
 ) => {
   if (kind === 'settlement') {
     return `${formatSignedWon(entry.settlementDelta)} (${formatSignedRate(entry.settlementDeltaRate)})`

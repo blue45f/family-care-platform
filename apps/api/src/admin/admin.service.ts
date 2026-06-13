@@ -55,7 +55,7 @@ export class AdminService {
   constructor(
     private readonly careLogService: CareLogService,
     private readonly settlementService: SettlementService,
-    private readonly claimsService: ClaimsService,
+    private readonly claimsService: ClaimsService
   ) {}
 
   private getRecentMonthKeys(monthCount = 3): string[] {
@@ -99,14 +99,14 @@ export class AdminService {
     const monthlyTrend: AdminMonthlyTrend[] = this.getRecentMonthKeys(3).map((month) => {
       const claimsByMonth = claims.filter((claim) => claim.issueDate.startsWith(month))
       const settlementsByMonth = settlements.filter((settlement) =>
-        settlement.date.startsWith(month),
+        settlement.date.startsWith(month)
       )
       const monthApprovedClaims = claimsByMonth.filter((claim) => claim.status === '승인').length
       return {
         month,
         settlementTotal: settlementsByMonth.reduce(
           (sum, settlement) => sum + settlement.totalAmount,
-          0,
+          0
         ),
         claimCount: claimsByMonth.length,
         approvedClaimCount: monthApprovedClaims,
@@ -116,10 +116,10 @@ export class AdminService {
 
     const monthlyRecurringRevenue = this.plans.reduce(
       (sum, plan) => sum + plan.monthlyPrice * plan.activeClients,
-      0,
+      0
     )
     const planTakeRate = Number(
-      ((this.plans.reduce((sum, plan) => sum + plan.activeClients, 0) / 500) * 100).toFixed(1),
+      ((this.plans.reduce((sum, plan) => sum + plan.activeClients, 0) / 500) * 100).toFixed(1)
     )
 
     return {

@@ -18,12 +18,12 @@ export const supportThreadInputSchema = z.object({
   subject: requiredText(
     '상담 제목을 입력해 주세요.',
     SUPPORT_SUBJECT_MAX,
-    '상담 제목은 80자 이내여야 합니다.',
+    '상담 제목은 80자 이내여야 합니다.'
   ),
   message: requiredText(
     '상담 내용을 입력해 주세요.',
     SUPPORT_MESSAGE_MAX,
-    '상담 내용은 2000자 이내여야 합니다.',
+    '상담 내용은 2000자 이내여야 합니다.'
   ),
 })
 
@@ -31,7 +31,7 @@ export const supportMessageInputSchema = z.object({
   body: requiredText(
     '메시지 내용을 입력해 주세요.',
     SUPPORT_MESSAGE_MAX,
-    '메시지는 2000자 이내여야 합니다.',
+    '메시지는 2000자 이내여야 합니다.'
   ),
 })
 
