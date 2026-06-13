@@ -20,6 +20,7 @@
   "dependencies": {
     "@family-care/shared": "workspace:*",
     "@hookform/resolvers": "^5.4.0",
+    "@radix-ui/react-dialog": "^1.1.16",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.77.0",

@@ -5,7 +5,18 @@ import type { UpdateProfileInput } from '../../auth/authContext'
 import type { ProtectedNavigateState } from '../../appRoutes'
 import { normalizeApiErrorMessage } from '../../features/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import { Badge, Button, Card, CardHeader, EmptyState, Field, Icon, Input, PageHeader } from '../ui'
+import {
+  Badge,
+  Button,
+  Card,
+  CardHeader,
+  ConfirmDialog,
+  EmptyState,
+  Field,
+  Icon,
+  Input,
+  PageHeader,
+} from '../ui'
 
 type AccountSettingsPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void
@@ -119,14 +130,14 @@ export const AccountSettingsPage = ({ onNavigate }: AccountSettingsPageProps) =>
     }
   }
 
-  const submitWithdrawal = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  // 탈퇴 확인 모달을 연다(실제 탈퇴는 모달 안에서 비밀번호 확인 후 실행).
+  const openWithdrawal = () => {
+    setWithdrawArmed(true)
+    setError('')
+  }
+
+  const confirmWithdrawal = async () => {
     if (withdrawing) {
-      return
-    }
-    if (!withdrawArmed) {
-      setWithdrawArmed(true)
-      setError('')
       return
     }
     if (!withdrawPassword) {
@@ -292,55 +303,45 @@ export const AccountSettingsPage = ({ onNavigate }: AccountSettingsPageProps) =>
             title="계정 탈퇴"
             subtitle="탈퇴하면 개인정보가 익명화되고 현재 세션과 기존 토큰이 더 이상 유효하지 않습니다."
           />
-          <form className="stack-sm" onSubmit={submitWithdrawal} aria-busy={withdrawing}>
-            {withdrawArmed ? (
-              <Field label="현재 비밀번호" required>
-                {(field) => (
-                  <Input
-                    {...field}
-                    type="password"
-                    autoComplete="current-password"
-                    value={withdrawPassword}
-                    disabled={withdrawing}
-                    onChange={(event) => setWithdrawPassword(event.target.value)}
-                  />
-                )}
-              </Field>
-            ) : (
-              <p className="empty-desc">
-                마지막 관리자 계정은 탈퇴할 수 없습니다. 관리자 권한이 필요하면 먼저 다른 관리자에게
-                권한을 넘기세요.
-              </p>
-            )}
+          <div className="stack-sm">
+            <p className="empty-desc">
+              마지막 관리자 계정은 탈퇴할 수 없습니다. 관리자 권한이 필요하면 먼저 다른 관리자에게
+              권한을 넘기세요.
+            </p>
+            <Button type="button" variant="ghost" disabled={withdrawing} onClick={openWithdrawal}>
+              <Icon name="trash" size={16} />
+              계정 탈퇴
+            </Button>
+          </div>
 
-            {withdrawArmed ? (
-              <div className="feedback feedback-warning confirm-bar" role="alert">
-                <span>정말 탈퇴할까요? 탈퇴 후 같은 이메일로 재가입할 수 있습니다.</span>
-                <span className="confirm-bar-actions">
-                  <Button type="submit" size="sm" disabled={withdrawing} variant="primary">
-                    {withdrawing ? '탈퇴 처리 중…' : '탈퇴 확정'}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="secondary"
-                    disabled={withdrawing}
-                    onClick={() => {
-                      setWithdrawArmed(false)
-                      setWithdrawPassword('')
-                    }}
-                  >
-                    취소
-                  </Button>
-                </span>
-              </div>
-            ) : (
-              <Button type="submit" variant="ghost">
-                <Icon name="trash" size={16} />
-                계정 탈퇴
-              </Button>
-            )}
-          </form>
+          <ConfirmDialog
+            open={withdrawArmed}
+            onOpenChange={(next) => {
+              if (!next) {
+                setWithdrawArmed(false)
+                setWithdrawPassword('')
+              }
+            }}
+            tone="danger"
+            busy={withdrawing}
+            title="계정 탈퇴"
+            description="정말 탈퇴할까요? 탈퇴 후 같은 이메일로 재가입할 수 있습니다."
+            confirmLabel={withdrawing ? '탈퇴 처리 중…' : '탈퇴 확정'}
+            onConfirm={() => void confirmWithdrawal()}
+          >
+            <Field label="현재 비밀번호" required>
+              {(field) => (
+                <Input
+                  {...field}
+                  type="password"
+                  autoComplete="current-password"
+                  value={withdrawPassword}
+                  disabled={withdrawing}
+                  onChange={(event) => setWithdrawPassword(event.target.value)}
+                />
+              )}
+            </Field>
+          </ConfirmDialog>
         </Card>
       </section>
     </div>
