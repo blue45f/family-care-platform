@@ -11,6 +11,7 @@ import { CommunityModule } from './community/community.module'
 import { SupportModule } from './support/support.module'
 import { MessagesModule } from './messages/messages.module'
 import { RateLimitMiddleware } from './common/rate-limit.middleware'
+import { StoreBackendLifecycle } from './db/store-backend.lifecycle'
 import { HealthController } from './health.controller'
 
 @Module({
@@ -26,6 +27,7 @@ import { HealthController } from './health.controller'
     MessagesModule,
   ],
   controllers: [HealthController],
+  providers: [StoreBackendLifecycle],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
