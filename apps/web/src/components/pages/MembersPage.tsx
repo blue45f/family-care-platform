@@ -477,7 +477,7 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
         />
 
         <form
-          className="board-toolbar"
+          className="mb-3 flex gap-2"
           onSubmit={submitForbiddenWord}
           aria-busy={wordBusyId !== null}
         >
@@ -489,6 +489,7 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
             aria-label="커뮤니티 금칙어"
             disabled={wordBusyId !== null}
             onChange={(event) => setWordDraft(event.target.value)}
+            className="min-w-0 flex-1"
           />
           <Button type="submit" size="sm" disabled={wordBusyId !== null || !wordDraft.trim()}>
             {wordBusyId === 'new' || (editingWordId !== null && wordBusyId === editingWordId)
