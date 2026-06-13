@@ -12,6 +12,7 @@ import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/comm
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import type { ProtectedNavigateState } from '../../appRoutes'
 import type { SupportThreadDetail, SupportThreadSummary } from '../../types'
+import { cn } from '../../utils/cn'
 import {
   Badge,
   Button,
@@ -404,22 +405,35 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
 
               <div
                 ref={logRef}
-                className="bubble-log"
+                className="max-h-[26rem] overflow-y-auto rounded-md border border-border-subtle bg-bg-sunken p-3"
                 role="log"
                 aria-label={`상담 대화: ${thread.subject}`}
               >
-                <ul className="bubble-list">
+                <ul className="grid gap-3">
                   {thread.messages.map((message) => {
                     const mine = message.senderRole === (isStaff ? 'staff' : 'user')
                     return (
-                      <li key={message.id} className={`bubble ${mine ? 'bubble--mine' : ''}`}>
-                        <span className="bubble-meta">
+                      <li
+                        key={message.id}
+                        className={cn(
+                          'grid max-w-[85%] justify-items-start gap-1',
+                          mine && 'justify-self-end justify-items-end',
+                        )}
+                      >
+                        <span className="text-xs text-fg-subtle">
                           {message.senderRole === 'staff'
                             ? `운영팀 ${message.senderName}`
                             : message.senderName}{' '}
                           · {formatRelativeIso(message.createdAt)}
                         </span>
-                        <span className="bubble-body">{message.body}</span>
+                        <span
+                          className={cn(
+                            'whitespace-pre-line break-words rounded-md border border-border-subtle bg-bg-surface px-3 py-2 text-sm text-fg-default',
+                            mine && 'border-sage-200 bg-accent-soft text-sage-700',
+                          )}
+                        >
+                          {message.body}
+                        </span>
                       </li>
                     )
                   })}
