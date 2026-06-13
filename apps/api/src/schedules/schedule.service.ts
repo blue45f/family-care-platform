@@ -2,8 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import type { CareSchedule, CareScheduleInput, ScheduleStatus } from './schedule.model'
+
 import { scheduleInputSchema, scheduleStatusSchema } from './schedule.schema'
+
+import type { CareSchedule, CareScheduleInput, ScheduleStatus } from './schedule.model'
 
 @Injectable()
 export class ScheduleService {

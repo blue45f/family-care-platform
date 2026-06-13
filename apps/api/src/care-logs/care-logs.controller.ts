@@ -1,8 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common'
 
 import { localYmd } from '../common/date.util'
-import type { CareLog, CareLogInput } from './care-log.model'
+
 import { CareLogService } from './care-logs.service'
+
+import type { CareLog, CareLogInput } from './care-log.model'
 
 @Controller('care-logs')
 export class CareLogController {

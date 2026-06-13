@@ -2,8 +2,9 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
-import type { TermsdeskPolicy } from '../../termsdeskPolicy'
 import { PolicyArticle, PolicyFallbackCard, PolicyPage } from './PolicyPage'
+
+import type { TermsdeskPolicy } from '../../termsdeskPolicy'
 
 const policyFixture: TermsdeskPolicy = {
   policySlug: 'terms-of-service',

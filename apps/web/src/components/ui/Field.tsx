@@ -1,12 +1,13 @@
 import { useId } from 'react'
+
+import { cn } from '../../utils/cn'
+
 import type {
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
-
-import { cn } from '../../utils/cn'
 
 type FieldShellProps = {
   label: ReactNode

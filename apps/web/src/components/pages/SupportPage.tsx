@@ -10,8 +10,6 @@ import {
 import { useAuth } from '../../auth/useAuth'
 import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import type { SupportThreadDetail, SupportThreadSummary } from '../../types'
 import { cn } from '../../utils/cn'
 import {
   Badge,
@@ -26,6 +24,9 @@ import {
   Skeleton,
   Textarea,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type { SupportThreadDetail, SupportThreadSummary } from '../../types'
 
 type SupportPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void

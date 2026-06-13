@@ -11,13 +11,6 @@ import {
 import { useAuth } from '../../auth/useAuth'
 import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import type {
-  AdminUserUpdateInput,
-  CommunityForbiddenWord,
-  MemberStatus,
-  MemberUser,
-} from '../../types'
 import {
   Badge,
   Button,
@@ -34,6 +27,14 @@ import {
   Table,
   type TableColumn,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type {
+  AdminUserUpdateInput,
+  CommunityForbiddenWord,
+  MemberStatus,
+  MemberUser,
+} from '../../types'
 
 type MembersPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void

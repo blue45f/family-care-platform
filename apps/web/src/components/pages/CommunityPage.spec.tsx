@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { AuthProvider } from '../../auth/AuthProvider'
+
 import { CommunityPage } from './CommunityPage'
 
 // 초기(데이터 로드 전) 렌더 검증 — effect는 실행되지 않으므로 네트워크 없이 구조만 확인한다.

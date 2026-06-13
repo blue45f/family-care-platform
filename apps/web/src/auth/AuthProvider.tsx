@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 import { deleteMyAccount, patchMyProfile } from '../api'
+
 import { AuthContext, type AuthContextValue, type AuthStatus, type AuthUser } from './authContext'
 import { readStoredToken, writeStoredToken } from './authSession'
 

@@ -62,7 +62,7 @@ if (exists('pnpm-workspace.yaml')) {
   const ws = read('pnpm-workspace.yaml')
   const globs = [...ws.matchAll(/^\s*-\s*['"]?([^'"\n]+?)['"]?\s*$/gm)]
     .map((m) => m[1].trim())
-    .filter((g) => g.includes('/'))
+    .filter((g) => g.includes('/') && !g.includes('@'))
   for (const glob of globs) {
     const base = glob.replace(/\/\*+$/, '')
     if (!exists(base)) issues.push(`workspace dir missing: ${base} (from "${glob}")`)

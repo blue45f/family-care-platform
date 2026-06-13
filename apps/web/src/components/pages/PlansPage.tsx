@@ -1,13 +1,11 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { type CSSProperties, type ReactNode, useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
-import type { PlatformData } from '../../state/usePlatformData'
 import {
   revenuePlanFormSchema,
   type RevenuePlanFormValues,
 } from '../../features/revenue-plan/schema'
-import type { RevenuePlan } from '../../types'
 import { formatRate, formatWon, isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,
@@ -22,6 +20,9 @@ import {
   Skeleton,
   Stat,
 } from '../ui'
+
+import type { PlatformData } from '../../state/usePlatformData'
+import type { RevenuePlan } from '../../types'
 
 type PlansPageProps = {
   data: PlatformData

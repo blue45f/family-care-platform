@@ -1,9 +1,11 @@
-import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common'
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { Response } from 'express'
+
+import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common'
 
 import { resolveDataDir } from './common/json-store'
+
+import type { Response } from 'express'
 
 @Controller('health')
 export class HealthController {

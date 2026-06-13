@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { requireAdmin, requireUser } from './role.util'
+
 import type { AuthenticatedUser } from './auth.model'
 
 const operator: AuthenticatedUser = {

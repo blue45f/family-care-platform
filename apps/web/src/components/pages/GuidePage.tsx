@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { routeDefs } from '../../routeConfig'
 import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
 type GuidePageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void

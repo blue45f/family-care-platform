@@ -1,9 +1,7 @@
-import { managementRoutes, routeDefs, type AppRoute } from '../../routeConfig'
 import { useState } from 'react'
-import type { PlatformData } from '../../state/usePlatformData'
+
+import { managementRoutes, routeDefs, type AppRoute } from '../../routeConfig'
 import { claimStatusClass, formatWon } from '../../utils'
-import type { ClaimStatus } from '../../types'
-import { buildTodayWorkQueue } from './dashboardViewModel'
 import {
   Badge,
   type BadgeTone,
@@ -15,6 +13,11 @@ import {
   Skeleton,
   Stat,
 } from '../ui'
+
+import { buildTodayWorkQueue } from './dashboardViewModel'
+
+import type { PlatformData } from '../../state/usePlatformData'
+import type { ClaimStatus } from '../../types'
 
 const DASHBOARD_ONBOARDING_KEY = 'dashboard-first-onboarding-dismissed-v1'
 

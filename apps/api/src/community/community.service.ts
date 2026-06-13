@@ -1,3 +1,4 @@
+import { communityAttachmentKind, dataUrlByteSize } from '@family-care/shared'
 import {
   ConflictException,
   ForbiddenException,
@@ -5,17 +6,16 @@ import {
   NotFoundException,
 } from '@nestjs/common'
 
-import { communityAttachmentKind, dataUrlByteSize } from '@family-care/shared'
-
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import type { AuthenticatedUser } from '../auth/auth.model'
+
 import {
   communityForbiddenWordInputSchema,
   communityCommentInputSchema,
   communityPostInputSchema,
   communityVisibilityInputSchema,
 } from './community.schema'
+
 import type {
   CommunityComment,
   CommunityCommentInput,
@@ -26,6 +26,7 @@ import type {
   CommunityPostInput,
   CommunityPostSummary,
 } from './community.model'
+import type { AuthenticatedUser } from '../auth/auth.model'
 
 const EXCERPT_LENGTH = 120
 const POST_NOT_FOUND_MESSAGE = '게시글을 찾을 수 없습니다.'

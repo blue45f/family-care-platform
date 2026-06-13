@@ -2,13 +2,14 @@ import 'reflect-metadata'
 
 import { Logger } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
-import type { NestExpressApplication } from '@nestjs/platform-express'
-import type { NextFunction, Request, Response } from 'express'
 
 import { AppModule } from './app.module'
 import { isCorsOriginAllowed, resolveAllowedOrigins } from './common/cors-policy'
 import { storeBackend } from './db/store-backend'
 import { AllExceptionsFilter } from './http-exception.filter'
+
+import type { NestExpressApplication } from '@nestjs/platform-express'
+import type { NextFunction, Request, Response } from 'express'
 
 type OriginCheck = (
   origin: string | undefined,

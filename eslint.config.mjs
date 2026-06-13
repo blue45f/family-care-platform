@@ -1,11 +1,8 @@
-import js from '@eslint/js'
+import { base, react, plugin, defineConfig } from '@heejun/eslint-config'
+import { globalIgnores } from 'eslint/config'
 import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { defineConfig, globalIgnores } from 'eslint/config'
 
-export default defineConfig([
+export default defineConfig(
   globalIgnores([
     '**/dist/**',
     '**/build/**',
@@ -17,38 +14,42 @@ export default defineConfig([
     '**/*.config.{js,mjs,cjs,ts}',
   ]),
 
-  // Shared TS rules for the whole monorepo.
+  // 공유 베이스(TS + import 위생 + 커스텀 규칙 + prettier 충돌 비활성).
+  base({ files: ['**/*.{ts,tsx}'] }),
+
+  // shared base 가 다루지 않는, 레포 하드 게이트에 포함된 품질/스타일 규칙을 보존한다.
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [js.configs.recommended, tseslint.configs.recommended],
     rules: {
-      '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
-      ],
       '@typescript-eslint/no-unsafe-function-type': 'error',
       '@typescript-eslint/no-require-imports': 'error',
-      '@typescript-eslint/no-unused-expressions': 'error',
-      'no-empty': ['error', { allowEmptyCatch: true }],
       'no-useless-escape': 'error',
-      // Quality/style rules from the recommended preset are part of the hard gate.
       'prefer-const': 'error',
       'no-useless-assignment': 'error',
     },
   },
 
-  // apps/web — React 19 + Vite + React Compiler (browser).
+  // apps/web — React 19 + Vite + RC + jsx-a11y.
+  react({ files: ['apps/web/**/*.{ts,tsx}'] }),
+
+  // heejun 개인 테스트/목 컨벤션 규칙은 비활성 — 횡단 일관성 대상이 아니라
+  // 이 레포 자체 테스트 스타일과 충돌한다(shared base 의 일반 규칙만 채택).
+  {
+    plugins: { '@heejun': plugin },
+    rules: {
+      '@heejun/vitest-mock-import': 'off',
+      '@heejun/vitest-mock-import-original': 'off',
+      '@heejun/mock-response-naming': 'off',
+      '@heejun/no-js-interface-direct-access': 'off',
+    },
+  },
+
+  // apps/web 레포 정책: 네이티브 confirm/alert/prompt 금지(포트폴리오 표준 — DEVELOPMENT.md §5.1).
+  // 브랜드 다이얼로그/toast/인라인 알림으로 대체한다. 로컬 변수는 섀도잉이라 영향 없음.
+  // RC 진단(react-hooks v7) + hooks 규칙은 하드 에러로 강제한다.
   {
     files: ['apps/web/**/*.{ts,tsx}'],
-    extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
-    languageOptions: {
-      ecmaVersion: 2022,
-      globals: globals.browser,
-    },
     rules: {
-      // 네이티브 window.confirm/alert/prompt 금지 (포트폴리오 표준 — DEVELOPMENT.md §5.1).
-      // 브랜드 다이얼로그/toast/인라인 알림으로 대체한다. 로컬 변수는 섀도잉이라 영향 없음.
       'no-restricted-globals': [
         'error',
         { name: 'confirm', message: '브랜드 확인 다이얼로그를 사용하세요 (window.confirm 금지).' },
@@ -56,7 +57,6 @@ export default defineConfig([
         { name: 'prompt', message: '브랜드 입력 다이얼로그를 사용하세요 (window.prompt 금지).' },
       ],
       'react-hooks/exhaustive-deps': 'error',
-      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
       'react-hooks/rules-of-hooks': 'error',
       // react-hooks v7 ships React Compiler diagnostics; enforce them as errors.
       'react-hooks/set-state-in-effect': 'error',
@@ -69,27 +69,29 @@ export default defineConfig([
     },
   },
 
-  // apps/api — NestJS (Node). Decorator-heavy; empty constructors/interfaces are idiomatic.
+  // apps/api — NestJS (Node). 데코레이터 + 빈 생성자/클래스 관용.
   {
     files: ['apps/api/**/*.ts'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      globals: globals.node,
-    },
+    languageOptions: { globals: globals.node },
     rules: {
       '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-extraneous-class': 'off',
     },
   },
 
-  // Test files — Vitest globals; relax fast-refresh constraint.
+  // packages/shared — isomorphic (Node).
+  {
+    files: ['packages/shared/**/*.ts'],
+    languageOptions: { globals: globals.node },
+  },
+
+  // 테스트 — Vitest globals; fast-refresh 제약 완화.
   {
     files: ['**/*.{test,spec}.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
-    languageOptions: {
-      globals: { ...globals.node, ...globals.browser },
-    },
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
     rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
       'react-refresh/only-export-components': 'off',
     },
   },
-])
+)

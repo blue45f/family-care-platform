@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 
 import { AuthProvider } from '../../auth/AuthProvider'
+
 import { SupportPage } from './SupportPage'
 
 const render = () =>

@@ -1,6 +1,6 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
   careLogFormSchema,
@@ -8,8 +8,6 @@ import {
   type CareLogFormValues,
 } from '../../features/care-log/schema'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { PlatformData } from '../../state/usePlatformData'
-import type { CareLog, CareLogType } from '../../types'
 import { isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,
@@ -29,6 +27,9 @@ import {
   type TableColumn,
   Textarea,
 } from '../ui'
+
+import type { PlatformData } from '../../state/usePlatformData'
+import type { CareLog, CareLogType } from '../../types'
 
 type CarePageProps = {
   data: PlatformData

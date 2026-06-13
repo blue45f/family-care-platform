@@ -1,8 +1,7 @@
+import { COMMUNITY_ATTACHMENT_MAX_COUNT, type CommunityAttachmentInput } from '@family-care/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-
-import { COMMUNITY_ATTACHMENT_MAX_COUNT, type CommunityAttachmentInput } from '@family-care/shared'
 
 import {
   deleteCommunityAttachment,
@@ -33,8 +32,6 @@ import {
   visibleCommentCount,
 } from '../../features/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import type { CommunityComment, CommunityPostDetail, CommunityPostSummary } from '../../types'
 import { cn } from '../../utils/cn'
 import {
   Badge,
@@ -52,6 +49,9 @@ import {
   SkeletonLines,
   Textarea,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type { CommunityComment, CommunityPostDetail, CommunityPostSummary } from '../../types'
 
 type CommunityPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void

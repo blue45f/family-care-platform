@@ -1,13 +1,14 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useId, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useLocation } from 'react-router-dom'
+import { z } from 'zod'
 
-import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { DEMO_CREDENTIALS } from '../../auth/authSession'
 import { useAuth } from '../../auth/useAuth'
 import { Button, Card, Field, Icon, Input } from '../ui'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
 type LoginPageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void

@@ -1,7 +1,7 @@
+import { existsSync } from 'node:fs'
+
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
-
-import { existsSync } from 'node:fs'
 
 import * as schema from './schema'
 

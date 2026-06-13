@@ -2,9 +2,11 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from 
 
 import { localYmd } from '../common/date.util'
 import { ZodValidationPipe } from '../common/zod-validation.pipe'
-import type { Claim, ClaimInput, ClaimStatusUpdate } from './claim.model'
+
 import { claimIdParamSchema, claimStatusUpdateSchema } from './claim.schema'
 import { ClaimsService } from './claims.service'
+
+import type { Claim, ClaimInput, ClaimStatusUpdate } from './claim.model'
 
 @Controller('claims')
 export class ClaimsController {

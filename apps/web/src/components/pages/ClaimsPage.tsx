@@ -1,12 +1,10 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
 import { claimFormSchema, type ClaimFormValues } from '../../features/claim/schema'
-import type { AppRoute } from '../../routeConfig'
 import { routeDefs } from '../../routeConfig'
 import { claimStatusOptions, type PlatformData } from '../../state/usePlatformData'
-import type { Claim, ClaimStatus } from '../../types'
 import { formatWon } from '../../utils'
 import {
   Badge,
@@ -25,6 +23,9 @@ import {
   type TableColumn,
   PageHeader,
 } from '../ui'
+
+import type { AppRoute } from '../../routeConfig'
+import type { Claim, ClaimStatus } from '../../types'
 
 type ClaimsPageProps = {
   data: PlatformData

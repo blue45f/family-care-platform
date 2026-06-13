@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { SupportService } from './support.service'
+
 import type { AuthenticatedUser } from '../auth/auth.model'
 
 const guardian: AuthenticatedUser = {

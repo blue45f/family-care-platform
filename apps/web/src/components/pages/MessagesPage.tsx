@@ -1,7 +1,6 @@
+import { MESSAGE_BODY_MAX } from '@family-care/shared'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useLocation } from 'react-router-dom'
-
-import { MESSAGE_BODY_MAX } from '@family-care/shared'
 
 import {
   fetchConversation,
@@ -13,8 +12,6 @@ import {
 import { useAuth } from '../../auth/useAuth'
 import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import type { ConversationDetail, ConversationSummary, MessageRecipient } from '../../types'
 import { cn } from '../../utils/cn'
 import {
   Badge,
@@ -29,6 +26,9 @@ import {
   Skeleton,
   Textarea,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type { ConversationDetail, ConversationSummary, MessageRecipient } from '../../types'
 
 type MessagesPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void
@@ -56,6 +56,9 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
   const [error, setError] = useState('')
   const [pollFailed, setPollFailed] = useState(false)
   const logRef = useRef<HTMLDivElement | null>(null)
+  // 마운트 시점의 프리필/내 id 를 한 번만 고정한다. 초기 로드 effect 가
+  // 이후 렌더의 prefill(매 렌더 새 객체)·myId 변화에 재실행되지 않도록 ref 로 캡처.
+  const initialLoadRef = useRef({ prefillRecipientId: prefill.recipientId, myId })
 
   const refreshConversations = useCallback(async (options: { silent?: boolean } = {}) => {
     try {
@@ -160,7 +163,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
           setRecipients([])
         }
       })
-    const prefillRecipientId = prefill.recipientId
+    const { prefillRecipientId, myId: mountMyId } = initialLoadRef.current
     if (prefillRecipientId !== undefined) {
       fetchConversation(prefillRecipientId)
         .then(async (detail) => {
@@ -170,7 +173,8 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
           setConversation(detail)
           setPollFailed(false)
           const unread = detail.messages.some(
-            (message) => myId !== null && message.recipientId === myId && message.readAt === null,
+            (message) =>
+              mountMyId !== null && message.recipientId === mountMyId && message.readAt === null,
           )
           if (unread) {
             await postConversationRead(prefillRecipientId)
@@ -196,8 +200,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
     return () => {
       cancelled = true
     }
-    // location.state 프리필은 마운트 시 한 번만 반영한다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // location.state 프리필은 마운트 시 한 번만 반영한다(값은 initialLoadRef 로 고정).
   }, [])
 
   // 폴링: 탭이 보일 때만 목록·활성 대화를 조용히 갱신한다(실패해도 기존 화면 유지).

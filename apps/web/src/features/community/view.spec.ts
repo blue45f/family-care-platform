@@ -6,6 +6,7 @@ import {
   normalizeApiErrorMessage,
   visibleCommentCount,
 } from './view'
+
 import type { CommunityComment } from '../../types'
 
 const comment = (

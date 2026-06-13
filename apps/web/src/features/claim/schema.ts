@@ -1,6 +1,5 @@
-import { z } from 'zod'
-
 import { claimStatusSchema, claimStatuses } from '@family-care/shared'
+import { z } from 'zod'
 
 // 프론트엔드 보험청구 폼 스키마.
 // 청구 상태 enum(claimStatuses/claimStatusSchema)은 @family-care/shared가 단일 소스다.

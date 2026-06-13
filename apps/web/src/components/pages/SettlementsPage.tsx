@@ -1,12 +1,9 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
-import type { AppRoute } from '../../routeConfig'
-import type { PlatformData } from '../../state/usePlatformData'
-import type { Settlement } from '../../types'
-import { formatWon, roundMoney } from '../../utils'
 import { settlementFormSchema, type SettlementFormValues } from '../../features/settlement/schema'
+import { formatWon, roundMoney } from '../../utils'
 import { RouteField } from '../common/RouteField'
 import {
   Button,
@@ -20,6 +17,10 @@ import {
   Table,
   type TableColumn,
 } from '../ui'
+
+import type { AppRoute } from '../../routeConfig'
+import type { PlatformData } from '../../state/usePlatformData'
+import type { Settlement } from '../../types'
 
 type SettlementsPageProps = {
   data: PlatformData

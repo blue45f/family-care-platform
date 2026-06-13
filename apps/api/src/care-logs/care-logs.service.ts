@@ -3,8 +3,10 @@ import { Injectable } from '@nestjs/common'
 import { localYmd } from '../common/date.util'
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import type { CareLog, CareLogInput } from './care-log.model'
+
 import { careLogInputSchema } from './care-log.schema'
+
+import type { CareLog, CareLogInput } from './care-log.model'
 
 @Injectable()
 export class CareLogService {

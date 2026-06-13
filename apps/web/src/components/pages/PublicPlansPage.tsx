@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 
-import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { Badge, Button, Card, CardHeader, Icon, PageHeader, Stat } from '../ui'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
 type PublicPlansPageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void

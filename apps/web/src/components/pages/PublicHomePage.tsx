@@ -1,9 +1,9 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react'
 
-import type { AppRoute } from '../../routeConfig'
-import type { PublicNavigateState } from '../../routeConfig'
 import { cn } from '../../utils/cn'
 import { Button, Icon } from '../ui'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
 type PublicHomePageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
