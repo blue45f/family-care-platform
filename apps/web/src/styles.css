@@ -688,18 +688,10 @@ svg {
   }
 }
 
-/* ============================================================ PageHeader */
-.page-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
-}
-.page-header-text {
-  min-width: 0;
-}
+/* ============================================================ PageHeader
+   <PageHeader> now renders with Tailwind utilities. Only .page-eyebrow (×22)
+   and .page-desc (×1) remain — they are still used as raw classNames on pages
+   not yet migrated. Remove each once its last call site moves to utilities. */
 .page-eyebrow {
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
@@ -707,26 +699,11 @@ svg {
   color: var(--accent-hover);
   margin-bottom: var(--space-1);
 }
-.page-title {
-  font-size: var(--text-2xl);
-  line-height: var(--leading-tight);
-}
-@media (max-width: 47.99rem) {
-  .page-title {
-    font-size: var(--text-xl);
-  }
-}
 .page-desc {
   margin-top: var(--space-2);
   color: var(--fg-muted);
   font-size: var(--text-sm);
   max-width: var(--measure);
-}
-.page-header-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex-wrap: wrap;
 }
 
 /* =============================================================== Button */
