@@ -3329,3 +3329,73 @@ svg {
   gap: var(--space-2);
   margin-left: auto;
 }
+
+/* ============================================================ Confirm dialog
+   Radix Dialog 기반 접근성 확인 모달. 기존 .card/.card-pad/.btn 위에 얹어
+   디자인 시스템을 그대로 재사용한다(새 비주얼 언어 없음). */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: oklch(0.32 0.012 76 / 0.45);
+  backdrop-filter: saturate(1.2) blur(3px);
+  animation: fade-in var(--dur-mid) var(--ease-out);
+}
+.dialog-panel {
+  position: fixed;
+  z-index: 121;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(28rem, calc(100vw - var(--space-5) * 2));
+  max-height: calc(100dvh - var(--space-6) * 2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-lg);
+  animation: dialog-pop var(--dur-mid) var(--ease-out);
+}
+.dialog-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.dialog-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--fg-strong);
+}
+.dialog-desc {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--fg-muted);
+}
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+/* 파괴적 확인 버튼 — 기존 위험 톤 토큰을 재사용해 btn-primary를 덮어쓴다. */
+.btn-confirm-danger {
+  background: var(--c-danger-fg);
+  border-color: transparent;
+  color: var(--fg-on-accent);
+}
+.btn-confirm-danger:hover:not(:disabled) {
+  background: oklch(0.46 0.15 30);
+}
+.btn-confirm-danger:active:not(:disabled) {
+  background: oklch(0.42 0.15 30);
+}
+@keyframes dialog-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.97);
+  }
+}

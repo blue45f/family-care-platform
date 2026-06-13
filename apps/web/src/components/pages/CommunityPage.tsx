@@ -40,6 +40,7 @@ import {
   Button,
   Card,
   CardHeader,
+  ConfirmDialog,
   EmptyState,
   Field,
   Icon,
@@ -574,7 +575,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
               {detail.hidden ? '게시글 복구' : '게시글 숨김'}
             </Button>
           ) : null}
-          {canModerate(detail.authorId) && !confirmingPostDelete ? (
+          {canModerate(detail.authorId) ? (
             <Button
               variant="ghost"
               size="sm"
@@ -586,42 +587,29 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
           ) : null}
         </div>
 
-        {confirmingPostDelete ? (
-          <div className="feedback feedback-warning confirm-bar" role="alert">
-            <span>이 글을 삭제할까요? 댓글도 함께 삭제되며 되돌릴 수 없습니다.</span>
-            <span className="confirm-bar-actions">
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={actionBusy}
-                onClick={() => {
-                  void (async () => {
-                    const deleted = await runAction(
-                      () => deleteCommunityPost(detail.id),
-                      '게시글을 삭제했습니다.',
-                      null,
-                    )
-                    if (deleted) {
-                      setSelectedId(null)
-                      setDetail(null)
-                      setConfirmingPostDelete(false)
-                    }
-                  })()
-                }}
-              >
-                삭제 확정
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={actionBusy}
-                onClick={() => setConfirmingPostDelete(false)}
-              >
-                취소
-              </Button>
-            </span>
-          </div>
-        ) : null}
+        <ConfirmDialog
+          open={confirmingPostDelete}
+          onOpenChange={setConfirmingPostDelete}
+          tone="danger"
+          busy={actionBusy}
+          title="게시글 삭제"
+          description="이 글을 삭제할까요? 댓글도 함께 삭제되며 되돌릴 수 없습니다."
+          confirmLabel={actionBusy ? '삭제 중…' : '삭제 확정'}
+          onConfirm={() => {
+            void (async () => {
+              const deleted = await runAction(
+                () => deleteCommunityPost(detail.id),
+                '게시글을 삭제했습니다.',
+                null,
+              )
+              if (deleted) {
+                setSelectedId(null)
+                setDetail(null)
+                setConfirmingPostDelete(false)
+              }
+            })()
+          }}
+        />
       </article>
 
       <section aria-label="댓글" className="comment-section">

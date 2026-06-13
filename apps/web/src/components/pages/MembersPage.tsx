@@ -23,6 +23,7 @@ import {
   Button,
   Card,
   CardHeader,
+  ConfirmDialog,
   EmptyState,
   Icon,
   Input,
@@ -61,11 +62,12 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
   const [wordBusyId, setWordBusyId] = useState<number | 'new' | null>(null)
-  // window.confirm 금지 컨벤션 — 정지/해제/탈퇴는 2단계 인라인 확인으로 처리한다.
+  // window.confirm 금지 컨벤션 — 정지/해제/탈퇴는 접근성 확인 모달로 처리한다.
   const [confirmAction, setConfirmAction] = useState<MemberConfirmAction | null>(null)
   const [wordDraft, setWordDraft] = useState('')
   const [editingWordId, setEditingWordId] = useState<number | null>(null)
-  const [confirmWordDeleteId, setConfirmWordDeleteId] = useState<number | null>(null)
+  // 삭제 확인 모달을 띄울 금칙어 — 모달 확정 시 실제 삭제가 실행된다.
+  const [confirmWordDelete, setConfirmWordDelete] = useState<CommunityForbiddenWord | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
@@ -203,7 +205,7 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
       })
       setWordDraft('')
       setEditingWordId(null)
-      setConfirmWordDeleteId(null)
+      setConfirmWordDelete(null)
       setNotice(editingWordId === null ? '금칙어를 추가했습니다.' : '금칙어를 수정했습니다.')
     } catch (cause) {
       setError(normalizeApiErrorMessage(cause, '금칙어 저장에 실패했습니다.'))
@@ -215,20 +217,16 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
   const startEditForbiddenWord = (word: CommunityForbiddenWord) => {
     setEditingWordId(word.id)
     setWordDraft(word.term)
-    setConfirmWordDeleteId(null)
+    setConfirmWordDelete(null)
   }
 
   const deleteForbiddenWord = async (word: CommunityForbiddenWord) => {
-    if (confirmWordDeleteId !== word.id) {
-      setConfirmWordDeleteId(word.id)
-      return
-    }
     setWordBusyId(word.id)
     setError('')
     try {
       await deleteCommunityForbiddenWord(word.id)
       setForbiddenWords((prev) => prev.filter((item) => item.id !== word.id))
-      setConfirmWordDeleteId(null)
+      setConfirmWordDelete(null)
       if (editingWordId === word.id) {
         setEditingWordId(null)
         setWordDraft('')
@@ -450,41 +448,6 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
           subtitle="역할과 상태를 변경합니다. 마지막 관리자와 본인 계정의 권한 하향·정지·탈퇴는 서버에서 차단됩니다."
         />
 
-        {confirmAction ? (
-          <div className="feedback feedback-warning confirm-bar" role="alert">
-            <span>
-              {confirmAction.status === 'withdrawn'
-                ? `${confirmAction.member.name}님을 탈퇴 처리할까요? 개인정보가 익명화되고 로그인할 수 없습니다.`
-                : confirmAction.status === 'active'
-                  ? `${confirmAction.member.name}님의 이용 정지를 해제할까요?`
-                  : `${confirmAction.member.name}님의 이용을 정지할까요? 정지 즉시 로그인과 글쓰기가 차단됩니다.`}
-            </span>
-            <span className="confirm-bar-actions">
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={updatingId !== null}
-                onClick={() => void applyConfirmedAction(confirmAction)}
-              >
-                {updatingId === confirmAction.member.id
-                  ? '변경 중…'
-                  : confirmAction.status === 'withdrawn'
-                    ? '탈퇴 확정'
-                    : confirmAction.status === 'active'
-                      ? '해제 확정'
-                      : '정지 확정'}
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={updatingId !== null}
-                onClick={() => setConfirmAction(null)}
-              >
-                취소
-              </Button>
-            </span>
-          </div>
-        ) : null}
         {loading ? (
           <div className="stack-sm" aria-hidden="true">
             {Array.from({ length: 4 }, (_, i) => (
@@ -584,15 +547,12 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
                   <Button
                     type="button"
                     size="sm"
-                    variant={confirmWordDeleteId === word.id ? 'primary' : 'ghost'}
+                    variant="ghost"
                     disabled={wordBusyId !== null}
-                    onClick={() => void deleteForbiddenWord(word)}
+                    aria-label={`금칙어 "${word.term}" 삭제`}
+                    onClick={() => setConfirmWordDelete(word)}
                   >
-                    {wordBusyId === word.id
-                      ? '삭제 중…'
-                      : confirmWordDeleteId === word.id
-                        ? '삭제 확정'
-                        : '삭제'}
+                    {wordBusyId === word.id ? '삭제 중…' : '삭제'}
                   </Button>
                 </span>
               </li>
@@ -600,6 +560,70 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
           </ul>
         )}
       </Card>
+
+      <ConfirmDialog
+        open={confirmAction !== null}
+        onOpenChange={(next) => {
+          if (!next) {
+            setConfirmAction(null)
+          }
+        }}
+        tone={confirmAction?.status === 'active' ? 'default' : 'danger'}
+        busy={updatingId !== null}
+        title={
+          confirmAction?.status === 'withdrawn'
+            ? '회원 탈퇴 처리'
+            : confirmAction?.status === 'active'
+              ? '이용 정지 해제'
+              : '이용 정지'
+        }
+        description={
+          confirmAction?.status === 'withdrawn'
+            ? `${confirmAction.member.name}님을 탈퇴 처리할까요? 개인정보가 익명화되고 로그인할 수 없습니다.`
+            : confirmAction?.status === 'active'
+              ? `${confirmAction.member.name}님의 이용 정지를 해제할까요?`
+              : confirmAction
+                ? `${confirmAction.member.name}님의 이용을 정지할까요? 정지 즉시 로그인과 글쓰기가 차단됩니다.`
+                : ''
+        }
+        confirmLabel={
+          updatingId !== null
+            ? '변경 중…'
+            : confirmAction?.status === 'withdrawn'
+              ? '탈퇴 확정'
+              : confirmAction?.status === 'active'
+                ? '해제 확정'
+                : '정지 확정'
+        }
+        onConfirm={() => {
+          if (confirmAction) {
+            void applyConfirmedAction(confirmAction)
+          }
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmWordDelete !== null}
+        onOpenChange={(next) => {
+          if (!next) {
+            setConfirmWordDelete(null)
+          }
+        }}
+        tone="danger"
+        busy={wordBusyId !== null}
+        title="금칙어 삭제"
+        description={
+          confirmWordDelete
+            ? `금칙어 "${confirmWordDelete.term}"을(를) 삭제할까요? 이 표현은 다시 작성에서 허용됩니다.`
+            : ''
+        }
+        confirmLabel={wordBusyId !== null ? '삭제 중…' : '삭제 확정'}
+        onConfirm={() => {
+          if (confirmWordDelete) {
+            void deleteForbiddenWord(confirmWordDelete)
+          }
+        }}
+      />
     </div>
   )
 }
