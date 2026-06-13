@@ -303,7 +303,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
         </Card>
       ) : null}
 
-      <div className="thread-layout">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <Card>
           <CardHeader
             title={isStaff ? '전체 상담' : '내 상담'}
@@ -333,23 +333,28 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
               }
             />
           ) : (
-            <ul className="thread-list" aria-label="상담 목록">
+            <ul className="grid gap-2" aria-label="상담 목록">
               {threads.map((item) => (
                 <li key={item.id}>
                   <button
                     type="button"
-                    className={`thread-item ${activeThreadId === item.id ? 'is-active' : ''}`}
+                    className={cn(
+                      'grid w-full cursor-pointer gap-1 rounded-md border border-border-subtle bg-bg-surface p-3 text-left hover:bg-[var(--bg-hover)]',
+                      activeThreadId === item.id && 'border-accent bg-accent-soft',
+                    )}
                     aria-current={activeThreadId === item.id ? 'true' : undefined}
                     onClick={() => void openThread(item.id)}
                   >
-                    <span className="thread-item-head">
-                      <strong>{item.subject}</strong>
-                      <span className="thread-item-time">
+                    <span className="flex items-baseline gap-2 text-fg-strong">
+                      <strong className="text-sm break-keep">{item.subject}</strong>
+                      <span className="ml-auto shrink-0 text-xs text-fg-subtle">
                         {formatRelativeIso(item.lastMessageAt)}
                       </span>
                     </span>
-                    <span className="thread-item-preview">{item.lastMessagePreview}</span>
-                    <span className="thread-item-foot">
+                    <span className="truncate text-sm text-fg-muted">
+                      {item.lastMessagePreview}
+                    </span>
+                    <span className="flex items-center gap-3 text-xs text-fg-subtle">
                       {statusBadge(item.status)}
                       {isStaff ? <span>{item.userName}</span> : null}
                       <span>메시지 {item.messageCount}</span>
