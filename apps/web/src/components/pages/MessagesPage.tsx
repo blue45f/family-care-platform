@@ -295,12 +295,12 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
         </p>
       ) : null}
 
-      <div className="thread-layout">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <Card>
           <CardHeader title="대화 목록" subtitle="가장 최근 대화부터 보여줍니다." />
 
           <form
-            className="stack-sm thread-new"
+            className="mb-4 flex flex-col gap-3 border-b border-border-subtle pb-4"
             onSubmit={startNewConversation}
             aria-label="새 쪽지 시작"
           >
@@ -342,22 +342,27 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
               description="위에서 받는 사람을 선택해 첫 쪽지를 보내 보세요."
             />
           ) : (
-            <ul className="thread-list" aria-label="대화 목록">
+            <ul className="grid gap-2" aria-label="대화 목록">
               {conversations.map((item) => (
                 <li key={item.partnerId}>
                   <button
                     type="button"
-                    className={`thread-item ${activePartnerId === item.partnerId ? 'is-active' : ''}`}
+                    className={cn(
+                      'grid w-full cursor-pointer gap-1 rounded-md border border-border-subtle bg-bg-surface p-3 text-left hover:bg-[var(--bg-hover)]',
+                      activePartnerId === item.partnerId && 'border-accent bg-accent-soft',
+                    )}
                     aria-current={activePartnerId === item.partnerId ? 'true' : undefined}
                     onClick={() => void openConversation(item.partnerId)}
                   >
-                    <span className="thread-item-head">
-                      <strong>{item.partnerName}</strong>
-                      <span className="thread-item-time">
+                    <span className="flex items-baseline gap-2 text-fg-strong">
+                      <strong className="text-sm break-keep">{item.partnerName}</strong>
+                      <span className="ml-auto shrink-0 text-xs text-fg-subtle">
                         {formatRelativeIso(item.lastMessageAt)}
                       </span>
                     </span>
-                    <span className="thread-item-preview">{item.lastMessagePreview}</span>
+                    <span className="truncate text-sm text-fg-muted">
+                      {item.lastMessagePreview}
+                    </span>
                     {item.unreadCount > 0 ? (
                       <Badge tone="accent">안 읽음 {item.unreadCount}</Badge>
                     ) : null}
