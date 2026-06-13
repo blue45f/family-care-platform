@@ -505,7 +505,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
           </p>
         </div>
 
-        <p className="mb-5! whitespace-pre-line break-keep text-base text-fg-default">
+        <p className="mb-5! whitespace-pre-line break-keep text-base leading-relaxed text-fg-default">
           {detail.body}
         </p>
 

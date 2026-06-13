@@ -364,7 +364,7 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
                 <button
                   key={link.path}
                   type="button"
-                  className="flex min-h-[3.25rem] cursor-pointer items-center gap-3 rounded-md border border-border-subtle bg-bg-surface p-3 text-left text-sm font-medium! text-fg-strong transition duration-150 ease-out hover:-translate-y-px hover:border-accent hover:bg-bg-surface-raised"
+                  className="flex min-h-[3.25rem] cursor-pointer items-center gap-3 rounded-md border border-border-subtle bg-bg-surface p-3 text-left text-sm! font-medium! text-fg-strong transition duration-150 ease-out hover:-translate-y-px hover:border-accent hover:bg-bg-surface-raised"
                   onClick={() => onNavigate(link.path)}
                 >
                   <span
