@@ -10,3 +10,8 @@ dist/
 data/
 **/data/
 .vercel
+
+# secrets
+.env
+.env.*
+!.env.example

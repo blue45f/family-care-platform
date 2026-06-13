@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 
+import { storeBackend } from '../db/store-backend'
+
 // proto-live(backend/src/projects/projects.store.ts)의 "atomic JSON file store" 패턴을
 // 가족 돌봄 API에 이식한 재사용 헬퍼다. DB/ORM 없이 node:fs만으로 재시작 후에도
 // 데이터가 살아남도록 한다.
@@ -63,7 +65,17 @@ export class JsonCollectionStore<T> {
 
   /** 시작 시 1회 호출. 파일이 있으면 로드, 없으면 seed로 초기화한다. */
   load(): StoredCollection<T> {
-    if (this.testMode || !existsSync(this.filePath)) {
+    if (this.testMode) {
+      return this.normalize(this.seed())
+    }
+
+    // Neon 백엔드(DATABASE_URL 설정 시): 시작 시 하이드레이트된 캐시에서 동기 로드.
+    if (storeBackend.enabled) {
+      const fromDb = storeBackend.read(this.fileName) as StoredCollection<T> | undefined
+      return this.normalize(fromDb ?? this.seed())
+    }
+
+    if (!existsSync(this.filePath)) {
       return this.normalize(this.seed())
     }
 
@@ -84,6 +96,12 @@ export class JsonCollectionStore<T> {
   /** 현재 상태를 원자적으로 파일에 기록한다. 테스트 환경에서는 no-op. */
   save(state: StoredCollection<T>): void {
     if (this.testMode) {
+      return
+    }
+
+    // Neon 백엔드: 캐시 갱신 + write-behind upsert(동기 계약 유지).
+    if (storeBackend.enabled) {
+      storeBackend.write(this.fileName, this.normalize(state))
       return
     }
 
