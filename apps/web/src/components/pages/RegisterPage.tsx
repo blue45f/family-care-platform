@@ -76,9 +76,12 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
   })
 
   return (
-    <main className="auth-page" aria-labelledby="register-title">
-      <div className="auth-card-wrap">
-        <div className="auth-brand">
+    <main
+      className="flex min-h-dvh items-center justify-center bg-bg-app px-4 py-5"
+      aria-labelledby="register-title"
+    >
+      <div className="w-full max-w-[26rem]">
+        <div className="mb-5 flex items-center justify-center gap-3">
           <span className="brand-mark" aria-hidden="true">
             <Icon name="heart" size={20} />
           </span>
@@ -89,11 +92,11 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
         </div>
 
         <Card>
-          <div className="stack-sm auth-card-head">
-            <h1 id="register-title" className="card-title">
+          <div className="mb-5 flex flex-col gap-3">
+            <h1 id="register-title" className="text-xl">
               회원가입
             </h1>
-            <p className="card-subtitle">
+            <p className="text-sm text-fg-muted">
               {locationState.fromLanding
                 ? '데모 문의 흐름으로 왔더라도, 담당자 전용 계정은 바로 만들 수 있습니다.'
                 : locationState.source === 'pricing_button'
@@ -189,7 +192,7 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
             </Button>
           </form>
 
-          <p className="auth-switch">
+          <div className="mt-5 text-center text-sm text-fg-muted">
             이미 계정이 있으신가요?{' '}
             <button
               type="button"
@@ -204,7 +207,7 @@ export const RegisterPage = ({ onNavigate, redirectTo = '/' }: RegisterPageProps
             >
               로그인
             </button>
-          </p>
+          </div>
         </Card>
       </div>
     </main>
