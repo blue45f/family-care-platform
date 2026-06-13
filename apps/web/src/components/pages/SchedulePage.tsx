@@ -305,11 +305,14 @@ export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
           />
 
           {todayList.length > 0 ? (
-            <div className="schedule-strip" aria-label="오늘 방문 순서">
+            <div className="mb-4 flex flex-wrap gap-2" aria-label="오늘 방문 순서">
               {todayList.slice(0, 4).map((schedule) => (
-                <span className="schedule-chip" key={`today-${schedule.id}`}>
+                <span
+                  className="inline-flex min-h-8 items-center gap-2 whitespace-nowrap rounded-full border border-border-subtle bg-[color-mix(in_oklch,var(--accent-soft)_42%,var(--bg-surface))] px-3 py-1 text-sm leading-snug text-accent-soft-fg"
+                  key={`today-${schedule.id}`}
+                >
                   <Icon name="clock" size={14} />
-                  <strong>{schedule.startTime}</strong>
+                  <strong className="text-fg-strong tabular-nums">{schedule.startTime}</strong>
                   {schedule.recipient}
                 </span>
               ))}
