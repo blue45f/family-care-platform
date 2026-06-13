@@ -82,15 +82,27 @@
   --radius-xl: 1.375rem;
   --radius-full: 999px;
 
-  /* font-size → text-2xs … text-3xl (line-height stays separate via leading-*) */
+  /* font-size → text-2xs … text-3xl. line-height defaults to the body value
+     (--leading-normal) so a text-* utility matches the design without needing a
+     leading-* companion. Heading elements still resolve to 1.18 because the
+     unlayered h1–h4 reset outranks the utilities layer; override anywhere with
+     leading-tight / leading-snug when a tighter measure is wanted. */
   --text-2xs: 0.694rem;
+  --text-2xs--line-height: var(--leading-normal);
   --text-xs: 0.8rem;
+  --text-xs--line-height: var(--leading-normal);
   --text-sm: 0.875rem;
+  --text-sm--line-height: var(--leading-normal);
   --text-base: 1rem;
+  --text-base--line-height: var(--leading-normal);
   --text-lg: 1.25rem;
+  --text-lg--line-height: var(--leading-normal);
   --text-xl: 1.5625rem;
+  --text-xl--line-height: var(--leading-normal);
   --text-2xl: 1.953rem;
+  --text-2xl--line-height: var(--leading-normal);
   --text-3xl: 2.441rem;
+  --text-3xl--line-height: var(--leading-normal);
 
   /* line-height → leading-tight / snug / normal */
   --leading-tight: 1.18;
