@@ -15,16 +15,19 @@ export const PlaceholderPage = ({ def, onNavigate }: PlaceholderPageProps) => (
   <div className="stack">
     <PageHeader eyebrow={def.eyebrow} title={def.title} description={def.description} />
 
-    <div className="placeholder">
-      <span className="placeholder-icon" aria-hidden="true">
+    <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-border bg-bg-surface px-6 py-12 text-center">
+      <span
+        className="grid h-14 w-14 place-items-center rounded-lg bg-accent-soft text-accent-soft-fg"
+        aria-hidden="true"
+      >
         <Icon name={def.icon} size={28} />
       </span>
-      <p className="placeholder-title">화면을 준비하고 있어요</p>
-      <p className="placeholder-desc">
+      <p className="text-lg">화면을 준비하고 있어요</p>
+      <p className="max-w-[44ch] text-sm text-fg-muted">
         {def.title} 화면은 다음 단계에서 새 디자인으로 완성됩니다. 지금은 대시보드에서 핵심 현황을
         확인하실 수 있어요.
       </p>
-      <div className="placeholder-list">
+      <div className="flex flex-wrap justify-center gap-2">
         <Badge tone="accent">곧 제공</Badge>
         <Badge plain>Phase 2</Badge>
       </div>

@@ -2484,42 +2484,6 @@ svg {
   border-bottom: 0;
 }
 
-/* Placeholder page (unbuilt routes) */
-.placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-4);
-  padding: var(--space-12) var(--space-6);
-  background: var(--bg-surface);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-lg);
-}
-.placeholder-icon {
-  display: grid;
-  place-items: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: var(--radius-lg);
-  background: var(--accent-soft);
-  color: var(--accent-soft-fg);
-}
-.placeholder-title {
-  font-size: var(--text-lg);
-}
-.placeholder-desc {
-  color: var(--fg-muted);
-  font-size: var(--text-sm);
-  max-width: 44ch;
-}
-.placeholder-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  justify-content: center;
-}
-
 /* ================================================ Legal (TermsDesk 게시본) */
 /* /terms·/privacy 내부 렌더. 공개(셸 없음) 모드에선 페이지 패딩을 직접
    제공하고, 인증 셸(.content) 안에서는 셸 패딩에 맡긴다. */
