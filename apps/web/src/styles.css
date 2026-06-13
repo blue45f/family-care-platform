@@ -3207,51 +3207,6 @@ svg {
   font-size: var(--text-xs);
 }
 
-.bubble-log {
-  max-height: 26rem;
-  overflow-y: auto;
-  padding: var(--space-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-sunken);
-}
-.bubble-list {
-  display: grid;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.bubble {
-  display: grid;
-  gap: var(--space-1);
-  justify-items: start;
-  max-width: 85%;
-}
-.bubble--mine {
-  justify-self: end;
-  justify-items: end;
-}
-.bubble-meta {
-  color: var(--fg-subtle);
-  font-size: var(--text-xs);
-}
-.bubble-body {
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--fg-default);
-  font-size: var(--text-sm);
-  line-height: var(--leading-normal);
-  white-space: pre-line;
-  word-break: break-word;
-}
-.bubble--mine .bubble-body {
-  border-color: var(--c-sage-200);
-  background: var(--accent-soft);
-  color: var(--c-sage-700);
-}
 .composer {
   display: grid;
   gap: var(--space-2);

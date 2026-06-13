@@ -15,6 +15,7 @@ import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/comm
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import type { ProtectedNavigateState } from '../../appRoutes'
 import type { ConversationDetail, ConversationSummary, MessageRecipient } from '../../types'
+import { cn } from '../../utils/cn'
 import {
   Badge,
   Button,
@@ -391,22 +392,35 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
               />
               <div
                 ref={logRef}
-                className="bubble-log"
+                className="max-h-[26rem] overflow-y-auto rounded-md border border-border-subtle bg-bg-sunken p-3"
                 role="log"
                 aria-label={`${partnerName || '상대'}와 주고받은 쪽지`}
               >
                 {conversation && conversation.messages.length > 0 ? (
-                  <ul className="bubble-list">
+                  <ul className="grid gap-3">
                     {conversation.messages.map((message) => {
                       const mine = myId !== null && message.senderId === myId
                       return (
-                        <li key={message.id} className={`bubble ${mine ? 'bubble--mine' : ''}`}>
-                          <span className="bubble-meta">
+                        <li
+                          key={message.id}
+                          className={cn(
+                            'grid max-w-[85%] justify-items-start gap-1',
+                            mine && 'justify-self-end justify-items-end',
+                          )}
+                        >
+                          <span className="text-xs text-fg-subtle">
                             {mine ? '나' : message.senderName} ·{' '}
                             {formatRelativeIso(message.createdAt)}
                             {mine && message.readAt ? ' · 읽음' : ''}
                           </span>
-                          <span className="bubble-body">{message.body}</span>
+                          <span
+                            className={cn(
+                              'whitespace-pre-line break-words rounded-md border border-border-subtle bg-bg-surface px-3 py-2 text-sm text-fg-default',
+                              mine && 'border-sage-200 bg-accent-soft text-sage-700',
+                            )}
+                          >
+                            {message.body}
+                          </span>
                         </li>
                       )
                     })}
