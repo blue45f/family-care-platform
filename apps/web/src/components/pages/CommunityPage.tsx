@@ -63,9 +63,9 @@ type CategoryFilter = (typeof CATEGORY_FILTERS)[number]
 /** 댓글 한 건(삭제 placeholder 포함) 렌더. */
 const CommentBody = ({ comment }: { comment: CommunityComment }) =>
   comment.deleted ? (
-    <p className="comment-deleted">삭제된 댓글입니다.</p>
+    <p className="mt-1! text-sm italic text-fg-subtle">삭제된 댓글입니다.</p>
   ) : (
-    <p className="comment-body">{comment.body}</p>
+    <p className="mt-1! whitespace-pre-line break-keep text-sm text-fg-default">{comment.body}</p>
   )
 
 export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
@@ -424,22 +424,27 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
         ) : null}
 
         {attachments.length > 0 ? (
-          <ul className="attach-grid" aria-label="첨부 목록">
+          <ul className="grid gap-3" aria-label="첨부 목록">
             {attachments.map((attachment, index) => (
-              <li key={`${attachment.name}-${index}`} className="attach-item">
+              <li
+                key={`${attachment.name}-${index}`}
+                className="flex flex-wrap items-center gap-x-3 gap-y-2"
+              >
                 {attachment.mimeType === 'application/pdf' ? (
-                  <span className="attach-chip">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border bg-bg-sunken px-3 py-1 text-sm text-fg-default">
                     <Icon name="paperclip" size={14} />
                     PDF
                   </span>
                 ) : (
                   <img
-                    className="attach-thumb"
+                    className="h-13 w-13 rounded-sm border border-border-subtle object-cover"
                     src={attachment.dataUrl}
                     alt={`첨부 미리보기: ${attachment.name}`}
                   />
                 )}
-                <span className="attach-name">{attachment.name}</span>
+                <span className="text-xs text-fg-muted [overflow-wrap:anywhere]">
+                  {attachment.name}
+                </span>
                 <button
                   type="button"
                   className="inline-action"
@@ -483,8 +488,8 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
   ) : (
     <Card>
       <article aria-label={`게시글: ${detail.title}`}>
-        <div className="board-detail-head">
-          <div className="board-detail-meta">
+        <div className="mb-4 grid gap-2">
+          <div className="flex flex-wrap gap-2">
             <Badge tone="accent" plain>
               {detail.category}
             </Badge>
@@ -494,35 +499,41 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
               </Badge>
             ) : null}
           </div>
-          <h2 className="board-detail-title">{detail.title}</h2>
-          <p className="board-detail-byline">
+          <h2 className="break-keep text-xl">{detail.title}</h2>
+          <p className="text-sm text-fg-muted">
             {detail.authorName} · {formatRelativeIso(detail.createdAt)}
           </p>
         </div>
 
-        <p className="board-detail-body">{detail.body}</p>
+        <p className="mb-5! whitespace-pre-line break-keep text-base text-fg-default">
+          {detail.body}
+        </p>
 
         {detail.attachments.length > 0 ? (
           <section aria-label="첨부 파일" className="stack-sm">
-            <h3 className="board-section-title">
+            <h3 className="mb-2! flex items-center gap-2 text-sm">
               <Icon name="paperclip" size={14} /> 첨부 {detail.attachments.length}개
             </h3>
-            <ul className="attach-grid">
+            <ul className="grid gap-3">
               {detail.attachments.map((attachment) => (
-                <li key={attachment.id} className="attach-item">
+                <li key={attachment.id} className="flex flex-wrap items-center gap-x-3 gap-y-2">
                   {attachment.kind === 'image' ? (
                     <img
-                      className="attach-preview"
+                      className="block max-h-72 max-w-[min(100%,24rem)] rounded-md border border-border-subtle bg-bg-sunken object-contain"
                       src={attachment.dataUrl}
                       alt={`첨부 이미지: ${attachment.name}`}
                     />
                   ) : (
-                    <a className="attach-chip" href={attachment.dataUrl} download={attachment.name}>
+                    <a
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-bg-sunken px-3 py-1 text-sm text-fg-default no-underline hover:bg-[var(--bg-hover)]"
+                      href={attachment.dataUrl}
+                      download={attachment.name}
+                    >
                       <Icon name="paperclip" size={14} />
                       {attachment.name} 내려받기
                     </a>
                   )}
-                  <span className="attach-name">
+                  <span className="text-xs text-fg-muted [overflow-wrap:anywhere]">
                     {attachment.name} · {formatByteSize(attachment.size)}
                   </span>
                   {canModerate(detail.authorId) ? (
@@ -548,7 +559,11 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
           </section>
         ) : null}
 
-        <div className="board-actions" role="group" aria-label="게시글 동작">
+        <div
+          className="mt-4 flex flex-wrap gap-2 border-t border-border-subtle pt-4"
+          role="group"
+          aria-label="게시글 동작"
+        >
           {myId !== null && detail.authorId !== myId ? (
             <Button
               variant="secondary"
@@ -613,21 +628,26 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
         />
       </article>
 
-      <section aria-label="댓글" className="comment-section">
-        <h3 className="board-section-title">댓글 {visibleCommentCount(detail.comments)}개</h3>
+      <section aria-label="댓글" className="mt-5 border-t border-border-subtle pt-4">
+        <h3 className="mb-2! text-sm">댓글 {visibleCommentCount(detail.comments)}개</h3>
 
         {commentThreads.length === 0 ? (
           <p className="empty-desc">아직 댓글이 없습니다. 첫 의견을 남겨 보세요.</p>
         ) : (
-          <ul className="comment-list">
+          <ul className="mb-4! grid gap-3">
             {commentThreads.map(({ comment, replies }) => (
-              <li key={comment.id} className="comment-item">
-                <div className="comment-head">
+              <li
+                key={comment.id}
+                className="rounded-md border border-border-subtle bg-bg-surface p-3"
+              >
+                <div className="flex items-baseline gap-2 text-sm text-fg-strong">
                   <strong>{comment.authorName}</strong>
-                  <span className="comment-time">{formatRelativeIso(comment.createdAt)}</span>
+                  <span className="text-xs text-fg-subtle">
+                    {formatRelativeIso(comment.createdAt)}
+                  </span>
                 </div>
                 <CommentBody comment={comment} />
-                <div className="comment-actions">
+                <div className="mt-2 flex gap-3">
                   {!comment.deleted ? (
                     <button
                       type="button"
@@ -656,16 +676,21 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
                 </div>
 
                 {replies.length > 0 ? (
-                  <ul className="comment-replies">
+                  <ul className="mt-3! grid gap-2 border-l-2 border-border-subtle pl-5!">
                     {replies.map((reply) => (
-                      <li key={reply.id} className="comment-item comment-item--reply">
-                        <div className="comment-head">
+                      <li
+                        key={reply.id}
+                        className="rounded-md border border-border-subtle bg-bg-sunken p-3"
+                      >
+                        <div className="flex items-baseline gap-2 text-sm text-fg-strong">
                           <strong>{reply.authorName}</strong>
-                          <span className="comment-time">{formatRelativeIso(reply.createdAt)}</span>
+                          <span className="text-xs text-fg-subtle">
+                            {formatRelativeIso(reply.createdAt)}
+                          </span>
                         </div>
                         <CommentBody comment={reply} />
                         {!reply.deleted && canModerate(reply.authorId) ? (
-                          <div className="comment-actions">
+                          <div className="mt-2 flex gap-3">
                             <button
                               type="button"
                               className="inline-action"
