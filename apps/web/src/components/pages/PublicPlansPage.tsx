@@ -269,7 +269,7 @@ export const PublicPlansPage = ({ onNavigate }: PublicPlansPageProps) => {
         <div className="public-pricing-list" style={{ marginBottom: 'var(--space-5)' }}>
           {publicPlans.map((plan) => (
             <article
-              className={`public-plan-card ${plan.highlight ? 'public-pricing-item--highlight' : ''}`}
+              className={plan.highlight ? 'public-pricing-item--highlight' : ''}
               style={{
                 position: 'relative',
                 display: 'grid',
@@ -289,16 +289,11 @@ export const PublicPlansPage = ({ onNavigate }: PublicPlansPageProps) => {
                 {plan.highlight ? '추천' : '표준'}
               </Badge>
               <h3 style={{ marginTop: 'var(--space-2)' }}>{plan.tier}</h3>
-              <p
-                className="public-plan-price"
-                style={{ fontSize: 'var(--text-2xl)', color: 'var(--fg-strong)' }}
-              >
+              <p style={{ fontSize: 'var(--text-2xl)', color: 'var(--fg-strong)' }}>
                 {renderPrice(plan)}
               </p>
-              <p className="public-plan-note" style={{ color: 'var(--fg-muted)' }}>
-                {plan.note}
-              </p>
-              <ul className="public-plan-list" style={{ padding: 0, margin: 0, listStyle: 'none' }}>
+              <p style={{ color: 'var(--fg-muted)' }}>{plan.note}</p>
+              <ul style={{ padding: 0, margin: 0, listStyle: 'none' }}>
                 {plan.included.map((item) => (
                   <li
                     key={item}

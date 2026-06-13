@@ -1420,11 +1420,11 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
           ))}
         </div>
 
-        <div className="public-community-category-summary">
+        <div className="mt-4 grid gap-2">
           <h3>주제별 분포</h3>
-          <div className="public-community-category-summary__items">
+          <div className="flex flex-wrap gap-2 mt-2">
             {sortedCategoryCount.map((item) => (
-              <span className="public-community-tag" key={item.category}>
+              <span className="text-xs font-semibold text-fg-subtle" key={item.category}>
                 {item.category} {item.total}건
               </span>
             ))}
@@ -1454,7 +1454,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
             <div className="guide-progress-track" style={{ marginTop: 0 }}>
               <span style={{ width: `${missionRate}%` }} />
             </div>
-            <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-2)' }}>
+            <p className="text-sm text-fg-muted" style={{ marginTop: 'var(--space-2)' }}>
               데모 동작 요약: 조회 {threadActionSummary.viewCount}건 · 좋아요{' '}
               {threadActionSummary.likeCount}건 · 댓글 {threadActionSummary.commentCount}건 · 신고{' '}
               {threadActionSummary.reportCount}건 · 글작성 {threadActionSummary.publishCount}건 ·
@@ -1467,7 +1467,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
             </p>
             {recentBlockedActivity.length > 0 ? (
               <p
-                className="guide-step-subtitle"
+                className="text-sm"
                 style={{ marginTop: 'var(--space-1)', color: 'var(--c-warn-fg)' }}
               >
                 약관 미동의 차단 {recentBlockedActivity.length}건 · 필수 조항 동의 후 같은 동작을
@@ -1492,7 +1492,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                   <div>
                     <strong>{mission.title}</strong>
                     <p
-                      className="guide-step-subtitle"
+                      className="text-sm text-fg-muted"
                       style={{
                         marginTop: 'var(--space-1)',
                         marginBottom: 0,
@@ -1597,12 +1597,12 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                 ))}
               </div>
 
-              <div className="public-community-sort" aria-label="정렬 기준">
+              <div className="flex flex-wrap gap-2" aria-label="정렬 기준">
                 {sortModes.map((mode) => (
                   <button
                     type="button"
                     key={mode.value}
-                    className={`public-community-sort-btn ${sortMode === mode.value ? 'is-active' : ''}`}
+                    className={sortMode === mode.value ? 'is-active' : ''}
                     onClick={() => handleSetSort(mode.value)}
                   >
                     {mode.label}
@@ -1630,7 +1630,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                       onClick={() => handleSelectThread(thread.id)}
                     >
                       <div className="public-community-thread-meta">
-                        <div className="public-community-thread-title-wrap">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span>{thread.category}</span>
                           {thread.isPinned ? (
                             <Badge tone="accent" plain>
@@ -1718,7 +1718,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                         북마크
                       </Badge>
                     ) : null}
-                    <span className="public-community-count" aria-label="조회수">
+                    <span className="text-xs font-semibold text-fg-subtle" aria-label="조회수">
                       조회 {formatNumber(selectedThread.views)}
                     </span>
                   </div>
@@ -1818,7 +1818,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                     aria-label="댓글 입력"
                     disabled={selectedThread.state === 'closed'}
                   />
-                  <p className="public-community-counter">
+                  <p className="text-xs text-fg-muted">
                     {replyDraft.length} / {MAX_REPLY_TEXT_LENGTH}자
                   </p>
                   {replyError ? <p className="public-faq-answer is-open">{replyError}</p> : null}
@@ -1827,11 +1827,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                   </Button>
                 </form>
 
-                <form
-                  className="public-community-report-form public-community-reply-form"
-                  onSubmit={submitReport}
-                  noValidate
-                >
+                <form className="public-community-reply-form" onSubmit={submitReport} noValidate>
                   <label className="public-lead-form">
                     신고 사유
                     <select
@@ -1864,7 +1860,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                       aria-label="신고 메모"
                       placeholder="신고 판단에 필요한 핵심 증거를 간단히 남겨보세요."
                     />
-                    <small className="public-community-counter">
+                    <small>
                       {reportMemo.length} / {MAX_REPORT_NOTE_LENGTH}자
                     </small>
                   </label>
@@ -1900,7 +1896,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                 aria-label="커뮤니티 글 제목"
                 maxLength={MAX_POST_TITLE_LENGTH}
               />
-              <small className="public-community-counter">
+              <small>
                 {draft.title.length} / {MAX_POST_TITLE_LENGTH}자
               </small>
             </label>
@@ -1939,7 +1935,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                 placeholder="운영에서 실제로 공유하고 싶은 포인트를 2~3문장으로 남겨보세요."
                 aria-label="커뮤니티 글 내용"
               />
-              <small className="public-community-counter">
+              <small>
                 {draft.text.length} / {MAX_POST_TEXT_LENGTH}자
               </small>
             </label>

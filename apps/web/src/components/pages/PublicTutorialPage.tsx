@@ -758,7 +758,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
       </section>
 
       <section className="guide-flow" aria-labelledby="tutorial-flow-title">
-        <div className="guide-flow-title">
+        <div>
           <p className="page-eyebrow">추천 운영 시퀀스</p>
           <h2 id="tutorial-flow-title" className="section-title">
             업무 시작 1회차 동선
@@ -865,10 +865,10 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
           <div className="guide-progress-track">
             <span style={{ width: `${tutorialMissionRate}%` }} />
           </div>
-          <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-2)' }}>
+          <p className="text-sm text-fg-muted" style={{ marginTop: 'var(--space-2)' }}>
             화면 탐색 커버리지 {routeCoverageRate}% · 시나리오 완주율 {scenarioCompletionRate}%
           </p>
-          <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-1)' }}>
+          <p className="text-sm text-fg-muted" style={{ marginTop: 'var(--space-1)' }}>
             현재까지: 방문 화면 {visitedRouteCount}개 · FAQ 상호작용 {faqOpenCount}회 · 요약 복사{' '}
             {isCopyActionDone ? '완료' : '미완료'} · 단계 체크 {checkedCount}/{tutorialSteps.length}{' '}
             · 커뮤니티 차단 {communityBlockedCount}건
@@ -890,7 +890,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                   }}
                 />
                 <span>{item.title}</span>
-                <span className="guide-step-subtitle" style={{ color: 'var(--fg-muted)' }}>
+                <span className="text-sm text-fg-muted" style={{ color: 'var(--fg-muted)' }}>
                   방문 {item.visitCount}회
                 </span>
               </li>
@@ -919,7 +919,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
                 <div>
                   <strong>{step.title}</strong>
                   <span
-                    className="guide-step-subtitle"
+                    className="text-sm text-fg-muted"
                     style={{ display: 'block', marginTop: '0.25rem' }}
                   >
                     {step.duration} · {step.desc}
@@ -964,7 +964,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
               </Badge>
               <h3>{scenario.title}</h3>
               <p>{scenario.summary}</p>
-              <p className="guide-step-subtitle" style={{ marginTop: 'var(--space-2)' }}>
+              <p className="text-sm text-fg-muted" style={{ marginTop: 'var(--space-2)' }}>
                 예상 소요: {scenario.duration}
               </p>
               <Button

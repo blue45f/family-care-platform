@@ -38,19 +38,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   render(): ReactNode {
     if (this.state.error) {
       return (
-        <main className="page" role="alert">
-          <section className="panel app-error-boundary">
-            <h1>화면을 표시하지 못했습니다</h1>
-            <p>예상치 못한 오류가 발생했습니다. 다시 시도하거나 홈으로 이동해 주세요.</p>
-            <div className="app-error-actions">
+        <main className="grid min-h-dvh place-items-center bg-bg-app p-4" role="alert">
+          <section className="mx-auto flex w-full max-w-md flex-col gap-4 rounded-lg border border-border-subtle bg-bg-surface p-5 text-center shadow-sm md:p-6">
+            <h1 className="text-lg font-semibold text-fg-strong">화면을 표시하지 못했습니다</h1>
+            <p className="text-fg-muted">
+              예상치 못한 오류가 발생했습니다. 다시 시도하거나 홈으로 이동해 주세요.
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
               <button type="button" className="btn btn-primary" onClick={this.handleReset}>
                 다시 시도
               </button>
-              <button
-                type="button"
-                className="route-tab route-tab-subtle"
-                onClick={this.handleGoHome}
-              >
+              <button type="button" className="btn btn-ghost" onClick={this.handleGoHome}>
                 홈으로
               </button>
             </div>
