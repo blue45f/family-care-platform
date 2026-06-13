@@ -20,7 +20,13 @@ jobs:
     name: SonarQube quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Skip (neutral) unless SonarQube secrets are configured, and never run on
+    # forked PRs (secrets are unavailable there). Avoids hard-failing the gate
+    # when the optional SonarQube service is not wired up for this repo.
+    if: >-
+      ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' &&
+      (github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository) }}
     env:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -38,11 +44,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Verify SonarQube secrets
-        run: |
-          test -n "$SONAR_HOST_URL"
-          test -n "$SONAR_TOKEN"
 
       - name: SonarQube scan
         uses: SonarSource/sonarqube-scan-action@v8.2.0
