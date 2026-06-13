@@ -20,32 +20,44 @@ jobs:
     name: SonarQube quality gate
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    # Skip (neutral) unless SonarQube secrets are configured, and never run on
-    # forked PRs (secrets are unavailable there). Avoids hard-failing the gate
-    # when the optional SonarQube service is not wired up for this repo.
-    if: >-
-      ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' &&
-      (github.event_name != 'pull_request' ||
-      github.event.pull_request.head.repo.full_name == github.repository) }}
+    # Never run on forked PRs (secrets are unavailable there). When the optional
+    # SonarQube secrets are not configured, the scan steps below are skipped so
+    # the job stays green instead of hard-failing CI.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     env:
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
+      - name: Check SonarQube secrets
+        id: secrets
+        run: |
+          if [ -n "$SONAR_HOST_URL" ] && [ -n "$SONAR_TOKEN" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "SonarQube secrets are not configured; skipping scan."
+          fi
+
       - uses: actions/checkout@v6
+        if: steps.secrets.outputs.enabled == 'true'
         with:
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
+        if: steps.secrets.outputs.enabled == 'true'
 
       - uses: actions/setup-node@v6
+        if: steps.secrets.outputs.enabled == 'true'
         with:
           node-version: 24
           cache: pnpm
 
       - name: Install dependencies
+        if: steps.secrets.outputs.enabled == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: SonarQube scan
+        if: steps.secrets.outputs.enabled == 'true'
         uses: SonarSource/sonarqube-scan-action@v8.2.0
         env:
           SONAR_HOST_URL: ${{ env.SONAR_HOST_URL }}
