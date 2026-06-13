@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
-import { settlementFormSchema, type SettlementFormValues } from '../../features/settlement/schema'
+import { settlementFormSchema, type SettlementFormValues } from '../../domains/settlement/schema'
 import { formatWon, roundMoney } from '../../utils'
 import { RouteField } from '../common/RouteField'
 import {

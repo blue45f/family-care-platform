@@ -2,15 +2,15 @@ import { MESSAGE_BODY_MAX } from '@family-care/shared'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 
+import { useAuth } from '../../auth/useAuth'
+import { formatRelativeIso, normalizeApiErrorMessage } from '../../domains/community/view'
 import {
   fetchConversation,
   fetchConversations,
   fetchMessageRecipients,
   postConversationRead,
   postDirectMessage,
-} from '../../api'
-import { useAuth } from '../../auth/useAuth'
-import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/community/view'
+} from '../../infrastructure/api'
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import { cn } from '../../utils/cn'
 import {

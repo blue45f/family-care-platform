@@ -1,6 +1,6 @@
-import { authHeader } from './auth/authSession'
+import { authHeader } from '../auth/authSession'
 
-import type { AuthUser, UpdateProfileInput } from './auth/authContext'
+import type { AuthUser, UpdateProfileInput } from '../auth/authContext'
 import type {
   AdminUserUpdateInput,
   AdminOverview,
@@ -35,7 +35,7 @@ import type {
   SupportThreadInput,
   SupportThreadStatus,
   SupportThreadSummary,
-} from './types'
+} from '../types'
 
 const DEFAULT_API_URL = import.meta.env.DEV ? 'http://127.0.0.1:3001/api' : '/api'
 const BASE_URL = import.meta.env.VITE_API_URL ?? DEFAULT_API_URL

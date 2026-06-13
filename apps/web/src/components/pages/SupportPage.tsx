@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
 
+import { useAuth } from '../../auth/useAuth'
+import { formatRelativeIso, normalizeApiErrorMessage } from '../../domains/community/view'
 import {
   fetchSupportThread,
   fetchSupportThreads,
   patchSupportStatus,
   postSupportMessage,
   postSupportThread,
-} from '../../api'
-import { useAuth } from '../../auth/useAuth'
-import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/community/view'
+} from '../../infrastructure/api'
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import { cn } from '../../utils/cn'
 import {

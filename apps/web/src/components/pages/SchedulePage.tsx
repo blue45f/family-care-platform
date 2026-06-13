@@ -6,7 +6,7 @@ import {
   scheduleFormSchema,
   scheduleStatuses,
   type ScheduleFormValues,
-} from '../../features/schedule/schema'
+} from '../../domains/schedule/schema'
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import { isReadOnlyErrorMessage } from '../../utils'
 import {

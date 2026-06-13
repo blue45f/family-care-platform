@@ -6,7 +6,7 @@ import {
   careLogFormSchema,
   careLogTypes,
   type CareLogFormValues,
-} from '../../features/care-log/schema'
+} from '../../domains/care-log/schema'
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import { isReadOnlyErrorMessage } from '../../utils'
 import {

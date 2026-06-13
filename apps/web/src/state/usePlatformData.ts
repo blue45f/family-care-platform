@@ -15,7 +15,7 @@ import {
   postSchedule,
   postSettlement,
   updateAdminPlan,
-} from '../api'
+} from '../infrastructure/api'
 import {
   TREND_SOURCE_FALLBACK,
   TREND_SOURCE_SERVER,

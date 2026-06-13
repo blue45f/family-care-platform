@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 
 import { useAuth } from '../../auth/useAuth'
-import { normalizeApiErrorMessage } from '../../features/community/view'
+import { normalizeApiErrorMessage } from '../../domains/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import {
   Badge,

@@ -1,4 +1,4 @@
-import { base, react, plugin, defineConfig } from '@heejun/eslint-config'
+import { base, react, plugin, boundaries, defineConfig } from '@heejun/eslint-config'
 import { globalIgnores } from 'eslint/config'
 import globals from 'globals'
 
@@ -67,6 +67,53 @@ export default defineConfig(
       'react-hooks/preserve-manual-memoization': 'error',
       'react-hooks/static-components': 'error',
     },
+  },
+
+  // apps/web 계층 경계 — 개발가이드의 app/domains/shared/infrastructure 4계층.
+  // app = 라우터/부트스트랩 + 페이지/셸(components/pages·shell 는 재사용 빌딩블록이
+  // 아니라 App/appRoutes 만 소비하는 페이지·앱셸 계층이라 물리 위치는 그대로 두고
+  // app 으로 매핑한다). shared = 순수 빌딩블록(components/ui·common, utils, styles)
+  // 과 루트 유틸. components 는 물리적으로 옮기지 않는다.
+  ...boundaries({
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    elements: [
+      {
+        type: 'app',
+        pattern:
+          'apps/web/src/{app/**/*,components/pages/**/*,components/shell/**/*,App.tsx,appRoutes.tsx,main.tsx,routeConfig.ts,routeNavigation.ts,useRouteMeta.ts,lazyRetry.ts}',
+        mode: 'full',
+      },
+      { type: 'domains', pattern: 'apps/web/src/domains/*/**/*', mode: 'full' },
+      {
+        type: 'shared',
+        pattern:
+          'apps/web/src/{components/**/*,utils/**/*,state/**/*,auth/**/*,styles/**/*,types.ts,utils.ts,termsdeskPolicy.ts}',
+        mode: 'full',
+      },
+      { type: 'infrastructure', pattern: 'apps/web/src/infrastructure/**/*', mode: 'full' },
+    ],
+    rules: [
+      { from: ['app'], allow: ['app', 'domains', 'shared', 'infrastructure'] },
+      { from: ['domains'], allow: ['domains', 'shared', 'infrastructure'] },
+      { from: ['infrastructure'], allow: ['shared', 'infrastructure'] },
+      { from: ['shared'], allow: ['shared'] },
+    ],
+  }),
+  // boundaries 는 TS 임포트를 분류하려면 리졸버가 필요하다(없으면 조용히 no-op).
+  {
+    files: ['apps/web/src/**/*.{ts,tsx}'],
+    settings: {
+      'import/resolver': { typescript: { project: 'apps/web/tsconfig.json' }, node: true },
+    },
+  },
+  // 기술부채 완화(의도적·국소): auth/state 부트스트랩은 매핑상 shared 지만 자연스럽게
+  // infrastructure(api 클라이언트)를 오케스트레이션한다(AuthProvider 의 프로필 patch/탈퇴,
+  // usePlatformData 의 데이터 로딩). 이는 offhours 파일럿의 store→infrastructure 완화와
+  // 동일한 패턴이다. 순수 shared(components/ui·common, utils, styles, 루트 유틸)는 계속
+  // strict 하게 강제한다.
+  {
+    files: ['apps/web/src/auth/AuthProvider.tsx', 'apps/web/src/state/usePlatformData.ts'],
+    rules: { 'boundaries/element-types': 'off' },
   },
 
   // apps/api — NestJS (Node). 데코레이터 + 빈 생성자/클래스 관용.

@@ -5,7 +5,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import {
   revenuePlanFormSchema,
   type RevenuePlanFormValues,
-} from '../../features/revenue-plan/schema'
+} from '../../domains/revenue-plan/schema'
 import { formatRate, formatWon, isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,

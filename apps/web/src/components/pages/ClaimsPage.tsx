@@ -2,7 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { claimFormSchema, type ClaimFormValues } from '../../features/claim/schema'
+import { claimFormSchema, type ClaimFormValues } from '../../domains/claim/schema'
 import { routeDefs } from '../../routeConfig'
 import { claimStatusOptions, type PlatformData } from '../../state/usePlatformData'
 import { formatWon } from '../../utils'
