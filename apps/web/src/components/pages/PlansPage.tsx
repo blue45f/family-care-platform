@@ -479,14 +479,20 @@ export const PlansPage = ({ data }: PlansPageProps) => {
           subtitle="현재 시나리오에 맞춘 운영 점검 포인트입니다."
           titleAs="h2"
         />
-        <ul className="activity">
+        <ul className="flex flex-col">
           {data.growthRecommendations.map((item) => (
-            <li className="activity-item" key={item}>
-              <span className="activity-dot" aria-hidden="true">
+            <li
+              className="flex items-start gap-3 border-b border-border-subtle py-3 last:border-b-0"
+              key={item}
+            >
+              <span
+                className="mt-[0.1rem] grid h-8 w-8 flex-none place-items-center rounded-full bg-accent-soft text-accent-soft-fg"
+                aria-hidden="true"
+              >
                 <Icon name="check" size={16} />
               </span>
-              <span className="activity-body">
-                <span className="activity-title">{item}</span>
+              <span className="min-w-0 flex-1">
+                <span className="text-sm font-medium text-fg-strong">{item}</span>
               </span>
             </li>
           ))}

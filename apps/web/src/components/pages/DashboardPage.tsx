@@ -285,17 +285,23 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
               }
             />
           ) : (
-            <ul className="activity">
+            <ul className="flex flex-col">
               {recentCare.map((log) => (
-                <li className="activity-item" key={log.id}>
-                  <span className="activity-dot" aria-hidden="true">
+                <li
+                  className="flex items-start gap-3 border-b border-border-subtle py-3 last:border-b-0"
+                  key={log.id}
+                >
+                  <span
+                    className="mt-[0.1rem] grid h-8 w-8 flex-none place-items-center rounded-full bg-accent-soft text-accent-soft-fg"
+                    aria-hidden="true"
+                  >
                     <Icon name="care" size={16} />
                   </span>
-                  <span className="activity-body">
-                    <span className="activity-title">
+                  <span className="min-w-0 flex-1">
+                    <span className="text-sm font-medium text-fg-strong">
                       {log.recipient} · {log.type}
                     </span>
-                    <span className="activity-meta">
+                    <span className="mt-[0.1rem] text-xs text-fg-subtle">
                       {log.date} · 담당 {log.caregiver}
                     </span>
                   </span>
@@ -327,12 +333,15 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
                 description="요청·검토 중인 청구가 모두 처리되었습니다."
               />
             ) : (
-              <ul className="activity">
+              <ul className="flex flex-col">
                 {pendingClaimList.map((claim) => (
-                  <li className="activity-item" key={claim.id}>
-                    <span className="activity-body">
-                      <span className="activity-title">{claim.recipient}</span>
-                      <span className="activity-meta">
+                  <li
+                    className="flex items-start gap-3 border-b border-border-subtle py-3 last:border-b-0"
+                    key={claim.id}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="text-sm font-medium text-fg-strong">{claim.recipient}</span>
+                      <span className="mt-[0.1rem] text-xs text-fg-subtle">
                         {claim.claimType} · {formatWon(claim.expectedAmount)}
                       </span>
                     </span>
@@ -350,20 +359,23 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
 
           <Card>
             <CardHeader title="바로가기" subtitle="자주 쓰는 업무로 이동합니다." titleAs="h2" />
-            <div className="quicklinks">
+            <div className="grid grid-cols-1 gap-2 min-[30rem]:grid-cols-2">
               {managementLinks.map((link) => (
                 <button
                   key={link.path}
                   type="button"
-                  className="quicklink"
+                  className="flex min-h-[3.25rem] cursor-pointer items-center gap-3 rounded-md border border-border-subtle bg-bg-surface p-3 text-left text-sm font-medium! text-fg-strong transition duration-150 ease-out hover:-translate-y-px hover:border-accent hover:bg-bg-surface-raised"
                   onClick={() => onNavigate(link.path)}
                 >
-                  <span className="quicklink-icon" aria-hidden="true">
+                  <span
+                    className="grid h-9 w-9 flex-none place-items-center rounded-md bg-accent-soft text-accent-soft-fg"
+                    aria-hidden="true"
+                  >
                     <Icon name={link.icon} size={18} />
                   </span>
-                  <span className="quicklink-text">
+                  <span className="flex min-w-0 flex-col gap-[0.1rem]">
                     <span>{link.title}</span>
-                    <span className="quicklink-sub">{link.description}</span>
+                    <span className="text-xs font-normal text-fg-subtle">{link.description}</span>
                   </span>
                 </button>
               ))}
