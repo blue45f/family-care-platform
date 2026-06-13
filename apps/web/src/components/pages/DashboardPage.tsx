@@ -162,14 +162,17 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
         </Card>
       ) : null}
 
-      <section className="today-panel" aria-labelledby="today-panel-title">
-        <div className="today-panel-head">
-          <div className="greeting">
-            <p className="greeting-date">{formatToday()}</p>
-            <h1 id="today-panel-title" className="greeting-title">
+      <section
+        aria-labelledby="today-panel-title"
+        className="grid gap-5 rounded-lg border border-border-subtle p-5 shadow-sm md:p-6 bg-[linear-gradient(135deg,oklch(0.992_0.004_85),oklch(0.956_0.018_98))]"
+      >
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-fg-muted">{formatToday()}</p>
+            <h1 id="today-panel-title" className="text-xl md:text-2xl">
               {greetByHour()}
             </h1>
-            <p className="today-panel-copy">
+            <p className="max-w-[58ch] text-sm text-fg-muted">
               방문 일정, 돌봄 기록, 정산, 보험청구 순서로 오늘 놓치기 쉬운 일을 확인하세요.
             </p>
           </div>
@@ -178,23 +181,34 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
           </Badge>
         </div>
 
-        <ol className="today-task-list" aria-label="오늘 처리할 일">
+        <ol className="grid gap-3" aria-label="오늘 처리할 일">
           {todayTasks.map((task, index) => (
-            <li className="today-task" data-tone={task.tone} key={task.route}>
-              <span className="today-task-step" aria-hidden="true">
+            <li
+              key={task.route}
+              data-tone={task.tone}
+              className="group/task grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-md border border-border-subtle bg-bg-surface p-3 data-[tone=primary]:border-[color-mix(in_oklch,var(--accent)_28%,var(--border-subtle))] data-[tone=primary]:bg-[color-mix(in_oklch,var(--accent-soft)_36%,var(--bg-surface))] md:grid-cols-[auto_auto_minmax(0,1fr)_auto]"
+            >
+              <span
+                aria-hidden="true"
+                className="grid h-[1.65rem] w-[1.65rem] place-items-center rounded-full bg-bg-sunken text-xs font-semibold tabular-nums text-fg-muted max-md:hidden group-data-[tone=primary]/task:bg-accent group-data-[tone=primary]/task:text-fg-on-accent"
+              >
                 {index + 1}
               </span>
-              <span className="today-task-icon" aria-hidden="true">
+              <span
+                aria-hidden="true"
+                className="grid h-9 w-9 place-items-center rounded-md bg-accent-soft text-accent-soft-fg"
+              >
                 <Icon name={task.icon} size={20} />
               </span>
-              <span className="today-task-body">
-                <span className="today-task-title">{task.title}</span>
-                <span className="today-task-desc">{task.description}</span>
+              <span className="flex min-w-0 flex-col gap-[0.1rem]">
+                <span className="text-sm font-semibold text-fg-strong">{task.title}</span>
+                <span className="text-xs text-fg-muted">{task.description}</span>
               </span>
               <Button
                 variant={task.tone === 'primary' ? 'primary' : 'secondary'}
                 size="sm"
                 onClick={() => onNavigate(task.route)}
+                className="max-md:col-span-full max-md:w-full"
               >
                 {task.actionLabel}
                 <Icon name="arrow-right" size={15} />
