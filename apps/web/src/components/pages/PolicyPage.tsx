@@ -94,7 +94,7 @@ export const PolicyArticle = ({ slug, policy }: PolicyArticleProps) => {
   const effectiveDate = formatPolicyDate(policy.effectiveAt)
 
   return (
-    <Card as="article" className="legal-card">
+    <Card as="article">
       <div className="legal-doc-head">
         <Badge tone="accent" plain>
           {policy.versionLabel}

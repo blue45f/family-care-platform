@@ -7,6 +7,7 @@ import type { NextFunction, Request, Response } from 'express'
 
 import { AppModule } from './app.module'
 import { isCorsOriginAllowed, resolveAllowedOrigins } from './common/cors-policy'
+import { storeBackend } from './db/store-backend'
 import { AllExceptionsFilter } from './http-exception.filter'
 
 type OriginCheck = (
@@ -34,6 +35,10 @@ function applySecurityHeaders(_request: Request, response: Response, next: NextF
 }
 
 async function bootstrap() {
+  // Neon 백엔드 하이드레이트 — 서비스 생성(NestFactory.create) 전에 캐시를 채워
+  // JsonCollectionStore.load()(동기)가 DB 데이터를 읽도록 한다. DATABASE_URL 없으면 no-op.
+  await storeBackend.hydrate()
+
   // 기본 body parser(100kb)를 끄고 직접 등록한다 — 커뮤니티 첨부(파일당 2MB, 최대 4개)를
   // base64 data URL JSON으로 받으므로 한도를 12mb로 올린다(2MB×4 ≈ base64 10.7MB + 본문).
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false })
