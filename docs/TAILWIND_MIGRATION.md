@@ -23,19 +23,26 @@
 - **테두리/모서리/그림자**: 토큰 기반 (`border`, `rounded-md`, `shadow-sm`).
 - **단순 반응형**: `sm:` `md:` 등 표준 브레이크포인트 한두 개로 표현되는 변형.
 
-## styles.css에 CSS로 둔다 (KEEP)
+## 정교한 CSS도 Tailwind로 (MIGRATE — arbitrary value)
 
-옮기면 arbitrary 값 범벅이 되어 **더 나빠지는** 것들:
+정교한 스타일도 **가능한 한 arbitrary value 문법으로 옮긴다**. 공백은 `_`, oklch/색/함수는
+그대로 쓴다:
 
-- **그라데이션 / 합성 배경**: `linear-gradient(…)` 또는 여러 배경 레이어
-  (예: `.today-panel`의 `linear-gradient(135deg,…), var(--bg-surface)`).
-- **계산 색**: `color-mix(in oklch, …)` (예: `.today-task[data-tone='primary']`).
-- **복잡한 반응형 그리드**: `grid-template-columns: auto auto minmax(0,1fr) auto`처럼
-  브레이크포인트마다 트랙이 재편되는 그리드.
-- **keyframe 애니메이션**: `@keyframes` 및 이를 쓰는 클래스 (예: `.skeleton` shimmer,
-  `.auth-splash-dot` pulse).
-- **상태/데이터 속성 변형**이 CSS가 더 읽기 쉬운 경우.
-- **base reset · `:root` 토큰 · `@theme`**: 항상 CSS/설정에 둔다.
+- **그라데이션 / 합성 배경** →
+  `bg-[linear-gradient(135deg,oklch(0.992_0.004_85),oklch(0.956_0.018_98)),var(--bg-surface)]`
+- **계산 색(`color-mix`)** →
+  `bg-[color-mix(in_oklch,var(--accent-soft)_36%,var(--bg-surface))]`, `border-[color-mix(…)]`
+- **복잡한 반응형 그리드** → `grid-cols-[auto_minmax(0,1fr)] md:grid-cols-[auto_auto_minmax(0,1fr)_auto]`
+- **데이터 속성 변형** → `data-[tone=primary]:border-[…]`, 자손 변형은 `data-[tone=primary]:*:…` 등
+
+판단 기준: arbitrary가 **과도하게 길어 가독성을 심하게 해치면** 그 부분만 CSS 유지(드묾).
+
+## styles.css에 CSS로 두는 것 (KEEP — 최소)
+
+- **`@keyframes` 정의**: 유틸 문법으로 표현 불가. 애니메이션은 `animate-[name_dur_ease]`로
+  적용하되 `@keyframes` 블록 자체는 CSS에 둔다 (예: `.skeleton`/`auth-splash` shimmer·pulse).
+- **base reset · `:root` 토큰 · `@theme`**: 기반/설정이므로 CSS에 둔다.
+- (선택) 여러 화면이 재사용하는 패턴은 공유 클래스/컴포넌트로 두는 편이 DRY할 수 있다.
 
 ## 간격 규칙 (중요한 함정)
 
