@@ -86,9 +86,12 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
   const busy = isSubmitting || isDemoLoading
 
   return (
-    <main className="auth-page" aria-labelledby="login-title">
-      <div className="auth-card-wrap">
-        <div className="auth-brand">
+    <main
+      className="flex min-h-dvh items-center justify-center bg-bg-app px-4 py-5"
+      aria-labelledby="login-title"
+    >
+      <div className="w-full max-w-[26rem]">
+        <div className="mb-5 flex items-center justify-center gap-3">
           <span className="brand-mark" aria-hidden="true">
             <Icon name="heart" size={20} />
           </span>
@@ -99,11 +102,11 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
         </div>
 
         <Card>
-          <div className="stack-sm auth-card-head">
-            <h1 id="login-title" className="card-title">
+          <div className="mb-5 flex flex-col gap-3">
+            <h1 id="login-title" className="text-xl">
               로그인
             </h1>
-            <p className="card-subtitle">
+            <p className="text-sm text-fg-muted">
               {locationState.fromLanding
                 ? '데모 문의 후 이어진 사용자님이라면, 담당자 계정으로 바로 로그인해 작업 화면을 확인하세요.'
                 : locationState.source === 'pricing_button'
@@ -168,7 +171,7 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
             </Button>
           </form>
 
-          <p className="auth-switch">
+          <div className="mt-5 text-center text-sm text-fg-muted">
             아직 계정이 없으신가요?{' '}
             <button
               type="button"
@@ -183,7 +186,7 @@ export const LoginPage = ({ onNavigate, redirectTo = '/' }: LoginPageProps) => {
             >
               회원가입
             </button>
-          </p>
+          </div>
         </Card>
       </div>
     </main>

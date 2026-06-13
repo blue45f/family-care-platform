@@ -559,35 +559,10 @@ svg {
   }
 }
 
-/* --- Auth pages (login/register) -------------------------------------- */
-.auth-page {
-  min-height: 100dvh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-5) var(--space-4);
-  background: var(--bg-app);
-}
-.auth-card-wrap {
-  width: 100%;
-  max-width: 26rem;
-}
-.auth-brand {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-5);
-}
-.auth-card-head {
-  margin-bottom: var(--space-5);
-}
-.auth-page .card-title {
-  font-size: var(--text-xl);
-}
-.auth-page .card-subtitle {
-  margin-top: 0;
-}
+/* --- Auth pages (login/register) --------------------------------------
+   Page/card-wrap/brand/card-head/title/subtitle/switch layout now renders
+   with Tailwind utilities in LoginPage/RegisterPage. Only the demo-credentials
+   block stays here — its nested <dl> + non-uniform spacing reads cleaner as CSS. */
 .auth-demo {
   background: var(--accent-soft);
   border: 1px solid var(--border-subtle);
@@ -616,16 +591,6 @@ svg {
   margin: 0;
   font-weight: var(--weight-medium);
 }
-.auth-switch {
-  margin-top: var(--space-5);
-  font-size: var(--text-sm);
-  color: var(--fg-muted);
-  text-align: center;
-}
-.auth-switch .inline-action {
-  margin-left: 0;
-}
-
 /* --- Main column ------------------------------------------------------ */
 .main-col {
   display: flex;
