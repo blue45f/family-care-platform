@@ -6,6 +6,7 @@ import { App } from './App'
 import { AuthProvider } from './auth/AuthProvider'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 
+import './styles/tailwind.css'
 import './styles.css'
 
 createRoot(document.getElementById('root')!).render(

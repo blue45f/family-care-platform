@@ -1,0 +1,68 @@
+/* =========================================================================
+   Tailwind v4 — additive layer for family-care.
+
+   Preflight is intentionally omitted: the existing styles.css owns the base
+   reset and global element styles, so Tailwind utilities are available for new
+   and migrated components WITHOUT shifting any current page. @theme maps the
+   Tailwind color namespace onto the existing OKLCH tokens (defined in
+   styles.css :root) so utilities and the legacy CSS share one source of truth.
+   Fonts are deliberately not remapped — styles.css already defines --font-sans
+   / --font-mono in :root (unlayered, so it wins), and Tailwind's font-sans
+   utility resolves to it automatically.
+
+   Adopt full preflight later, page-by-page, as components migrate to Tailwind.
+   ========================================================================= */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  /* warm sand neutrals */
+  --color-sand-50: var(--c-sand-50);
+  --color-sand-100: var(--c-sand-100);
+  --color-sand-150: var(--c-sand-150);
+  --color-sand-200: var(--c-sand-200);
+  --color-sand-300: var(--c-sand-300);
+  --color-sand-400: var(--c-sand-400);
+  --color-sand-500: var(--c-sand-500);
+  --color-sand-600: var(--c-sand-600);
+  --color-sand-700: var(--c-sand-700);
+  --color-sand-800: var(--c-sand-800);
+  --color-sand-900: var(--c-sand-900);
+
+  /* sage accent (care / trust) */
+  --color-sage-50: var(--c-sage-50);
+  --color-sage-100: var(--c-sage-100);
+  --color-sage-200: var(--c-sage-200);
+  --color-sage-300: var(--c-sage-300);
+  --color-sage-400: var(--c-sage-400);
+  --color-sage-500: var(--c-sage-500);
+  --color-sage-600: var(--c-sage-600);
+  --color-sage-700: var(--c-sage-700);
+
+  /* clay secondary accent */
+  --color-clay-100: var(--c-clay-100);
+  --color-clay-300: var(--c-clay-300);
+  --color-clay-500: var(--c-clay-500);
+  --color-clay-700: var(--c-clay-700);
+
+  /* semantic role tokens */
+  --color-bg-app: var(--bg-app);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-raised: var(--bg-surface-raised);
+  --color-bg-sunken: var(--bg-sunken);
+  --color-fg-strong: var(--fg-strong);
+  --color-fg-default: var(--fg-default);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-fg-on-accent: var(--fg-on-accent);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-subtle: var(--border-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-active: var(--accent-active);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-fg: var(--accent-soft-fg);
+}
