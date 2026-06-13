@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'rea
 
 import type { AppRoute } from '../../routeConfig'
 import type { PublicNavigateState } from '../../routeConfig'
+import { cn } from '../../utils/cn'
 import { Button, Icon } from '../ui'
 
 type PublicHomePageProps = {
@@ -388,20 +389,10 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <p className="page-eyebrow">돌봄 센터 운영자를 위한 업무 플랫폼</p>
           <h1 id="public-home-title">가족 돌봄 운영 플랫폼</h1>
           <p>방문 일정부터 보험청구까지, 센터 담당자가 오늘 해야 할 일을 놓치지 않게 정리합니다.</p>
-          <div className="public-hero-actions">
+          <div className="public-hero-actions flex-col items-stretch sm:flex-row sm:items-center">
             <Button onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}>
-              <Icon name="arrow-right" size={16} />
+              <Icon name="arrow-right" size={18} />
               데모 계정으로 둘러보기
-            </Button>
-            <Button onClick={() => onNavigate('/tutorial', { source: 'hero', fromLanding: true })}>
-              <Icon name="book-open" size={16} />
-              3분 튜토리얼
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
-            >
-              운영 가이드 보기
             </Button>
             <Button
               variant="secondary"
@@ -410,6 +401,28 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
               센터 계정 만들기
             </Button>
           </div>
+          <div className="public-hero-actions pt-1">
+            <button
+              type="button"
+              className="public-text-link inline-flex items-center gap-1.5"
+              onClick={() => onNavigate('/tutorial', { source: 'hero', fromLanding: true })}
+            >
+              <Icon name="book-open" size={15} />
+              3분 튜토리얼
+            </button>
+            <button
+              type="button"
+              className="public-text-link inline-flex items-center gap-1.5"
+              onClick={() => onNavigate('/guide', { source: 'hero', fromLanding: true })}
+            >
+              <Icon name="guide" size={15} />
+              운영 가이드 보기
+            </button>
+          </div>
+          <p className="mt-1 inline-flex items-center gap-2 text-sm text-fg-muted">
+            <Icon name="shield" size={15} className="text-accent" />
+            신용카드 없이 데모 데이터로 바로 둘러볼 수 있습니다.
+          </p>
         </div>
       </section>
 
@@ -535,9 +548,18 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
         <div className="public-pricing-list">
           {publicPricingTiers.map((plan) => (
             <article
-              className={`public-pricing-item ${plan.highlight ? 'public-pricing-item--highlight' : ''}`}
+              className={cn(
+                'public-pricing-item',
+                plan.highlight && 'public-pricing-item--highlight relative',
+              )}
               key={plan.name}
             >
+              {plan.highlight ? (
+                <span className="absolute -top-3 right-5 inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-fg-on-accent shadow-sm">
+                  <Icon name="heart" size={13} />
+                  가장 인기
+                </span>
+              ) : null}
               <p className="public-pricing-name">{plan.name}</p>
               <h3>{plan.price}</h3>
               <p>{plan.desc}</p>
