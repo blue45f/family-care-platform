@@ -1,4 +1,8 @@
-import { createContext } from 'react'
+/* =========================================================================
+   인증 도메인의 공유 타입. 상태/액션 구현은 zustand 스토어(authStore.ts)에 있고,
+   useAuth 훅이 아래 AuthContextValue 모양으로 노출한다(기존 Context 계약 보존).
+   AccountSettingsPage / infrastructure/api 가 이 타입들을 참조한다.
+   ========================================================================= */
 
 export type AuthUser = {
   id: string | number
@@ -38,5 +42,3 @@ export type AuthContextValue = {
   withdrawAccount: (password: string) => Promise<void>
   logout: () => void
 }
-
-export const AuthContext = createContext<AuthContextValue | null>(null)
