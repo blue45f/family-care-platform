@@ -7,9 +7,13 @@ import { App } from './App'
 import { queryClient } from './app/queryClient'
 import { AuthProvider } from './auth/AuthProvider'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
+import { validateWebEnv } from './infrastructure/env'
 
 import './styles/tailwind.css'
 import './styles.css'
+
+// VITE_* 환경 변수 검증(NON-FATAL) — 경고만, throw 없음.
+validateWebEnv()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
