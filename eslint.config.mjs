@@ -107,12 +107,12 @@ export default defineConfig(
     },
   },
   // 기술부채 완화(의도적·국소): auth/state 부트스트랩은 매핑상 shared 지만 자연스럽게
-  // infrastructure(api 클라이언트)를 오케스트레이션한다(AuthProvider 의 프로필 patch/탈퇴,
+  // infrastructure(api 클라이언트)를 오케스트레이션한다(auth 스토어의 프로필 patch/탈퇴,
   // usePlatformData 의 데이터 로딩). 이는 offhours 파일럿의 store→infrastructure 완화와
   // 동일한 패턴이다. 순수 shared(components/ui·common, utils, styles, 루트 유틸)는 계속
   // strict 하게 강제한다.
   {
-    files: ['apps/web/src/auth/AuthProvider.tsx', 'apps/web/src/state/usePlatformData.ts'],
+    files: ['apps/web/src/auth/authStore.ts', 'apps/web/src/state/usePlatformData.ts'],
     rules: { 'boundaries/element-types': 'off' },
   },
 
