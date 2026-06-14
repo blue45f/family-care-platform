@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
-import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { operationalWorkflowRoutes, routeDefs } from '../../routeConfig'
+import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
 type TutorialPageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void

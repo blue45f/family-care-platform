@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { ScheduleService } from './schedule.service'
+
 import type { ScheduleStatus } from './schedule.model'
 
 describe('ScheduleService', () => {

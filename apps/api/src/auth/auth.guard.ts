@@ -1,10 +1,11 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import type { Request } from 'express'
 
 import { AuthService } from './auth.service'
 import { IS_PUBLIC_KEY } from './public.decorator'
+
 import type { AuthenticatedUser } from './auth.model'
+import type { Request } from 'express'
 
 // 인증 사용자를 부착한 요청 타입. 라우트 핸들러에서 request.user로 접근할 수 있다.
 export interface RequestWithUser extends Request {

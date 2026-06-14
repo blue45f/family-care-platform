@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 
-import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
+
+import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
 type SortMode = 'latest' | 'popular' | 'reply' | 'views'
 
@@ -1800,24 +1801,25 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
                 </ul>
 
                 <form className="public-community-reply-form" onSubmit={submitComment} noValidate>
-                  <label className="public-lead-form">새 댓글 입력</label>
-                  <textarea
-                    className="public-community-textarea"
-                    value={replyDraft}
-                    onChange={(event) => {
-                      setReplyDraft(event.target.value)
-                      setReplyError('')
-                    }}
-                    rows={3}
-                    maxLength={MAX_REPLY_TEXT_LENGTH}
-                    placeholder={
-                      selectedThread.state === 'closed'
-                        ? '종료 글에는 댓글을 입력할 수 없습니다.'
-                        : '댓글은 운영 규칙에 맞춰 간결하게 작성해보세요.'
-                    }
-                    aria-label="댓글 입력"
-                    disabled={selectedThread.state === 'closed'}
-                  />
+                  <label className="public-lead-form">
+                    새 댓글 입력
+                    <textarea
+                      className="public-community-textarea"
+                      value={replyDraft}
+                      onChange={(event) => {
+                        setReplyDraft(event.target.value)
+                        setReplyError('')
+                      }}
+                      rows={3}
+                      maxLength={MAX_REPLY_TEXT_LENGTH}
+                      placeholder={
+                        selectedThread.state === 'closed'
+                          ? '종료 글에는 댓글을 입력할 수 없습니다.'
+                          : '댓글은 운영 규칙에 맞춰 간결하게 작성해보세요.'
+                      }
+                      disabled={selectedThread.state === 'closed'}
+                    />
+                  </label>
                   <p className="text-xs text-fg-muted">
                     {replyDraft.length} / {MAX_REPLY_TEXT_LENGTH}자
                   </p>

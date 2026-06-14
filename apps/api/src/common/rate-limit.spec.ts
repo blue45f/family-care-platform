@@ -1,6 +1,4 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { Mock } from 'vitest'
-import type { NextFunction, Request, Response } from 'express'
 
 import {
   RateLimitMiddleware,
@@ -8,6 +6,9 @@ import {
   resolveClientKey,
   resolveRateLimitOptions,
 } from './rate-limit.middleware'
+
+import type { NextFunction, Request, Response } from 'express'
+import type { Mock } from 'vitest'
 
 // Express의 NextFunction은 오버로드 타입이라 vi.fn<NextFunction>()이 직접 대입되지 않는다.
 // 호출 횟수 검증용 스파이를 NextFunction으로 안전하게 캐스팅해 반환한다.

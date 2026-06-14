@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react'
-
 import { Icon, type IconName } from './Icon'
+
+import type { ReactNode } from 'react'
 
 type StatProps = {
   label: ReactNode

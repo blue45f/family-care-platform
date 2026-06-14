@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { AdminService } from './admin.service'
 import { CareLogService } from '../care-logs/care-logs.service'
 import { ClaimsService } from '../claims/claims.service'
 import { SettlementService } from '../settlements/settlement.service'
+
+import { AdminService } from './admin.service'
 
 describe('AdminService', () => {
   it('초기 요약 정보를 계산한다', () => {

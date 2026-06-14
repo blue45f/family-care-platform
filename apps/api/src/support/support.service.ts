@@ -2,12 +2,13 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import type { AuthenticatedUser } from '../auth/auth.model'
+
 import {
   supportMessageInputSchema,
   supportStatusInputSchema,
   supportThreadInputSchema,
 } from './support.schema'
+
 import type {
   SupportMessage,
   SupportMessageInput,
@@ -16,6 +17,7 @@ import type {
   SupportThreadInput,
   SupportThreadSummary,
 } from './support.model'
+import type { AuthenticatedUser } from '../auth/auth.model'
 
 const THREAD_NOT_FOUND_MESSAGE = '상담을 찾을 수 없습니다.'
 const PREVIEW_LENGTH = 80

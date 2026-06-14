@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 
+import { useAuth } from '../../auth/useAuth'
+import { formatRelativeIso, normalizeApiErrorMessage } from '../../domains/community/view'
 import {
   deleteCommunityForbiddenWord,
   fetchAdminUsers,
@@ -7,17 +9,8 @@ import {
   patchAdminUser,
   patchCommunityForbiddenWord,
   postCommunityForbiddenWord,
-} from '../../api'
-import { useAuth } from '../../auth/useAuth'
-import { formatRelativeIso, normalizeApiErrorMessage } from '../../features/community/view'
+} from '../../infrastructure/api'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import type {
-  AdminUserUpdateInput,
-  CommunityForbiddenWord,
-  MemberStatus,
-  MemberUser,
-} from '../../types'
 import {
   Badge,
   Button,
@@ -34,6 +27,14 @@ import {
   Table,
   type TableColumn,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type {
+  AdminUserUpdateInput,
+  CommunityForbiddenWord,
+  MemberStatus,
+  MemberUser,
+} from '../../types'
 
 type MembersPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void

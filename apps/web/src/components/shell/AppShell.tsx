@@ -1,8 +1,10 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 
-import type { AppRoute } from '../../routeConfig'
 import { Icon } from '../ui/Icon'
+
 import { Sidebar } from './Sidebar'
+
+import type { AppRoute } from '../../routeConfig'
 
 type AppShellProps = {
   /** 현재 라우트 타이틀(모바일 상단바 + 드로어 헤더). */

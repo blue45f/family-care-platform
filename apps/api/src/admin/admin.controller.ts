@@ -3,19 +3,21 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from 
 import { AuthService } from '../auth/auth.service'
 import { CurrentUser } from '../auth/current-user.decorator'
 import { requireAdmin } from '../auth/role.util'
+import { CommunityService } from '../community/community.service'
+
+import { AdminService } from './admin.service'
+
+import type { AdminOverview, RevenuePlan, RevenuePlanDraft } from './admin.model'
 import type {
   AdminUserUpdateInput,
   AuthenticatedUser,
   PublicUser,
   SuspensionInput,
 } from '../auth/auth.model'
-import { CommunityService } from '../community/community.service'
 import type {
   CommunityForbiddenWord,
   CommunityForbiddenWordInput,
 } from '../community/community.model'
-import type { AdminOverview, RevenuePlan, RevenuePlanDraft } from './admin.model'
-import { AdminService } from './admin.service'
 
 @Controller('admin')
 export class AdminController {

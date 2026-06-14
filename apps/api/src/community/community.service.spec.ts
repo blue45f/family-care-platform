@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { CommunityService } from './community.service'
+
 import type { AuthenticatedUser } from '../auth/auth.model'
 
 // 테스트 환경(VITEST)에서는 JsonCollectionStore가 인메모리로만 동작해 매 인스턴스가 seed에서 출발한다.

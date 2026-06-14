@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import { AuthService } from './auth.service'
+
 import type { AuthenticatedUser } from './auth.model'
 
 const adminActor: AuthenticatedUser = {

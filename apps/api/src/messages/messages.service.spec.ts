@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import { MessagesService } from './messages.service'
 import { AuthService } from '../auth/auth.service'
+
+import { MessagesService } from './messages.service'
+
 import type { AuthenticatedUser } from '../auth/auth.model'
 
 // 실제 AuthService를 같이 띄워 수신자 실재/정지 검증까지 통합적으로 확인한다.

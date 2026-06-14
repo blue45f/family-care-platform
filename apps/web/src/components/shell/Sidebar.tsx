@@ -1,8 +1,9 @@
 import { NavLink } from 'react-router-dom'
 
-import type { AppRoute } from '../../routeConfig'
 import { navGroups, SITE_NAME } from '../../routeConfig'
 import { Icon } from '../ui/Icon'
+
+import type { AppRoute } from '../../routeConfig'
 
 type NavBadges = Partial<Record<AppRoute, number>>
 

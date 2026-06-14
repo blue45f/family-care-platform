@@ -1,9 +1,7 @@
 import { useState, type FormEvent } from 'react'
 
 import { useAuth } from '../../auth/useAuth'
-import type { UpdateProfileInput } from '../../auth/authContext'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import { normalizeApiErrorMessage } from '../../features/community/view'
+import { normalizeApiErrorMessage } from '../../domains/community/view'
 import { routeDefs, type AppRoute } from '../../routeConfig'
 import {
   Badge,
@@ -17,6 +15,9 @@ import {
   Input,
   PageHeader,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type { UpdateProfileInput } from '../../auth/authContext'
 
 type AccountSettingsPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void

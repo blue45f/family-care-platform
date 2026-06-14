@@ -2,8 +2,9 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from '@nestj
 
 import { CurrentUser } from '../auth/current-user.decorator'
 import { requireUser } from '../auth/role.util'
-import type { AuthenticatedUser } from '../auth/auth.model'
+
 import { MessagesService } from './messages.service'
+
 import type {
   ConversationDetail,
   ConversationSummary,
@@ -11,6 +12,7 @@ import type {
   DirectMessageInput,
   MessageRecipient,
 } from './messages.model'
+import type { AuthenticatedUser } from '../auth/auth.model'
 
 // 쪽지는 개인 데이터이므로 전역 가드가 공개로 두는 GET도 requireUser로 직접 보호한다.
 @Controller('messages')

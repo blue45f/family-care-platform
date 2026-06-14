@@ -1,9 +1,26 @@
+import { COMMUNITY_ATTACHMENT_MAX_COUNT, type CommunityAttachmentInput } from '@family-care/shared'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
-import { COMMUNITY_ATTACHMENT_MAX_COUNT, type CommunityAttachmentInput } from '@family-care/shared'
-
+import { useAuth } from '../../auth/useAuth'
+import {
+  ATTACHMENT_ACCEPT,
+  attachmentErrorMessage,
+  fileToAttachmentInput,
+  formatByteSize,
+} from '../../domains/community/attachment'
+import {
+  communityCategories,
+  communityPostFormSchema,
+  type CommunityPostFormValues,
+} from '../../domains/community/schema'
+import {
+  buildCommentThreads,
+  formatRelativeIso,
+  normalizeApiErrorMessage,
+  visibleCommentCount,
+} from '../../domains/community/view'
 import {
   deleteCommunityAttachment,
   deleteCommunityComment,
@@ -13,28 +30,8 @@ import {
   patchCommunityVisibility,
   postCommunityComment,
   postCommunityPost,
-} from '../../api'
-import { useAuth } from '../../auth/useAuth'
-import {
-  ATTACHMENT_ACCEPT,
-  attachmentErrorMessage,
-  fileToAttachmentInput,
-  formatByteSize,
-} from '../../features/community/attachment'
-import {
-  communityCategories,
-  communityPostFormSchema,
-  type CommunityPostFormValues,
-} from '../../features/community/schema'
-import {
-  buildCommentThreads,
-  formatRelativeIso,
-  normalizeApiErrorMessage,
-  visibleCommentCount,
-} from '../../features/community/view'
+} from '../../infrastructure/api'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { ProtectedNavigateState } from '../../appRoutes'
-import type { CommunityComment, CommunityPostDetail, CommunityPostSummary } from '../../types'
 import { cn } from '../../utils/cn'
 import {
   Badge,
@@ -52,6 +49,9 @@ import {
   SkeletonLines,
   Textarea,
 } from '../ui'
+
+import type { ProtectedNavigateState } from '../../appRoutes'
+import type { CommunityComment, CommunityPostDetail, CommunityPostSummary } from '../../types'
 
 type CommunityPageProps = {
   onNavigate: (path: AppRoute, state?: ProtectedNavigateState) => void

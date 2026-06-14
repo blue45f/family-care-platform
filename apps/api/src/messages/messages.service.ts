@@ -1,12 +1,12 @@
+import { conversationKey } from '@family-care/shared'
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 
-import { conversationKey } from '@family-care/shared'
-
+import { AuthService } from '../auth/auth.service'
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import { AuthService } from '../auth/auth.service'
-import type { AuthenticatedUser } from '../auth/auth.model'
+
 import { directMessageInputSchema } from './messages.schema'
+
 import type {
   ConversationDetail,
   ConversationSummary,
@@ -14,6 +14,7 @@ import type {
   DirectMessageInput,
   MessageRecipient,
 } from './messages.model'
+import type { AuthenticatedUser } from '../auth/auth.model'
 
 const PREVIEW_LENGTH = 60
 

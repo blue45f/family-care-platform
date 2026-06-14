@@ -1,7 +1,3 @@
-import type { CSSProperties } from 'react'
-
-import type { AppRoute } from '../../routeConfig'
-import type { AdminMonthlyTrendWithDelta, PlatformData } from '../../state/usePlatformData'
 import {
   formatMonthLabel,
   formatRate,
@@ -24,6 +20,10 @@ import {
   Table,
   type TableColumn,
 } from '../ui'
+
+import type { AppRoute } from '../../routeConfig'
+import type { AdminMonthlyTrendWithDelta, PlatformData } from '../../state/usePlatformData'
+import type { CSSProperties } from 'react'
 
 type AnalyticsPageProps = {
   data: PlatformData

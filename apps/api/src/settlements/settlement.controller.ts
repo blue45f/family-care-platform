@@ -1,8 +1,10 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common'
 
 import { localYmd } from '../common/date.util'
-import type { Settlement, SettlementInput } from './settlement.model'
+
 import { SettlementService } from './settlement.service'
+
+import type { Settlement, SettlementInput } from './settlement.model'
 
 @Controller('settlements')
 export class SettlementController {

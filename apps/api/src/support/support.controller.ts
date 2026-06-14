@@ -2,8 +2,9 @@ import { Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post } from 
 
 import { CurrentUser } from '../auth/current-user.decorator'
 import { requireUser } from '../auth/role.util'
-import type { AuthenticatedUser } from '../auth/auth.model'
+
 import { SupportService } from './support.service'
+
 import type {
   SupportMessage,
   SupportMessageInput,
@@ -11,6 +12,7 @@ import type {
   SupportThreadInput,
   SupportThreadSummary,
 } from './support.model'
+import type { AuthenticatedUser } from '../auth/auth.model'
 
 // 개인 상담 내역이므로 전역 가드가 공개로 두는 GET도 핸들러에서 requireUser로 보호한다.
 @Controller('support')

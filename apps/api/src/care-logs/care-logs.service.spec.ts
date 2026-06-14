@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { CareLogService } from './care-logs.service'
+
 import type { CareLogType } from './care-log.model'
 
 describe('CareLogService', () => {

@@ -3,8 +3,10 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { localYmd } from '../common/date.util'
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import type { Claim, ClaimInput, ClaimStatus } from './claim.model'
+
 import { claimInputSchema, claimStatusSchema } from './claim.schema'
+
+import type { Claim, ClaimInput, ClaimStatus } from './claim.model'
 
 @Injectable()
 export class ClaimsService {

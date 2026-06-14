@@ -1,9 +1,9 @@
-import type { ReactElement } from 'react'
-
 import { lazyRetry } from './lazyRetry'
-import type { AppRoute, AuthRoute, PublicLandingRoute, PublicNavigateState } from './routeConfig'
 import { publicLandingRoutes } from './routeConfig'
+
+import type { AppRoute, AuthRoute, PublicLandingRoute, PublicNavigateState } from './routeConfig'
 import type { PlatformData } from './state/usePlatformData'
+import type { ReactElement } from 'react'
 
 // 페이지는 라우트 단위 청크로 분리한다(초기 번들 축소). lazyRetry가 배포 직후
 // stale 청크 로드 실패를 1회 새로고침으로 복구하고, 재실패는 ErrorBoundary로 보낸다.

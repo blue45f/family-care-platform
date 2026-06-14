@@ -3,8 +3,10 @@ import { Injectable } from '@nestjs/common'
 import { localYmd } from '../common/date.util'
 import { JsonCollectionStore } from '../common/json-store'
 import { parseWithSchema } from '../common/zod-validation.pipe'
-import type { Settlement, SettlementInput } from './settlement.model'
+
 import { settlementInputSchema } from './settlement.schema'
+
+import type { Settlement, SettlementInput } from './settlement.model'
 
 @Injectable()
 export class SettlementService {

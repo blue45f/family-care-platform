@@ -6,9 +6,9 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common'
+
 import type { ArgumentsHost } from '@nestjs/common'
-import type { Response } from 'express'
-import type { Request } from 'express'
+import type { Response, Request } from 'express'
 
 type ApiErrorBody = {
   error: string

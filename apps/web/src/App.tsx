@@ -14,8 +14,8 @@ import { AppShell } from './components/shell/AppShell'
 import { getRouteDef, SITE_NAME, type AppRoute, type RouteDef } from './routeConfig'
 import { applyRouteEntrySideEffects, canonicalizeLocation } from './routeNavigation'
 import { usePlatformData } from './state/usePlatformData'
-import { isReadOnlyErrorMessage } from './utils'
 import { useRouteMeta } from './useRouteMeta'
+import { isReadOnlyErrorMessage } from './utils'
 
 const ROUTE_MAIN_ID = 'route-main-content'
 

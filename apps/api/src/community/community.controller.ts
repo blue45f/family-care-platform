@@ -12,8 +12,9 @@ import {
 
 import { CurrentUser } from '../auth/current-user.decorator'
 import { requireAdmin, requireUser } from '../auth/role.util'
-import type { AuthenticatedUser } from '../auth/auth.model'
+
 import { CommunityService } from './community.service'
+
 import type {
   CommunityComment,
   CommunityCommentInput,
@@ -21,6 +22,7 @@ import type {
   CommunityPostInput,
   CommunityPostSummary,
 } from './community.model'
+import type { AuthenticatedUser } from '../auth/auth.model'
 
 // CORS 허용 메서드(GET/POST/PATCH) 컨벤션을 따른다:
 // - 상태 변경(숨김/복구)은 PATCH :id/visibility (schedules의 PATCH :id/status와 동일 결).

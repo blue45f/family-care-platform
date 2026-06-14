@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import { AuthProvider } from '../../auth/AuthProvider'
+
 import { MessagesPage } from './MessagesPage'
 
 // useLocation을 쓰므로 MemoryRouter로 감싼다. effect 미실행 → 네트워크 없이 초기 구조 검증.

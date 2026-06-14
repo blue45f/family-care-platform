@@ -1,5 +1,6 @@
-import type { AppRoute, RouteDef } from '../../routeConfig'
 import { Badge, Button, Icon, PageHeader } from '../ui'
+
+import type { AppRoute, RouteDef } from '../../routeConfig'
 
 type PlaceholderPageProps = {
   def: RouteDef

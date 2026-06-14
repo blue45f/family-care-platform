@@ -1,15 +1,13 @@
+import { zodResolver } from '@hookform/resolvers/zod'
 import { type CSSProperties, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 
 import {
   scheduleFormSchema,
   scheduleStatuses,
   type ScheduleFormValues,
-} from '../../features/schedule/schema'
+} from '../../domains/schedule/schema'
 import { routeDefs, type AppRoute } from '../../routeConfig'
-import type { PlatformData } from '../../state/usePlatformData'
-import type { CareSchedule, ScheduleStatus } from '../../types'
 import { isReadOnlyErrorMessage } from '../../utils'
 import {
   Badge,
@@ -29,6 +27,9 @@ import {
   type TableColumn,
   Textarea,
 } from '../ui'
+
+import type { PlatformData } from '../../state/usePlatformData'
+import type { CareSchedule, ScheduleStatus } from '../../types'
 
 type SchedulePageProps = {
   data: PlatformData
