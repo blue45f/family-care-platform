@@ -1,6 +1,8 @@
 import { careLogTypes, claimStatuses, scheduleStatuses } from '@family-care/shared'
-import { type ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import { useMutation, useQueries, useQueryClient } from '@tanstack/react-query'
+import { type ChangeEvent, useCallback, useMemo, useState } from 'react'
 
+import { platformQueryKeys } from '../app/queryKeys'
 import {
   fetchAdminOverview,
   fetchAdminPlans,
@@ -145,6 +147,25 @@ type UsePlatformDataResult = {
   load: () => Promise<void>
 }
 
+// usePlatformData가 구독하는 6개 운영 리드 키. 수동 새로고침/제출 후 재동기화에서
+// 이 키들만 정확히 무효화한다(community/support 등 다른 도메인 캐시는 건드리지 않음).
+const PLATFORM_READ_KEYS = [
+  platformQueryKeys.schedules,
+  platformQueryKeys.careLogs,
+  platformQueryKeys.settlements,
+  platformQueryKeys.claims,
+  platformQueryKeys.adminOverview,
+  platformQueryKeys.adminPlans,
+]
+
+// 안정적인 빈 배열 참조(기존 useState([])의 참조 안정성 보존 — 다운스트림 useMemo가
+// 매 렌더 새 배열로 churn 하지 않도록 한다).
+const EMPTY_SCHEDULES: CareSchedule[] = []
+const EMPTY_CARE_LOGS: CareLog[] = []
+const EMPTY_SETTLEMENTS: Settlement[] = []
+const EMPTY_CLAIMS: Claim[] = []
+const EMPTY_PLANS: RevenuePlan[] = []
+
 const initialAdminOverview: AdminOverview = {
   activeHouseholds: 0,
   thisMonthSettlement: 0,
@@ -230,23 +251,76 @@ export const createInitialClaimDraft = (): ClaimDraft => ({
 })
 
 export const usePlatformData = (): UsePlatformDataResult => {
-  const [loading, setLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
+  const client = useQueryClient()
 
-  const [careLogs, setCareLogs] = useState<CareLog[]>([])
-  const [schedules, setSchedules] = useState<CareSchedule[]>([])
-  const [settlements, setSettlements] = useState<Settlement[]>([])
-  const [claims, setClaims] = useState<Claim[]>([])
+  // 6개 서버 리드를 react-query로 병렬 구독한다. 기존 동작 보존:
+  // - 마운트 시 1회 병렬 fetch(staleTime/refetchOnWindowFocus 기본값은 queryClient에서
+  //   기존 "1회 fetch + 수동 새로고침" 의미에 맞게 설정되어 있다).
+  // - loading: 초기 fetch + 수동 load() + 제출 후 재동기화 동안 모두 true(기존 setLoading 의미).
+  // - errorMessage: 어느 쿼리든 첫 실패를 기존 메시지 계약으로 정규화. 성공 refetch 시 자동 해소.
+  const reads = useQueries({
+    queries: [
+      { queryKey: platformQueryKeys.schedules, queryFn: fetchSchedules },
+      { queryKey: platformQueryKeys.careLogs, queryFn: fetchCareLogs },
+      { queryKey: platformQueryKeys.settlements, queryFn: fetchSettlements },
+      { queryKey: platformQueryKeys.claims, queryFn: fetchClaims },
+      { queryKey: platformQueryKeys.adminOverview, queryFn: fetchAdminOverview },
+      { queryKey: platformQueryKeys.adminPlans, queryFn: fetchAdminPlans },
+    ],
+    combine: (results) => {
+      const [
+        schedulesResult,
+        careLogsResult,
+        settlementsResult,
+        claimsResult,
+        overviewResult,
+        plansResult,
+      ] = results
+      return {
+        schedules: schedulesResult.data ?? EMPTY_SCHEDULES,
+        careLogs: careLogsResult.data ?? EMPTY_CARE_LOGS,
+        settlements: settlementsResult.data ?? EMPTY_SETTLEMENTS,
+        claims: claimsResult.data ?? EMPTY_CLAIMS,
+        adminOverview: overviewResult.data ?? initialAdminOverview,
+        plans: plansResult.data ?? EMPTY_PLANS,
+        // 초기 fetch + 수동 refetch 모두 포함(기존 load()의 setLoading(true) 의미와 동일).
+        isFetching: results.some((result) => result.isFetching),
+        // 첫 실패 쿼리의 에러(없으면 null). 성공 refetch 시 react-query가 자동으로 비운다.
+        queryError: results.find((result) => result.error)?.error ?? null,
+      }
+    },
+  })
 
-  const [adminOverview, setAdminOverview] = useState<AdminOverview>(initialAdminOverview)
-  const [plans, setPlans] = useState<RevenuePlan[]>([])
+  const { schedules, careLogs, settlements, claims, adminOverview, plans } = reads
+  const loading = reads.isFetching
+
+  // 뮤테이션(제출/상태변경/요금제)에서 표시할 에러. 읽기 쿼리 에러와 합쳐 노출하며,
+  // clearError로 닫을 수 있다(기존 setErrorMessage('') 의미 보존). 닫은 뒤 다음 fetch
+  // 사이클에서 쿼리 에러가 재발하면 다시 표시된다.
+  const [mutationError, setMutationError] = useState('')
+  // 사용자가 닫은(clearError) 쿼리 에러 메시지를 기억한다. 동일 메시지면 배너를 숨기고,
+  // 다른/새 쿼리 에러가 발생하면(문자열이 달라지므로) 다시 표시된다. effect 없이 렌더에서
+  // 파생 — react-hooks/set-state-in-effect 규칙(effect 내 setState 금지)을 피한다.
+  const [dismissedQueryError, setDismissedQueryError] = useState('')
+
+  const normalizedQueryError = useMemo(
+    () =>
+      reads.queryError
+        ? normalizeErrorMessage(
+            reads.queryError,
+            '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.'
+          )
+        : '',
+    [reads.queryError]
+  )
+
+  const visibleQueryError =
+    normalizedQueryError && normalizedQueryError !== dismissedQueryError ? normalizedQueryError : ''
+  const errorMessage = mutationError || visibleQueryError
+
   const [savingPlanId, setSavingPlanId] = useState<string | null>(null)
   const [updatingScheduleId, setUpdatingScheduleId] = useState<number | null>(null)
   const [updatingClaimId, setUpdatingClaimId] = useState<number | null>(null)
-  const [isSubmittingSchedule, setIsSubmittingSchedule] = useState(false)
-  const [isSubmittingCareLog, setIsSubmittingCareLog] = useState(false)
-  const [isSubmittingSettlement, setIsSubmittingSettlement] = useState(false)
-  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false)
 
   const [priceLiftPercent, setPriceLiftPercent] = useState(4)
   const [upgradePushPercent, setUpgradePushPercent] = useState(8)
@@ -488,272 +562,231 @@ export const usePlatformData = (): UsePlatformDataResult => {
     scenarioRevenue.goalRate,
   ])
 
-  const refreshData = useCallback(async () => {
-    try {
-      const [
-        schedulesResult,
-        logsResult,
-        settlementsResult,
-        claimsResult,
-        overviewResult,
-        plansResult,
-      ] = await Promise.all([
-        fetchSchedules(),
-        fetchCareLogs(),
-        fetchSettlements(),
-        fetchClaims(),
-        fetchAdminOverview(),
-        fetchAdminPlans(),
-      ])
+  // 6개 운영 데이터 쿼리 전체를 무효화해 재요청한다(기존 refreshData/Promise.all 재페치 대체).
+  const refetchAll = useCallback(
+    () =>
+      client.invalidateQueries({
+        predicate: (query) =>
+          PLATFORM_READ_KEYS.some((key) => JSON.stringify(query.queryKey) === JSON.stringify(key)),
+      }),
+    [client]
+  )
 
-      setSchedules(schedulesResult)
-      setCareLogs(logsResult)
-      setSettlements(settlementsResult)
-      setClaims(claimsResult)
-      setAdminOverview(overviewResult)
-      setPlans(plansResult)
-      setErrorMessage('')
-    } catch (error) {
-      const message = normalizeErrorMessage(
-        error,
-        '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.'
-      )
-      setErrorMessage(message)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
+  // 수동 새로고침. 제출 뮤테이션도 성공 후 이 경로로 재동기화한다(기존 await load()와 동일).
   const load = useCallback(async () => {
-    setLoading(true)
-    setErrorMessage('')
-    await refreshData()
-  }, [refreshData])
+    setMutationError('')
+    await refetchAll()
+  }, [refetchAll])
 
-  useEffect(() => {
-    let cancelled = false
-    Promise.all([
-      fetchSchedules(),
-      fetchCareLogs(),
-      fetchSettlements(),
-      fetchClaims(),
-      fetchAdminOverview(),
-      fetchAdminPlans(),
-    ])
-      .then(
-        ([
-          schedulesResult,
-          logsResult,
-          settlementsResult,
-          claimsResult,
-          overviewResult,
-          plansResult,
-        ]) => {
-          if (cancelled) {
-            return
-          }
-          setSchedules(schedulesResult)
-          setCareLogs(logsResult)
-          setSettlements(settlementsResult)
-          setClaims(claimsResult)
-          setAdminOverview(overviewResult)
-          setPlans(plansResult)
-          setErrorMessage('')
-        }
-      )
-      .catch((error) => {
-        if (cancelled) {
-          return
-        }
-        const message = normalizeErrorMessage(
-          error,
-          '데이터를 불러오지 못했습니다. 네트워크 상태를 확인하고 다시 시도해 주세요.'
-        )
-        setErrorMessage(message)
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
+  // 제출 뮤테이션. 검증은 폼(zodResolver)에서 끝난 뒤 검증된 값을 받는다.
+  // 기존 동작 보존: 성공 시 캐시에 낙관적으로 prepend → load()로 서버 재동기화.
+  // 실패 시 정규화된 에러 메시지. 재진입 가드는 isPending으로 대체한다.
+  const submitScheduleMutation = useMutation({
+    mutationFn: postSchedule,
+    onSuccess: (next) => {
+      client.setQueryData<CareSchedule[]>(platformQueryKeys.schedules, (prev) => [
+        next,
+        ...(prev ?? []),
+      ])
+    },
+  })
+  const submitCareLogMutation = useMutation({
+    mutationFn: postCareLog,
+    onSuccess: (next) => {
+      client.setQueryData<CareLog[]>(platformQueryKeys.careLogs, (prev) => [next, ...(prev ?? [])])
+    },
+  })
+  const submitSettlementMutation = useMutation({
+    mutationFn: postSettlement,
+    onSuccess: (next) => {
+      client.setQueryData<Settlement[]>(platformQueryKeys.settlements, (prev) => [
+        next,
+        ...(prev ?? []),
+      ])
+    },
+  })
+  const submitClaimMutation = useMutation({
+    mutationFn: postClaim,
+    onSuccess: (next) => {
+      client.setQueryData<Claim[]>(platformQueryKeys.claims, (prev) => [next, ...(prev ?? [])])
+    },
+  })
 
-  // 검증은 폼(zodResolver)에서 끝난 뒤 검증된 값을 받는다. 여기서는 제출 부수효과만 처리한다.
+  const isSubmittingSchedule = submitScheduleMutation.isPending
+  const isSubmittingCareLog = submitCareLogMutation.isPending
+  const isSubmittingSettlement = submitSettlementMutation.isPending
+  const isSubmittingClaim = submitClaimMutation.isPending
+
   const submitSchedule = useCallback(
     async (values: CareScheduleDraft) => {
-      if (isSubmittingSchedule) {
+      if (submitScheduleMutation.isPending) {
         return
       }
-
+      setMutationError('')
       try {
-        setIsSubmittingSchedule(true)
-        setErrorMessage('')
-        const next = await postSchedule(values)
-        setSchedules((prev) => [next, ...prev])
+        await submitScheduleMutation.mutateAsync(values)
         await load()
       } catch (error) {
-        setErrorMessage(
+        setMutationError(
           normalizeErrorMessage(error, '방문 일정 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         )
-      } finally {
-        setIsSubmittingSchedule(false)
       }
     },
-    [isSubmittingSchedule, load]
+    [submitScheduleMutation, load]
   )
 
   const submitCareLog = useCallback(
     async (values: CareLogDraft) => {
-      if (isSubmittingCareLog) {
+      if (submitCareLogMutation.isPending) {
         return
       }
-
+      setMutationError('')
       try {
-        setIsSubmittingCareLog(true)
-        setErrorMessage('')
-        const next = await postCareLog(values)
-        setCareLogs((prev) => [next, ...prev])
+        await submitCareLogMutation.mutateAsync(values)
         await load()
       } catch (error) {
-        setErrorMessage(
+        setMutationError(
           normalizeErrorMessage(error, '돌봄 기록 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         )
-      } finally {
-        setIsSubmittingCareLog(false)
       }
     },
-    [load, isSubmittingCareLog]
+    [submitCareLogMutation, load]
   )
 
   const submitSettlement = useCallback(
     async (values: SettlementDraft) => {
-      if (isSubmittingSettlement) {
+      if (submitSettlementMutation.isPending) {
         return
       }
-
+      setMutationError('')
       try {
-        setIsSubmittingSettlement(true)
-        setErrorMessage('')
-        const next = await postSettlement(values)
-        setSettlements((prev) => [next, ...prev])
+        await submitSettlementMutation.mutateAsync(values)
         await load()
       } catch (error) {
-        setErrorMessage(
+        setMutationError(
           normalizeErrorMessage(error, '정산 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.')
         )
-      } finally {
-        setIsSubmittingSettlement(false)
       }
     },
-    [load, isSubmittingSettlement]
+    [submitSettlementMutation, load]
   )
 
   const submitClaim = useCallback(
     async (values: ClaimDraft) => {
-      if (isSubmittingClaim) {
+      if (submitClaimMutation.isPending) {
         return
       }
-
+      setMutationError('')
       try {
-        setIsSubmittingClaim(true)
-        setErrorMessage('')
-        const next = await postClaim(values)
-        setClaims((prev) => [next, ...prev])
+        await submitClaimMutation.mutateAsync(values)
         await load()
       } catch (error) {
-        setErrorMessage(
+        setMutationError(
           normalizeErrorMessage(error, '보험청구 등록 실패. 잠시 후 다시 시도해 주세요.')
         )
-      } finally {
-        setIsSubmittingClaim(false)
       }
     },
-    [load, isSubmittingClaim]
+    [submitClaimMutation, load]
   )
 
-  const submitPlan = useCallback(async (draft: RevenuePlanDraft) => {
-    try {
-      setSavingPlanId(draft.id)
-      const next = await updateAdminPlan(draft)
-      setPlans((prev) => prev.map((plan) => (plan.id === next.id ? next : plan)))
-    } catch (error) {
-      setErrorMessage(
-        normalizeErrorMessage(error, '요금제 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+  // 요금제 저장: 성공 시 캐시 내 해당 plan 교체(기존 setPlans map과 동일).
+  const submitPlanMutation = useMutation({
+    mutationFn: updateAdminPlan,
+    onSuccess: (next) => {
+      client.setQueryData<RevenuePlan[]>(platformQueryKeys.adminPlans, (prev) =>
+        (prev ?? []).map((plan) => (plan.id === next.id ? next : plan))
       )
-    } finally {
-      setSavingPlanId(null)
-    }
-  }, [])
+    },
+  })
 
+  const submitPlan = useCallback(
+    async (draft: RevenuePlanDraft) => {
+      setSavingPlanId(draft.id)
+      try {
+        await submitPlanMutation.mutateAsync(draft)
+      } catch (error) {
+        setMutationError(
+          normalizeErrorMessage(error, '요금제 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+        )
+      } finally {
+        setSavingPlanId(null)
+      }
+    },
+    [submitPlanMutation]
+  )
+
+  // 상태 변경: 낙관적 캐시 업데이트 + 실패 롤백 + 성공 시 서버 확정 엔티티로 교체.
+  // 기존 setSchedules/setClaims 패턴을 setQueryData로 1:1 이식한다.
   const updateScheduleStatus = useCallback(
     async (scheduleId: number, nextStatus: ScheduleStatus) => {
-      // 낙관적 뮤테이션: 이전 행을 스냅샷한 뒤 서버 응답을 기다리지 않고 먼저 반영한다.
-      const snapshot = schedules.find((item) => item.id === scheduleId)
+      const current = client.getQueryData<CareSchedule[]>(platformQueryKeys.schedules) ?? []
+      const snapshot = current.find((item) => item.id === scheduleId)
       if (!snapshot || snapshot.status === nextStatus) {
         return
       }
 
       setUpdatingScheduleId(scheduleId)
-      setErrorMessage('')
-      setSchedules((prev) =>
-        prev.map((schedule) =>
+      setMutationError('')
+      client.setQueryData<CareSchedule[]>(platformQueryKeys.schedules, (prev) =>
+        (prev ?? []).map((schedule) =>
           schedule.id === scheduleId ? { ...schedule, status: nextStatus } : schedule
         )
       )
 
       try {
-        // 성공 재동기화: 서버가 확정한 엔티티로 교체한다.
         const updated = await patchScheduleStatus(scheduleId, nextStatus)
-        setSchedules((prev) =>
-          prev.map((schedule) => (schedule.id === updated.id ? updated : schedule))
+        client.setQueryData<CareSchedule[]>(platformQueryKeys.schedules, (prev) =>
+          (prev ?? []).map((schedule) => (schedule.id === updated.id ? updated : schedule))
         )
       } catch (error) {
         // 실패 롤백: 스냅샷한 이전 행으로 복원한다.
-        setSchedules((prev) =>
-          prev.map((schedule) => (schedule.id === scheduleId ? snapshot : schedule))
+        client.setQueryData<CareSchedule[]>(platformQueryKeys.schedules, (prev) =>
+          (prev ?? []).map((schedule) => (schedule.id === scheduleId ? snapshot : schedule))
         )
-        setErrorMessage(
+        setMutationError(
           normalizeErrorMessage(error, '방문 일정 상태 변경 실패. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setUpdatingScheduleId(null)
       }
     },
-    [schedules]
+    [client]
   )
 
   const updateClaimStatus = useCallback(
     async (claimId: number, nextStatus: ClaimStatus) => {
-      // 낙관적 뮤테이션: 이전 행을 스냅샷한 뒤 서버 응답을 기다리지 않고 먼저 반영한다.
-      const snapshot = claims.find((item) => item.id === claimId)
+      const current = client.getQueryData<Claim[]>(platformQueryKeys.claims) ?? []
+      const snapshot = current.find((item) => item.id === claimId)
       if (!snapshot || snapshot.status === nextStatus) {
         return
       }
 
       setUpdatingClaimId(claimId)
-      setErrorMessage('')
-      setClaims((prev) =>
-        prev.map((claim) => (claim.id === claimId ? { ...claim, status: nextStatus } : claim))
+      setMutationError('')
+      client.setQueryData<Claim[]>(platformQueryKeys.claims, (prev) =>
+        (prev ?? []).map((claim) =>
+          claim.id === claimId ? { ...claim, status: nextStatus } : claim
+        )
       )
 
       try {
-        // 성공 재동기화: 서버가 확정한 엔티티로 교체한다.
         const updated = await patchClaimStatus(claimId, nextStatus)
-        setClaims((prev) => prev.map((claim) => (claim.id === updated.id ? updated : claim)))
+        client.setQueryData<Claim[]>(platformQueryKeys.claims, (prev) =>
+          (prev ?? []).map((claim) => (claim.id === updated.id ? updated : claim))
+        )
       } catch (error) {
         // 실패 롤백: 스냅샷한 이전 행으로 복원한다.
-        setClaims((prev) => prev.map((claim) => (claim.id === claimId ? snapshot : claim)))
-        setErrorMessage(
+        client.setQueryData<Claim[]>(platformQueryKeys.claims, (prev) =>
+          (prev ?? []).map((claim) => (claim.id === claimId ? snapshot : claim))
+        )
+        setMutationError(
           normalizeErrorMessage(error, '보험청구 상태 변경 실패. 잠시 후 다시 시도해 주세요.')
         )
       } finally {
         setUpdatingClaimId(null)
       }
     },
-    [claims]
+    [client]
   )
 
   const onPriceLiftInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -765,8 +798,11 @@ export const usePlatformData = (): UsePlatformDataResult => {
   }, [])
 
   const clearError = useCallback(() => {
-    setErrorMessage('')
-  }, [])
+    // 뮤테이션 에러를 비우고, 현재 표시 중인 쿼리 에러를 닫음으로 기록한다(기존
+    // setErrorMessage('') 의미). 같은 에러는 숨겨지고, 새 에러가 나면 다시 표시된다.
+    setMutationError('')
+    setDismissedQueryError(normalizedQueryError)
+  }, [normalizedQueryError])
 
   return {
     loading,
