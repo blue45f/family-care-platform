@@ -1,0 +1,357 @@
+/* =========================================================================
+   DesignSystemPage — scoped styles for the living style guide (/design).
+
+   Additive and self-contained: every rule is namespaced under `.ds-` and reuses
+   the existing :root tokens (styles.css). It introduces no new colors, fonts, or
+   scale values — it only arranges the real tokens for display. Imported only by
+   DesignSystemPage so it never affects any other surface.
+   ========================================================================= */
+
+.ds-main {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-main {
+    scroll-behavior: auto;
+  }
+}
+
+/* --- Layout shell ---------------------------------------------------------- */
+.ds-layout {
+  display: grid;
+  gap: var(--space-8);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-10) clamp(var(--space-4), 5vw, var(--space-10)) var(--space-16);
+}
+@media (min-width: 64rem) {
+  .ds-layout {
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: var(--space-12);
+    align-items: start;
+  }
+}
+
+/* --- Sticky in-page nav ---------------------------------------------------- */
+.ds-toc {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .ds-toc {
+    display: block;
+    position: sticky;
+    top: calc(var(--space-6));
+    align-self: start;
+  }
+}
+.ds-toc-title {
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+  margin-bottom: var(--space-3);
+}
+.ds-toc ul {
+  display: grid;
+  gap: var(--space-1);
+}
+.ds-toc a {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+.ds-toc a:hover {
+  background: var(--bg-hover);
+  color: var(--fg-strong);
+}
+
+/* --- Content sections ------------------------------------------------------ */
+.ds-content {
+  display: grid;
+  gap: var(--space-12);
+  min-width: 0;
+}
+.ds-section {
+  display: grid;
+  gap: var(--space-5);
+  scroll-margin-top: var(--space-6);
+}
+.ds-section-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.ds-section-head h2 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+.ds-section-head p {
+  max-width: 70ch;
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+.ds-subhead {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* --- Hero ------------------------------------------------------------------ */
+.ds-hero {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: clamp(var(--space-8), 6vw, var(--space-12)) clamp(var(--space-4), 5vw, var(--space-10))
+    var(--space-4);
+}
+.ds-hero h1 {
+  max-width: 18ch;
+  font-size: var(--text-3xl);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.ds-hero-lede {
+  max-width: 64ch;
+  color: var(--fg-default);
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  text-wrap: pretty;
+}
+.ds-hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+/* --- Color swatches -------------------------------------------------------- */
+.ds-swatch-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.ds-swatch {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+.ds-swatch-chip {
+  height: 4.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ds-swatch-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: var(--space-3);
+}
+.ds-swatch-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--fg-strong);
+}
+.ds-swatch-token {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+  word-break: break-all;
+}
+.ds-swatch-value {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+  word-break: break-all;
+}
+
+/* --- Type scale ------------------------------------------------------------ */
+.ds-type-list {
+  display: grid;
+  gap: var(--space-5);
+}
+.ds-type-row {
+  display: grid;
+  gap: var(--space-1);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px dashed var(--border-subtle);
+}
+.ds-type-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.ds-type-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
+}
+.ds-type-sample {
+  color: var(--fg-strong);
+  line-height: var(--leading-tight);
+}
+.ds-measure-sample {
+  max-width: var(--measure);
+  color: var(--fg-default);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  text-wrap: pretty;
+}
+
+/* --- Spacing bars ---------------------------------------------------------- */
+.ds-spacing-list {
+  display: grid;
+  gap: var(--space-3);
+}
+.ds-spacing-row {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+.ds-spacing-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+}
+.ds-spacing-bar {
+  height: 0.85rem;
+  border-radius: var(--radius-xs);
+  background: var(--accent);
+}
+
+/* --- Radii / elevation tiles ----------------------------------------------- */
+.ds-tile-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+.ds-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.ds-radius-box {
+  width: 100%;
+  height: 4.5rem;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+}
+.ds-elevation-box {
+  width: 100%;
+  height: 4.5rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface-raised);
+  border: 1px solid var(--border-subtle);
+}
+.ds-tile-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+}
+
+/* --- Motion demo ----------------------------------------------------------- */
+.ds-motion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+.ds-motion-track {
+  flex: 1 1 14rem;
+  min-width: 12rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+}
+.ds-motion-dot {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.ds-motion.is-on .ds-motion-dot {
+  transform: translateX(calc(100% + 0.3rem));
+}
+@media (prefers-reduced-motion: reduce) {
+  .ds-motion-dot {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* --- Component specimens --------------------------------------------------- */
+.ds-specimen {
+  display: grid;
+  gap: var(--space-3);
+}
+.ds-specimen-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.ds-caption {
+  font-size: var(--text-xs);
+  color: var(--fg-subtle);
+}
+.ds-fields {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: start;
+}
+
+/* card list: 1D flex, not a uniform card grid; widths vary by content */
+.ds-card-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: stretch;
+}
+.ds-card-row > .card {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.ds-divider {
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* tasteful section reveal — enhances already-visible content, fully reset */
+@media (prefers-reduced-motion: no-preference) {
+  .ds-section {
+    animation: ds-rise var(--dur-slow) var(--ease-out) both;
+  }
+}
+@keyframes ds-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
