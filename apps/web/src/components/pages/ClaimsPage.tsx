@@ -1,11 +1,11 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { type CSSProperties } from 'react'
+import { type CSSProperties, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { claimFormSchema, type ClaimFormValues } from '../../domains/claim/schema'
 import { routeDefs } from '../../routeConfig'
 import { claimStatusOptions, type PlatformData } from '../../state/usePlatformData'
-import { formatWon } from '../../utils'
+import { formatRate, formatWon } from '../../utils'
 import {
   Badge,
   type BadgeTone,
@@ -23,6 +23,8 @@ import {
   type TableColumn,
   PageHeader,
 } from '../ui'
+
+import { buildClaimStatusBreakdown } from './operationsBreakdown'
 
 import type { AppRoute } from '../../routeConfig'
 import type { Claim, ClaimStatus } from '../../types'
@@ -73,9 +75,26 @@ const STATUS_CELL_STYLE: CSSProperties = {
   alignItems: 'flex-start',
 }
 
+// 상태 파이프라인 막대 한 칸 스타일(전용 CSS 없이 토큰으로 자체 완결).
+const PIPELINE_ROW_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--space-3)',
+  flexWrap: 'wrap',
+}
+
+const PIPELINE_META_STYLE: CSSProperties = {
+  color: 'var(--fg-muted)',
+  fontSize: 'var(--text-sm)',
+  marginLeft: 'auto',
+}
+
 export const ClaimsPage = ({ data, onNavigate }: ClaimsPageProps) => {
   const def = routeDefs['/claims']
   const isInitialLoading = data.loading && data.claims.length === 0
+
+  // 상태별 청구 파이프라인(요청→검토중→승인→거절). 항상 4개 상태를 보여준다.
+  const statusBreakdown = useMemo(() => buildClaimStatusBreakdown(data.claims), [data.claims])
 
   const {
     register,
@@ -224,6 +243,26 @@ export const ClaimsPage = ({ data, onNavigate }: ClaimsPageProps) => {
           </>
         )}
       </section>
+
+      {!isInitialLoading && data.claims.length > 0 ? (
+        <Card>
+          <CardHeader
+            title="청구 상태 파이프라인"
+            subtitle="요청부터 승인·거절까지 상태별 건수와 예상 금액을 한눈에 봅니다."
+          />
+          <div className="stack-sm">
+            {statusBreakdown.map((row) => (
+              <div key={row.status} style={PIPELINE_ROW_STYLE}>
+                <Badge tone={STATUS_TONE[row.status]}>{row.status}</Badge>
+                <strong aria-label={`${row.status} ${row.count}건`}>{row.count}건</strong>
+                <span style={PIPELINE_META_STYLE}>
+                  {formatRate(row.share)} · {formatWon(row.totalAmount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      ) : null}
 
       <div className="grid-2">
         <Card>
