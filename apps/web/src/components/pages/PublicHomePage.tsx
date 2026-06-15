@@ -834,6 +834,12 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
                   {publicFooterSupportLink.label}
                 </a>
               </li>
+              <li>
+                {/* 디자인 시스템 가이드 — 본문 내비가 아닌 푸터에만 노출하는 보조 링크. */}
+                <a className="public-footer-link" href="/design">
+                  디자인 시스템
+                </a>
+              </li>
             </ul>
           </nav>
         </div>

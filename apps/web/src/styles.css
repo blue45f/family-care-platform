@@ -1130,7 +1130,37 @@ svg {
   font-weight: var(--weight-semibold);
   cursor: pointer;
   text-decoration: underline;
-  padding: 0;
+  /* UX: give the inline text button a real (≈32px) tap/focus area without
+     shifting layout. Negative inline margins keep the baseline position the
+     same while widening the hit target on touch. */
+  min-height: 2rem;
+  padding: var(--space-1) var(--space-2);
+  margin-inline: calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+  border-radius: var(--radius-sm);
+}
+.inline-action:hover {
+  background: color-mix(in oklch, currentColor 10%, transparent);
+}
+
+/* UX: loading feedback reads as an in-progress STATE (not just static text)
+   via a calm pulsing marker, reusing the splash-dot motion language. Fully
+   reset under reduced-motion. Additive — only .feedback-loading opts in. */
+.feedback-loading {
+  align-items: center;
+}
+.feedback-loading::before {
+  content: '';
+  flex: none;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  animation: auth-splash-pulse 1.1s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .feedback-loading::before {
+    animation: none;
+  }
 }
 
 /* =============================================================== Layout */
