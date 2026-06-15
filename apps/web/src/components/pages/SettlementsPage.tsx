@@ -6,6 +6,7 @@ import { settlementFormSchema, type SettlementFormValues } from '../../domains/s
 import { formatWon, roundMoney } from '../../utils'
 import { RouteField } from '../common/RouteField'
 import {
+  Badge,
   Button,
   Card,
   CardHeader,
@@ -17,6 +18,8 @@ import {
   Table,
   type TableColumn,
 } from '../ui'
+
+import { buildSettlementBreakdown, type SettlementBreakdownRow } from './operationsBreakdown'
 
 import type { AppRoute } from '../../routeConfig'
 import type { PlatformData } from '../../state/usePlatformData'
@@ -74,6 +77,9 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
     [settlements.length, totalSettlement]
   )
 
+  // 가족(대상자)별 정산 합계 — 어느 가구에 얼마가 쌓였는지 한눈에 본다.
+  const breakdown = useMemo(() => buildSettlementBreakdown(settlements), [settlements])
+
   const isInitialLoading = data.loading && settlements.length === 0
 
   const columns: TableColumn<Settlement>[] = [
@@ -103,6 +109,36 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
       numeric: true,
       cell: (row) => (
         <strong aria-label={`정산 합계 ${formatWon(row.totalAmount)}`}>
+          {formatWon(row.totalAmount)}
+        </strong>
+      ),
+    },
+  ]
+
+  const breakdownColumns: TableColumn<SettlementBreakdownRow>[] = [
+    {
+      key: 'recipient',
+      header: '대상자',
+      cell: (row) => <span className="cell-strong">{row.recipient}</span>,
+    },
+    {
+      key: 'count',
+      header: '정산 건수',
+      numeric: true,
+      cell: (row) => `${row.count}건`,
+    },
+    {
+      key: 'hours',
+      header: '돌봄 시간',
+      numeric: true,
+      cell: (row) => `${row.totalHours}시간`,
+    },
+    {
+      key: 'amount',
+      header: '정산 합계',
+      numeric: true,
+      cell: (row) => (
+        <strong aria-label={`${row.recipient} 정산 합계 ${formatWon(row.totalAmount)}`}>
           {formatWon(row.totalAmount)}
         </strong>
       ),
@@ -289,6 +325,26 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
           )}
         </Card>
       </div>
+
+      {!isInitialLoading && breakdown.length > 0 ? (
+        <Card>
+          <CardHeader
+            title="가족별 정산 요약"
+            subtitle="대상자(가구)별로 정산 건수와 합계를 모아 보여줍니다."
+            action={
+              <Badge tone="accent" plain>
+                {breakdown.length}가구
+              </Badge>
+            }
+          />
+          <Table
+            caption="가족별 정산 요약"
+            columns={breakdownColumns}
+            rows={breakdown}
+            rowKey={(row) => row.recipient}
+          />
+        </Card>
+      ) : null}
     </div>
   )
 }

@@ -28,6 +28,8 @@ import {
   Textarea,
 } from '../ui'
 
+import { buildCaregiverWorkload, type CaregiverWorkloadRow } from './operationsBreakdown'
+
 import type { PlatformData } from '../../state/usePlatformData'
 import type { CareSchedule, ScheduleStatus } from '../../types'
 
@@ -118,6 +120,9 @@ export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
     () => new Set(data.schedules.map((schedule) => schedule.caregiver)).size,
     [data.schedules]
   )
+
+  // 담당자별 업무량(취소 제외 유효 일정·완료·예정 시간) — 배정 균형 점검용.
+  const caregiverWorkload = useMemo(() => buildCaregiverWorkload(data.schedules), [data.schedules])
 
   const onValid = handleSubmit(async (values) => {
     if (isBusy) {
@@ -223,6 +228,32 @@ export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
           복제
         </Button>
       ),
+    },
+  ]
+
+  const workloadColumns: TableColumn<CaregiverWorkloadRow>[] = [
+    {
+      key: 'caregiver',
+      header: '담당자',
+      cell: (row) => <strong>{row.caregiver}</strong>,
+    },
+    {
+      key: 'visits',
+      header: '담당 일정',
+      numeric: true,
+      cell: (row) => `${row.visitCount}건`,
+    },
+    {
+      key: 'completed',
+      header: '완료',
+      numeric: true,
+      cell: (row) => `${row.completedCount}건`,
+    },
+    {
+      key: 'hours',
+      header: '예정 시간',
+      numeric: true,
+      cell: (row) => `${row.totalHours}시간`,
     },
   ]
 
@@ -458,6 +489,26 @@ export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
           </form>
         </Card>
       </div>
+
+      {!isInitialLoading && caregiverWorkload.length > 0 ? (
+        <Card>
+          <CardHeader
+            title="담당자별 업무량"
+            subtitle="취소를 제외한 담당 일정과 예정 시간을 모아 배정 균형을 확인합니다."
+            action={
+              <Badge tone="accent" plain>
+                {caregiverWorkload.length}명
+              </Badge>
+            }
+          />
+          <Table
+            caption="담당자별 업무량"
+            columns={workloadColumns}
+            rows={caregiverWorkload}
+            rowKey={(row) => row.caregiver}
+          />
+        </Card>
+      ) : null}
     </div>
   )
 }
