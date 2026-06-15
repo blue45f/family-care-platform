@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { type CSSProperties, type ReactNode, useEffect } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -96,7 +96,7 @@ const PlanCard = ({ plan, submitPlan, isSaving, isReadOnly }: PlanCardProps): Re
     reset,
     formState: { errors, isValid },
   } = useForm<RevenuePlanFormValues>({
-    resolver: zodResolver(revenuePlanFormSchema),
+    resolver: standardSchemaResolver(revenuePlanFormSchema),
     defaultValues: plan,
     mode: 'onChange',
   })

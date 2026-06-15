@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -83,7 +83,7 @@ export const ClaimsPage = ({ data, onNavigate }: ClaimsPageProps) => {
     reset,
     formState: { isValid, errors },
   } = useForm<ClaimFormValues>({
-    resolver: zodResolver(claimFormSchema),
+    resolver: standardSchemaResolver(claimFormSchema),
     // claimType은 화면에 노출하지 않지만 API 검증을 위해 기본값으로 유지한다(기존 동작 보존).
     defaultValues: data.defaultClaimValues,
     mode: 'onChange',

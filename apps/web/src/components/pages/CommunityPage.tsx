@@ -1,5 +1,5 @@
 import { COMMUNITY_ATTACHMENT_MAX_COUNT, type CommunityAttachmentInput } from '@family-care/shared'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -107,7 +107,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
     reset,
     formState: { errors, isValid },
   } = useForm<CommunityPostFormValues>({
-    resolver: zodResolver(communityPostFormSchema),
+    resolver: standardSchemaResolver(communityPostFormSchema),
     defaultValues: { category: '정보공유', title: '', body: '' },
     mode: 'onChange',
   })

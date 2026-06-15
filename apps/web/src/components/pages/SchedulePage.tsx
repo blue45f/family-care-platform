@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { type CSSProperties, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -90,7 +90,7 @@ export const SchedulePage = ({ data, onNavigate }: SchedulePageProps) => {
     reset,
     formState: { isValid, errors },
   } = useForm<ScheduleFormValues>({
-    resolver: zodResolver(scheduleFormSchema),
+    resolver: standardSchemaResolver(scheduleFormSchema),
     defaultValues: data.defaultScheduleValues,
     mode: 'onChange',
   })
