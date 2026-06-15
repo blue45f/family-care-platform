@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
@@ -43,7 +43,7 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
     control,
     formState: { isValid, errors },
   } = useForm<SettlementFormValues>({
-    resolver: zodResolver(settlementFormSchema),
+    resolver: standardSchemaResolver(settlementFormSchema),
     defaultValues: defaultSettlementValues,
     mode: 'onChange',
   })

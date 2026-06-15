@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 
@@ -60,7 +60,7 @@ export const CarePage = ({ data, onNavigate }: CarePageProps) => {
     reset,
     formState: { isValid, errors },
   } = useForm<CareLogFormValues>({
-    resolver: zodResolver(careLogFormSchema),
+    resolver: standardSchemaResolver(careLogFormSchema),
     defaultValues: data.defaultCareLogValues,
     mode: 'onChange',
   })
