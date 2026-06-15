@@ -31,7 +31,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   private handleGoHome = (): void => {
     if (typeof window !== 'undefined') {
-      window.location.assign('/')
+      globalThis.location.assign('/')
     }
   }
 

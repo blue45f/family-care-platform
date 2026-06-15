@@ -205,7 +205,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
 
   // 폴링: 탭이 보일 때만 목록·활성 대화를 조용히 갱신한다(실패해도 기존 화면 유지).
   useEffect(() => {
-    const timer = window.setInterval(() => {
+    const timer = globalThis.setInterval(() => {
       if (document.hidden) {
         return
       }
@@ -214,7 +214,7 @@ export const MessagesPage = ({ onNavigate }: MessagesPageProps) => {
         void openConversation(activePartnerId, { silent: true })
       }
     }, POLL_INTERVAL_MS)
-    return () => window.clearInterval(timer)
+    return () => globalThis.clearInterval(timer)
   }, [activePartnerId, loadConversations, openConversation])
 
   // 새 메시지가 붙으면 로그를 맨 아래로 내린다.

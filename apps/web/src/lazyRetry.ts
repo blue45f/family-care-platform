@@ -25,7 +25,7 @@ export const retryImport = async <TModule>(factory: () => Promise<TModule>): Pro
   } catch (error) {
     if (!sessionStorage.getItem(CHUNK_RETRY_KEY)) {
       sessionStorage.setItem(CHUNK_RETRY_KEY, '1')
-      window.location.reload()
+      globalThis.location.reload()
       return new Promise<never>(() => {})
     }
     throw error

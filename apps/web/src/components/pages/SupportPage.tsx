@@ -131,7 +131,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
 
   // 폴링: 탭이 보일 때만 목록·활성 상담을 조용히 갱신한다(실패해도 기존 화면 유지).
   useEffect(() => {
-    const timer = window.setInterval(() => {
+    const timer = globalThis.setInterval(() => {
       if (document.hidden) {
         return
       }
@@ -140,7 +140,7 @@ export const SupportPage = ({ onNavigate }: SupportPageProps) => {
         void openThread(activeThreadId, { silent: true })
       }
     }, POLL_INTERVAL_MS)
-    return () => window.clearInterval(timer)
+    return () => globalThis.clearInterval(timer)
   }, [activeThreadId, loadThreads, openThread])
 
   useEffect(() => {

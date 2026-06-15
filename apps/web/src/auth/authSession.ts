@@ -11,7 +11,7 @@ export const readStoredToken = (): string | null => {
     return null
   }
   try {
-    return window.localStorage.getItem(TOKEN_STORAGE_KEY)
+    return globalThis.localStorage.getItem(TOKEN_STORAGE_KEY)
   } catch {
     return null
   }
@@ -23,9 +23,9 @@ export const writeStoredToken = (token: string | null) => {
   }
   try {
     if (token) {
-      window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
+      globalThis.localStorage.setItem(TOKEN_STORAGE_KEY, token)
     } else {
-      window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+      globalThis.localStorage.removeItem(TOKEN_STORAGE_KEY)
     }
   } catch {
     // localStorage 접근 불가(시크릿 모드 등)는 무시한다. 세션 한정으로 동작.

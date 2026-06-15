@@ -6,7 +6,7 @@ import { type AppRoute, resolveRouteResult, type ResolveRouteResult } from './ro
  * 주입 가능한 어댑터를 받으므로, jsdom 없이(node 환경) 단위 테스트할 수 있다.
  */
 
-/** `window.history`에서 라우터가 실제로 쓰는 부분만 추린 최소 인터페이스. */
+/** `globalThis.history`에서 라우터가 실제로 쓰는 부분만 추린 최소 인터페이스. */
 export type HistoryLike = {
   pushState: (data: unknown, unused: string, url?: string | null) => void
   replaceState: (data: unknown, unused: string, url?: string | null) => void

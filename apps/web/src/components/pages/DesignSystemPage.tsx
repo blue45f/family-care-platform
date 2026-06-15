@@ -226,7 +226,7 @@ export const DesignSystemPage = ({ onBack }: { onBack?: () => void }) => {
       return
     }
     if (typeof window !== 'undefined') {
-      window.location.assign('/')
+      globalThis.location.assign('/')
     }
   }
 

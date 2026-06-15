@@ -537,7 +537,7 @@ const readTermsConsentState = (): TermsConsentState => {
   }
 
   try {
-    const raw = window.localStorage.getItem(TERMS_CONSENT_STATUS_STORAGE)
+    const raw = globalThis.localStorage.getItem(TERMS_CONSENT_STATUS_STORAGE)
     if (!raw) {
       return { agreedIds: [] }
     }
@@ -559,7 +559,7 @@ const readCommunityActionLog = (): CommunityActionLog[] => {
   }
 
   try {
-    const raw = window.localStorage.getItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
+    const raw = globalThis.localStorage.getItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
     if (!raw) {
       return []
     }
@@ -614,7 +614,7 @@ const readLikedThreads = (): string[] => {
   }
 
   try {
-    const raw = window.localStorage.getItem(COMMUNITY_LIKE_STORAGE)
+    const raw = globalThis.localStorage.getItem(COMMUNITY_LIKE_STORAGE)
     return raw ? normalizeStringArray(JSON.parse(raw)) : []
   } catch {
     return []
@@ -627,7 +627,7 @@ const readBookmarkedThreads = (): string[] => {
   }
 
   try {
-    const raw = window.localStorage.getItem(COMMUNITY_BOOKMARK_STORAGE)
+    const raw = globalThis.localStorage.getItem(COMMUNITY_BOOKMARK_STORAGE)
     return raw ? normalizeStringArray(JSON.parse(raw)) : []
   } catch {
     return []
@@ -640,7 +640,7 @@ const readCommunityThreads = (): CommunityThread[] => {
   }
 
   try {
-    const raw = window.localStorage.getItem(COMMUNITY_DEMO_STORAGE)
+    const raw = globalThis.localStorage.getItem(COMMUNITY_DEMO_STORAGE)
     if (!raw) {
       return cloneSeedThreads()
     }
@@ -897,7 +897,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     }
 
     try {
-      window.localStorage.setItem(COMMUNITY_DEMO_STORAGE, JSON.stringify(threads))
+      globalThis.localStorage.setItem(COMMUNITY_DEMO_STORAGE, JSON.stringify(threads))
     } catch {
       // ignore
     }
@@ -908,7 +908,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
     try {
-      window.localStorage.setItem(COMMUNITY_ACTIVITY_LOG_STORAGE, JSON.stringify(threadActionLogs))
+      globalThis.localStorage.setItem(COMMUNITY_ACTIVITY_LOG_STORAGE, JSON.stringify(threadActionLogs))
     } catch {
       // ignore
     }
@@ -919,7 +919,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
     try {
-      window.localStorage.setItem(COMMUNITY_LIKE_STORAGE, JSON.stringify(next))
+      globalThis.localStorage.setItem(COMMUNITY_LIKE_STORAGE, JSON.stringify(next))
     } catch {
       // ignore storage failures
     }
@@ -930,7 +930,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
     try {
-      window.localStorage.setItem(COMMUNITY_BOOKMARK_STORAGE, JSON.stringify(next))
+      globalThis.localStorage.setItem(COMMUNITY_BOOKMARK_STORAGE, JSON.stringify(next))
     } catch {
       // ignore storage failures
     }
@@ -942,9 +942,9 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
     if (toastTimer.current) {
-      window.clearTimeout(toastTimer.current)
+      globalThis.clearTimeout(toastTimer.current)
     }
-    toastTimer.current = window.setTimeout(() => setFeedbackMessage(''), 1600)
+    toastTimer.current = globalThis.setTimeout(() => setFeedbackMessage(''), 1600)
   }
 
   const appendActionLog = (
@@ -1347,8 +1347,8 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
     setSortMode('latest')
     if (typeof window !== 'undefined') {
       try {
-        window.localStorage.removeItem(COMMUNITY_DEMO_STORAGE)
-        window.localStorage.removeItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
+        globalThis.localStorage.removeItem(COMMUNITY_DEMO_STORAGE)
+        globalThis.localStorage.removeItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
       } catch {
         // ignore
       }
@@ -1363,7 +1363,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
 
     return () => {
       if (toastTimer.current) {
-        window.clearTimeout(toastTimer.current)
+        globalThis.clearTimeout(toastTimer.current)
       }
     }
   }, [feedbackMessage])
@@ -1371,7 +1371,7 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
   useEffect(
     () => () => {
       if (toastTimer.current) {
-        window.clearTimeout(toastTimer.current)
+        globalThis.clearTimeout(toastTimer.current)
       }
     },
     []

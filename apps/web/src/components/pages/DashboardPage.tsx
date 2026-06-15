@@ -27,7 +27,7 @@ const isDashboardOnboardingDismissed = () => {
   }
 
   try {
-    return window.localStorage.getItem(DASHBOARD_ONBOARDING_KEY) === '1'
+    return globalThis.localStorage.getItem(DASHBOARD_ONBOARDING_KEY) === '1'
   } catch {
     return false
   }
@@ -39,7 +39,7 @@ const dismissDashboardOnboarding = () => {
   }
 
   try {
-    window.localStorage.setItem(DASHBOARD_ONBOARDING_KEY, '1')
+    globalThis.localStorage.setItem(DASHBOARD_ONBOARDING_KEY, '1')
   } catch {
     // storage unavailable: degrade gracefully
   }

@@ -68,19 +68,19 @@ export const AppShell = ({
         closeDrawer()
       }
     }
-    window.addEventListener('keydown', onKey)
+    globalThis.addEventListener('keydown', onKey)
     return () => {
       body.style.overflow = prevOverflow
-      window.removeEventListener('keydown', onKey)
+      globalThis.removeEventListener('keydown', onKey)
     }
   }, [closeDrawer, drawerOpen])
 
   // 데스크톱으로 넓어지면 드로어 상태를 정리한다(잔여 스크롤 락 방지).
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) {
+    if (typeof window === 'undefined' || !globalThis.matchMedia) {
       return
     }
-    const mq = window.matchMedia(DESKTOP_QUERY)
+    const mq = globalThis.matchMedia(DESKTOP_QUERY)
     const sync = () => {
       if (mq.matches) {
         setDrawerOpen(false)

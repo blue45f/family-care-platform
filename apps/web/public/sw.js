@@ -1,21 +1,21 @@
 const CACHE_NAME = 'family-care-platform-pwa-v2'
 
-self.addEventListener('install', () => {
-  self.skipWaiting()
+globalThis.addEventListener('install', () => {
+  globalThis.skipWaiting()
 })
 
-self.addEventListener('activate', (event) => {
+globalThis.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
         Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key)))
       )
-      .then(() => self.clients.claim())
+      .then(() => globalThis.clients.claim())
   )
 })
 
-self.addEventListener('fetch', (event) => {
+globalThis.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.mode === 'navigate') {
     event.respondWith(
@@ -36,7 +36,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   if (
     request.method === 'GET' &&
-    url.origin === self.location.origin &&
+    url.origin === globalThis.location.origin &&
     url.pathname.startsWith('/assets/')
   ) {
     event.respondWith(

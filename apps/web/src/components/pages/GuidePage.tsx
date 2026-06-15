@@ -246,7 +246,7 @@ const parseChecklistState = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(GUIDE_CHECKLIST_STORAGE_KEY)
+    const raw = globalThis.localStorage.getItem(GUIDE_CHECKLIST_STORAGE_KEY)
     if (!raw) {
       return []
     }
@@ -274,7 +274,7 @@ const useFirstDayChecklist = () => {
     if (typeof window === 'undefined') {
       return
     }
-    window.localStorage.setItem(GUIDE_CHECKLIST_STORAGE_KEY, JSON.stringify(checkedSteps))
+    globalThis.localStorage.setItem(GUIDE_CHECKLIST_STORAGE_KEY, JSON.stringify(checkedSteps))
   }, [checkedSteps])
 
   const toggleStep = (stepIndex: number, checked: boolean) => {

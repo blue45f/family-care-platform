@@ -287,7 +287,7 @@ const parseProgress = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(TUTORIAL_PROGRESS_KEY)
+    const raw = globalThis.localStorage.getItem(TUTORIAL_PROGRESS_KEY)
     if (!raw) {
       return []
     }
@@ -310,7 +310,7 @@ const useTutorialProgress = () => {
     if (typeof window === 'undefined') {
       return
     }
-    window.localStorage.setItem(TUTORIAL_PROGRESS_KEY, JSON.stringify(checkedSteps))
+    globalThis.localStorage.setItem(TUTORIAL_PROGRESS_KEY, JSON.stringify(checkedSteps))
   }, [checkedSteps])
 
   const toggleStep = (stepIndex: number, checked: boolean) => {
@@ -365,7 +365,7 @@ const readTutorialActionLog = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(TUTORIAL_ACTION_LOG_KEY)
+    const raw = globalThis.localStorage.getItem(TUTORIAL_ACTION_LOG_KEY)
     if (!raw) {
       return [] as TutorialActionLog[]
     }
@@ -420,7 +420,7 @@ const readCommunityBlockedCount = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
+    const raw = globalThis.localStorage.getItem(COMMUNITY_ACTIVITY_LOG_STORAGE)
     if (!raw) {
       return 0
     }
@@ -463,7 +463,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
       return
     }
     try {
-      window.localStorage.setItem(TUTORIAL_ACTION_LOG_KEY, JSON.stringify(actionLogs))
+      globalThis.localStorage.setItem(TUTORIAL_ACTION_LOG_KEY, JSON.stringify(actionLogs))
     } catch {
       // ignore storage failures
     }
@@ -475,8 +475,8 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
     }
 
     const refreshCommunityBlocks = () => setCommunityBlockedCount(readCommunityBlockedCount())
-    window.addEventListener('storage', refreshCommunityBlocks)
-    return () => window.removeEventListener('storage', refreshCommunityBlocks)
+    globalThis.addEventListener('storage', refreshCommunityBlocks)
+    return () => globalThis.removeEventListener('storage', refreshCommunityBlocks)
   }, [])
 
   const routeVisitCount = useMemo(() => {
@@ -665,14 +665,14 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
   )
 
   const copySummary = async () => {
-    if (typeof window === 'undefined' || !window.navigator || !window.navigator.clipboard) {
+    if (typeof window === 'undefined' || !globalThis.navigator || !globalThis.navigator.clipboard) {
       setCopyResult('브라우저에서 클립보드를 지원하지 않습니다.')
       appendActionLog('copy-summary', '요약 복사 실패', '클립보드 미지원')
       return
     }
 
     try {
-      await window.navigator.clipboard.writeText(summaryText)
+      await globalThis.navigator.clipboard.writeText(summaryText)
       setCopyResult('요약 내용을 복사했습니다.')
       appendActionLog('copy-summary', '요약 복사 완료', `${progressLabel}`)
     } catch {
@@ -681,10 +681,10 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
     }
 
     if (copyResultTimer.current) {
-      window.clearTimeout(copyResultTimer.current)
+      globalThis.clearTimeout(copyResultTimer.current)
     }
 
-    copyResultTimer.current = window.setTimeout(() => {
+    copyResultTimer.current = globalThis.setTimeout(() => {
       setCopyResult('')
     }, 1600)
   }
@@ -692,7 +692,7 @@ export const PublicTutorialPage = ({ onNavigate }: TutorialPageProps) => {
   useEffect(() => {
     return () => {
       if (copyResultTimer.current) {
-        window.clearTimeout(copyResultTimer.current)
+        globalThis.clearTimeout(copyResultTimer.current)
       }
     }
   }, [])

@@ -63,7 +63,7 @@ export const MembersPage = ({ onNavigate }: MembersPageProps) => {
   const [loading, setLoading] = useState(true)
   const [updatingId, setUpdatingId] = useState<number | null>(null)
   const [wordBusyId, setWordBusyId] = useState<number | 'new' | null>(null)
-  // window.confirm 금지 컨벤션 — 정지/해제/탈퇴는 접근성 확인 모달로 처리한다.
+  // globalThis.confirm 금지 컨벤션 — 정지/해제/탈퇴는 접근성 확인 모달로 처리한다.
   const [confirmAction, setConfirmAction] = useState<MemberConfirmAction | null>(null)
   const [wordDraft, setWordDraft] = useState('')
   const [editingWordId, setEditingWordId] = useState<number | null>(null)

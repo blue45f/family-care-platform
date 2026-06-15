@@ -157,7 +157,7 @@ const readDemoLeadDraft = () => {
   }
 
   try {
-    const raw = window.localStorage.getItem(DEMO_LEAD_DRAFT_KEY)
+    const raw = globalThis.localStorage.getItem(DEMO_LEAD_DRAFT_KEY)
     if (!raw) {
       return DEMO_LEAD_FALLBACK
     }
@@ -236,7 +236,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
     }
 
     try {
-      window.localStorage.setItem(DEMO_LEAD_DRAFT_KEY, JSON.stringify(demoLead))
+      globalThis.localStorage.setItem(DEMO_LEAD_DRAFT_KEY, JSON.stringify(demoLead))
     } catch {
       // storage unavailable: ignore persistence gracefully
     }
@@ -292,7 +292,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
     setLeadErrors({})
     if (draftStateAvailable) {
       try {
-        window.localStorage.removeItem(DEMO_LEAD_DRAFT_KEY)
+        globalThis.localStorage.removeItem(DEMO_LEAD_DRAFT_KEY)
       } catch {
         // ignore
       }
@@ -336,7 +336,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
     setLeadErrors({})
     if (draftStateAvailable) {
       try {
-        window.localStorage.removeItem(DEMO_LEAD_DRAFT_KEY)
+        globalThis.localStorage.removeItem(DEMO_LEAD_DRAFT_KEY)
       } catch {
         // ignore
       }

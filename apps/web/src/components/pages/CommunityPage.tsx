@@ -97,7 +97,7 @@ export const CommunityPage = ({ onNavigate }: CommunityPageProps) => {
   const [replyTo, setReplyTo] = useState<CommunityComment | null>(null)
   const [commentBusy, setCommentBusy] = useState(false)
   const [actionBusy, setActionBusy] = useState(false)
-  // window.confirm 금지 컨벤션 — 글 삭제는 2단계 인라인 확인으로 처리한다.
+  // globalThis.confirm 금지 컨벤션 — 글 삭제는 2단계 인라인 확인으로 처리한다.
   const [confirmingPostDelete, setConfirmingPostDelete] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
