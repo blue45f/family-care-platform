@@ -6,3 +6,8 @@ dist/
 data/
 **/data/
 pnpm-lock.yaml
+
+# 벤더링된 단일 파일 위젯(DeskCloud·SurveyDesk) — 원본 포맷을 그대로 유지하기 위해
+# prettier format:check 대상에서 제외한다.
+**/components/deskcloud/
+**/components/feedback/

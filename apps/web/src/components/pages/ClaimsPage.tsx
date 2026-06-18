@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { type CSSProperties } from 'react'
+import { useMemo, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { claimFormSchema, type ClaimFormValues } from '../../domains/claim/schema'

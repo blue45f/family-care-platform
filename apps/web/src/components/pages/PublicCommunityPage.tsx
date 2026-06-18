@@ -908,7 +908,10 @@ export const PublicCommunityPage = ({ onNavigate }: PublicCommunityPageProps) =>
       return
     }
     try {
-      globalThis.localStorage.setItem(COMMUNITY_ACTIVITY_LOG_STORAGE, JSON.stringify(threadActionLogs))
+      globalThis.localStorage.setItem(
+        COMMUNITY_ACTIVITY_LOG_STORAGE,
+        JSON.stringify(threadActionLogs)
+      )
     } catch {
       // ignore
     }

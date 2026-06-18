@@ -8,6 +8,7 @@ import { queryClient } from './app/queryClient'
 import { AuthProvider } from './auth/AuthProvider'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { RouteFallback } from './components/common/RouteFallback'
+import { DeskCloudWidgets } from './components/deskcloud/DeskCloudWidgets'
 import { FeedbackWidget } from './components/feedback/FeedbackWidget'
 import { validateWebEnv } from './infrastructure/env'
 import { lazyRetry } from './lazyRetry'
@@ -45,11 +46,11 @@ createRoot(document.getElementById('root')!).render(
             {/* SurveyDesk 피드백 위젯: endpoint(env)가 설정된 경우에만 마운트한다.
                 미설정(기본값)이면 렌더하지 않아 앱에 전혀 영향을 주지 않는다. */}
             {import.meta.env.VITE_SURVEYDESK_URL && (
-              <FeedbackWidget
-                appId="familycare"
-                endpoint={import.meta.env.VITE_SURVEYDESK_URL}
-              />
+              <FeedbackWidget appId="familycare" endpoint={import.meta.env.VITE_SURVEYDESK_URL} />
             )}
+            {/* DeskCloud 위젯(Changelog·Notify·Search·Chat·Media): 각 VITE_*_URL 이
+                설정된 경우에만 해당 위젯이 마운트된다. 미설정이면 아무것도 렌더하지 않는다. */}
+            <DeskCloudWidgets />
           </BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>
