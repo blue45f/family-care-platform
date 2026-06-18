@@ -64,6 +64,16 @@ describe('design tokens', () => {
     expect(ratio).toBeGreaterThanOrEqual(4.5)
   })
 
+  it('작은 글씨/플레이스홀더(--fg-subtle=sand-550)는 주요 표면에서 AA 4.5:1 이상이다', () => {
+    // fg-subtle는 타임스탬프·캡션·플레이스홀더에 두루 쓰인다. 가장 흔한 표면인
+    // surface(sand-50)에서 본문 AA 4.5:1을 만족해야 한다(이전 sand-500은 3.04:1로 미달).
+    const subtle = tokenOklch('--c-sand-550')
+    expect(contrastRatio(subtle, tokenOklch('--c-sand-50'))).toBeGreaterThanOrEqual(4.5)
+    // sunken/hover(sand-150)·app-bg(sand-100)에서도 large-text 3:1을 넉넉히 넘는다.
+    expect(contrastRatio(subtle, tokenOklch('--c-sand-150'))).toBeGreaterThanOrEqual(4.0)
+    expect(contrastRatio(subtle, tokenOklch('--c-sand-100'))).toBeGreaterThanOrEqual(4.4)
+  })
+
   it('포커스 링 색상은 --accent(sage-500)와 동기화되어 있다', () => {
     expect(tokenOklch('--accent-ring')).toEqual(tokenOklch('--c-sage-500'))
   })

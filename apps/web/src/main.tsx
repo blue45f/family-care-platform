@@ -8,7 +8,7 @@ import { queryClient } from './app/queryClient'
 import { AuthProvider } from './auth/AuthProvider'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { RouteFallback } from './components/common/RouteFallback'
-import { DeskCloudWidgets } from './components/deskcloud/DeskCloudWidgets'
+import { DeskSearchPalette } from './components/desk/DeskSearchPalette'
 import { FeedbackWidget } from './components/feedback/FeedbackWidget'
 import { validateWebEnv } from './infrastructure/env'
 import { lazyRetry } from './lazyRetry'
@@ -43,14 +43,15 @@ createRoot(document.getElementById('root')!).render(
               />
               <Route path="*" element={<App />} />
             </Routes>
-            {/* SurveyDesk 피드백 위젯: endpoint(env)가 설정된 경우에만 마운트한다.
+            {/* SurveyDesk 피드백 런처(1차 기능): endpoint(env)가 설정된 경우에만 마운트한다.
                 미설정(기본값)이면 렌더하지 않아 앱에 전혀 영향을 주지 않는다. */}
             {import.meta.env.VITE_SURVEYDESK_URL && (
               <FeedbackWidget appId="familycare" endpoint={import.meta.env.VITE_SURVEYDESK_URL} />
             )}
-            {/* DeskCloud 위젯(Changelog·Notify·Search·Chat·Media): 각 VITE_*_URL 이
-                설정된 경우에만 해당 위젯이 마운트된다. 미설정이면 아무것도 렌더하지 않는다. */}
-            <DeskCloudWidgets />
+            {/* SearchDesk(네이티브 ⌘K 팔레트): VITE_SEARCHDESK_URL 설정 시에만 단축키를
+                등록하고, 결과를 이 앱의 디자인 토큰으로 렌더한다. 미설정이면 무영향.
+                Changelog·Notify 는 각각 가이드/대시보드에 네이티브 카드로 인라인했다. */}
+            <DeskSearchPalette />
           </BrowserRouter>
         </AuthProvider>
       </QueryClientProvider>
