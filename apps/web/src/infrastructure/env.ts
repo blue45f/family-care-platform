@@ -7,24 +7,19 @@ import { z } from 'zod'
 const envSchema = z.object({
   // API 베이스 URL(미설정 시 코드에서 dev/prod 기본값으로 폴백하므로 optional).
   VITE_API_URL: z.string().url('유효한 URL이어야 합니다').optional(),
-  // SurveyDesk 피드백 위젯 엔드포인트(미설정 시 위젯을 마운트하지 않으므로 optional).
+  // SurveyDesk 피드백 런처 엔드포인트(미설정 시 런처를 마운트하지 않으므로 optional).
   VITE_SURVEYDESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
-  // DeskCloud 위젯 엔드포인트 — 각각 설정될 때만 해당 위젯을 마운트(전부 optional).
-  // ChangelogDesk: 변경 이력('What's new') 벨.
+  // DeskCloud 네이티브 연동(@heejun/deskcloud pk_ SDK) — 각 URL 이 설정될 때만 해당
+  // Desk 데이터를 이 앱의 컴포넌트로 렌더한다. 미설정이면 1차 기능으로 폴백(전부 optional).
+  // ChangelogDesk: 가이드 페이지의 '서비스 업데이트' 카드(getWall).
   VITE_CHANGELOGDESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
   VITE_CHANGELOGDESK_PK: z.string().optional(),
-  // NotifyDesk: 알림 인박스 벨.
+  // NotifyDesk: 대시보드의 '최근 알림' 카드(getInbox/markRead, 로그인 한정).
   VITE_NOTIFYDESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
   VITE_NOTIFYDESK_PK: z.string().optional(),
-  // SearchDesk: ⌘K 검색 팔레트.
+  // SearchDesk: 네이티브 ⌘K 검색 팔레트(search).
   VITE_SEARCHDESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
   VITE_SEARCHDESK_PK: z.string().optional(),
-  // ChatDesk: 쪽지·채팅 위젯.
-  VITE_CHATDESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
-  VITE_CHATDESK_PK: z.string().optional(),
-  // MediaDesk: 미디어 업로더·갤러리(플로팅 런처).
-  VITE_MEDIADESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
-  VITE_MEDIADESK_PK: z.string().optional(),
 })
 
 export function validateWebEnv(env: ImportMetaEnv = import.meta.env): void {

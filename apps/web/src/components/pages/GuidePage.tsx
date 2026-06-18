@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 import { routeDefs } from '../../routeConfig'
+import { DeskChangelogCard } from '../desk/DeskChangelogCard'
 import { Badge, Button, Card, CardHeader, Icon, PageHeader } from '../ui'
 
 import type { AppRoute, PublicNavigateState } from '../../routeConfig'
@@ -547,6 +548,10 @@ export const GuidePage = ({ onNavigate }: GuidePageProps) => {
           })}
         </div>
       </Card>
+
+      {/* ChangelogDesk(네이티브) — VITE_CHANGELOGDESK_URL 설정 시에만 발행 변경 이력을
+          이 앱의 카드로 렌더한다. 미설정/빈 이력이면 컴포넌트가 null 을 반환해 숨겨진다. */}
+      <DeskChangelogCard />
     </div>
   )
 }

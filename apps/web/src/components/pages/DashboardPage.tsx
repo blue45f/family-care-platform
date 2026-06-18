@@ -1,7 +1,10 @@
 import { useState } from 'react'
 
+import { useAuth } from '../../auth/useAuth'
 import { managementRoutes, routeDefs, type AppRoute } from '../../routeConfig'
 import { claimStatusClass, formatWon } from '../../utils'
+import { deskEnabled } from '../desk/deskClients'
+import { DeskNotificationsCard } from '../desk/DeskNotificationsCard'
 import {
   Badge,
   type BadgeTone,
@@ -74,6 +77,10 @@ const greetByHour = () => {
 }
 
 export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
+  const { user } = useAuth()
+  // NotifyDesk(네이티브) 알림 카드: VITE_NOTIFYDESK_URL 가 설정되고 로그인 사용자가
+  // 있을 때만 렌더한다. recipientId 는 NotifyDesk 의 테넌트측 사용자 식별자다.
+  const notifyRecipientId = deskEnabled.notify() && user ? String(user.id) : null
   const [showOnboarding, setShowOnboarding] = useState(!isDashboardOnboardingDismissed())
   const recentCare = data.careLogs.slice(0, 5)
   const pendingClaimList = data.claims.filter((claim) => claim.status !== '승인').slice(0, 4)
@@ -318,6 +325,8 @@ export const DashboardPage = ({ data, onNavigate }: DashboardPageProps) => {
         </Card>
 
         <div className="stack">
+          {notifyRecipientId ? <DeskNotificationsCard recipientId={notifyRecipientId} /> : null}
+
           <Card>
             <CardHeader
               title="확인할 보험청구"
