@@ -7,7 +7,10 @@ data/
 **/data/
 pnpm-lock.yaml
 
-# 벤더링된 단일 파일 위젯(DeskCloud·SurveyDesk) — 원본 포맷을 그대로 유지하기 위해
-# prettier format:check 대상에서 제외한다.
-**/components/deskcloud/
+# apps/toss(Granite 미니앱) 빌드 산출물 — 빌드마다 재생성되는 생성물이라 포맷 대상에서 제외.
+**/.granite/
+**/*.ait
+
+# 벤더링된 단일 파일 위젯(SurveyDesk FeedbackWidget) — 원본 포맷을 그대로 유지하기 위해
+# prettier format:check 대상에서 제외한다. (DeskCloud 위젯은 제거됨 — 네이티브 연동은 포맷 대상.)
 **/components/feedback/
