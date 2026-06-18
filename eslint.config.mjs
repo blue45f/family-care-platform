@@ -12,10 +12,11 @@ export default defineConfig(
     '**/*.d.ts',
     '**/*.tsbuildinfo',
     '**/*.config.{js,mjs,cjs,ts}',
-    // 벤더링된 단일 파일 위젯(DeskCloud·SurveyDesk) — 외부 온보딩용으로 복붙해
+    'apps/toss/**',
+    // 벤더링된 단일 파일 위젯(SurveyDesk FeedbackWidget) — 외부 온보딩용으로 복붙해
     // 쓰는 서드파티 성격의 소스라 이 레포의 strict 게이트(jsx-a11y·RC 진단) 대상에서
     // 제외한다. 위젯 소스는 원본 그대로 유지하고 게이트만 우회한다.
-    '**/components/deskcloud/**',
+    // (DeskCloud 위젯은 제거됨 — 네이티브 SDK 연동(components/desk/**)은 strict 게이트 대상.)
     '**/components/feedback/**',
   ]),
 
