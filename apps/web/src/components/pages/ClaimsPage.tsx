@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { useMemo, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { useForm } from 'react-hook-form'
 
 import { claimFormSchema, type ClaimFormValues } from '../../domains/claim/schema'
@@ -16,7 +16,11 @@ import {
   Field,
   Icon,
   Input,
+  ListToolbar,
+  type ListToolbarFilterOption,
+  type ListToolbarSortOption,
   Select,
+  ShareSummaryButton,
   Skeleton,
   Stat,
   Table,
@@ -24,10 +28,26 @@ import {
   PageHeader,
 } from '../ui'
 
-import { buildClaimStatusBreakdown } from './operationsBreakdown'
+import { compareNumbers, compareStrings, filterAndSort } from './listFilters'
+import { buildClaimShareText, buildClaimStatusBreakdown } from './operationsBreakdown'
 
 import type { AppRoute } from '../../routeConfig'
 import type { Claim, ClaimStatus } from '../../types'
+
+// 청구 목록 필터/정렬 상태. '전체'는 상태 필터 미적용을 뜻한다.
+type ClaimStatusFilter = ClaimStatus | '전체'
+type ClaimSort = 'latest' | 'amount-desc' | 'recipient'
+
+const CLAIM_STATUS_FILTERS: ReadonlyArray<ListToolbarFilterOption<ClaimStatusFilter>> = [
+  { value: '전체', label: '전체' },
+  ...claimStatusOptions.map((status) => ({ value: status, label: status })),
+]
+
+const CLAIM_SORTS: ReadonlyArray<ListToolbarSortOption<ClaimSort>> = [
+  { value: 'latest', label: '최근 접수순' },
+  { value: 'amount-desc', label: '청구액 높은순' },
+  { value: 'recipient', label: '대상자 이름순' },
+]
 
 type ClaimsPageProps = {
   data: PlatformData
@@ -92,6 +112,37 @@ const PIPELINE_META_STYLE: CSSProperties = {
 export const ClaimsPage = ({ data, onNavigate }: ClaimsPageProps) => {
   const def = routeDefs['/claims']
   const isInitialLoading = data.loading && data.claims.length === 0
+
+  // 목록 검색·상태 필터·정렬 상태(클라이언트 전용 — 서버 재요청 없음).
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<ClaimStatusFilter>('전체')
+  const [sort, setSort] = useState<ClaimSort>('latest')
+
+  const isFiltering = query.trim() !== '' || statusFilter !== '전체'
+
+  const visibleClaims = useMemo(
+    () =>
+      filterAndSort(data.claims, {
+        search: { query, fields: (claim) => [claim.recipient, claim.hospitalName, claim.note] },
+        predicate: statusFilter === '전체' ? undefined : (claim) => claim.status === statusFilter,
+        compare: (a, b) => {
+          if (sort === 'amount-desc') {
+            return compareNumbers(a.expectedAmount, b.expectedAmount, 'desc') || b.id - a.id
+          }
+          if (sort === 'recipient') {
+            return compareStrings(a.recipient, b.recipient) || b.id - a.id
+          }
+          // latest: 접수일 내림차순 → 동률이면 최신 id 우선.
+          return compareStrings(a.issueDate, b.issueDate, 'desc') || b.id - a.id
+        },
+      }),
+    [data.claims, query, statusFilter, sort]
+  )
+
+  const clearFilters = () => {
+    setQuery('')
+    setStatusFilter('전체')
+  }
 
   // 상태별 청구 파이프라인(요청→검토중→승인→거절). 항상 4개 상태를 보여준다.
   const statusBreakdown = useMemo(() => buildClaimStatusBreakdown(data.claims), [data.claims])
@@ -249,6 +300,11 @@ export const ClaimsPage = ({ data, onNavigate }: ClaimsPageProps) => {
           <CardHeader
             title="청구 상태 파이프라인"
             subtitle="요청부터 승인·거절까지 상태별 건수와 예상 금액을 한눈에 봅니다."
+            action={
+              <ShareSummaryButton title="보험청구 현황" text={buildClaimShareText(data.claims)}>
+                현황 공유
+              </ShareSummaryButton>
+            }
           />
           <div className="stack-sm">
             {statusBreakdown.map((row) => (
@@ -283,12 +339,48 @@ export const ClaimsPage = ({ data, onNavigate }: ClaimsPageProps) => {
               description="오른쪽 양식에서 대상자·기관·청구액을 입력하면 요청부터 승인까지 상태를 한눈에 추적할 수 있습니다."
             />
           ) : (
-            <Table
-              caption="보험청구 목록"
-              columns={columns}
-              rows={data.claims}
-              rowKey={(claim) => String(claim.id)}
-            />
+            <>
+              <ListToolbar
+                searchLabel="청구 검색"
+                searchPlaceholder="대상자·기관·메모로 검색"
+                searchValue={query}
+                onSearchChange={setQuery}
+                filterLabel="청구 상태 필터"
+                filterOptions={CLAIM_STATUS_FILTERS}
+                activeFilter={statusFilter}
+                onFilterChange={setStatusFilter}
+                sortLabel="청구 정렬 기준"
+                sortOptions={CLAIM_SORTS}
+                sortValue={sort}
+                onSortChange={setSort}
+                resultSummary={
+                  isFiltering
+                    ? `전체 ${data.claims.length}건 중 ${visibleClaims.length}건`
+                    : undefined
+                }
+                onClearFilters={isFiltering ? clearFilters : undefined}
+              />
+              {visibleClaims.length === 0 ? (
+                <EmptyState
+                  icon="claims"
+                  title="조건에 맞는 청구가 없습니다"
+                  description="검색어나 상태 필터를 바꾸거나 필터를 초기화해 보세요."
+                  action={
+                    <Button variant="secondary" size="sm" onClick={clearFilters}>
+                      <Icon name="refresh" size={14} />
+                      필터 초기화
+                    </Button>
+                  }
+                />
+              ) : (
+                <Table
+                  caption="보험청구 목록"
+                  columns={columns}
+                  rows={visibleClaims}
+                  rowKey={(claim) => String(claim.id)}
+                />
+              )}
+            </>
           )}
         </Card>
 

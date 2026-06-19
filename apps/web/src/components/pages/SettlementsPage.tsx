@@ -1,5 +1,5 @@
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 
 import { settlementFormSchema, type SettlementFormValues } from '../../domains/settlement/schema'
@@ -12,18 +12,35 @@ import {
   CardHeader,
   EmptyState,
   Icon,
+  ListToolbar,
+  type ListToolbarSortOption,
   PageHeader,
+  ShareSummaryButton,
   Skeleton,
   Stat,
   Table,
   type TableColumn,
 } from '../ui'
 
-import { buildSettlementBreakdown, type SettlementBreakdownRow } from './operationsBreakdown'
+import { compareNumbers, compareStrings, filterAndSort } from './listFilters'
+import {
+  buildSettlementBreakdown,
+  buildSettlementShareText,
+  type SettlementBreakdownRow,
+} from './operationsBreakdown'
 
 import type { AppRoute } from '../../routeConfig'
 import type { PlatformData } from '../../state/usePlatformData'
 import type { Settlement } from '../../types'
+
+// 정산 내역 정렬 옵션(정산은 상태 개념이 없어 검색+정렬만 제공).
+type SettlementSort = 'latest' | 'amount-desc' | 'recipient'
+
+const SETTLEMENT_SORTS: ReadonlyArray<ListToolbarSortOption<SettlementSort>> = [
+  { value: 'latest', label: '최근 정산순' },
+  { value: 'amount-desc', label: '정산액 높은순' },
+  { value: 'recipient', label: '대상자 이름순' },
+]
 
 type SettlementsPageProps = {
   data: PlatformData
@@ -79,6 +96,31 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
 
   // 가족(대상자)별 정산 합계 — 어느 가구에 얼마가 쌓였는지 한눈에 본다.
   const breakdown = useMemo(() => buildSettlementBreakdown(settlements), [settlements])
+
+  // 정산 내역 목록 검색·정렬 상태(클라이언트 전용).
+  const [query, setQuery] = useState('')
+  const [sort, setSort] = useState<SettlementSort>('latest')
+  const isFiltering = query.trim() !== ''
+
+  const visibleSettlements = useMemo(
+    () =>
+      filterAndSort(settlements, {
+        search: { query, fields: (row) => [row.recipient, row.note] },
+        compare: (a, b) => {
+          if (sort === 'amount-desc') {
+            return compareNumbers(a.totalAmount, b.totalAmount, 'desc') || b.id - a.id
+          }
+          if (sort === 'recipient') {
+            return compareStrings(a.recipient, b.recipient) || b.id - a.id
+          }
+          // latest: 정산 날짜 내림차순 → 동률이면 최신 id 우선.
+          return compareStrings(a.date, b.date, 'desc') || b.id - a.id
+        },
+      }),
+    [settlements, query, sort]
+  )
+
+  const clearFilters = () => setQuery('')
 
   const isInitialLoading = data.loading && settlements.length === 0
 
@@ -316,12 +358,44 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
               description="돌봄 시간과 시간당 금액을 입력하면 합계가 바로 계산되어 여기에 모입니다."
             />
           ) : (
-            <Table
-              caption="정산 내역 목록"
-              columns={columns}
-              rows={settlements}
-              rowKey={(row) => String(row.id)}
-            />
+            <>
+              <ListToolbar
+                searchLabel="정산 내역 검색"
+                searchPlaceholder="대상자·메모로 검색"
+                searchValue={query}
+                onSearchChange={setQuery}
+                sortLabel="정산 정렬 기준"
+                sortOptions={SETTLEMENT_SORTS}
+                sortValue={sort}
+                onSortChange={setSort}
+                resultSummary={
+                  isFiltering
+                    ? `전체 ${settlements.length}건 중 ${visibleSettlements.length}건`
+                    : undefined
+                }
+                onClearFilters={isFiltering ? clearFilters : undefined}
+              />
+              {visibleSettlements.length === 0 ? (
+                <EmptyState
+                  icon="settlement"
+                  title="조건에 맞는 정산이 없습니다"
+                  description="검색어를 바꾸거나 검색을 초기화해 보세요."
+                  action={
+                    <Button variant="secondary" size="sm" onClick={clearFilters}>
+                      <Icon name="refresh" size={14} />
+                      검색 초기화
+                    </Button>
+                  }
+                />
+              ) : (
+                <Table
+                  caption="정산 내역 목록"
+                  columns={columns}
+                  rows={visibleSettlements}
+                  rowKey={(row) => String(row.id)}
+                />
+              )}
+            </>
           )}
         </Card>
       </div>
@@ -332,9 +406,24 @@ export const SettlementsPage = ({ data, onNavigate }: SettlementsPageProps) => {
             title="가족별 정산 요약"
             subtitle="대상자(가구)별로 정산 건수와 합계를 모아 보여줍니다."
             action={
-              <Badge tone="accent" plain>
-                {breakdown.length}가구
-              </Badge>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 'var(--space-2)',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Badge tone="accent" plain>
+                  {breakdown.length}가구
+                </Badge>
+                <ShareSummaryButton
+                  title="가족별 정산 요약"
+                  text={buildSettlementShareText(settlements)}
+                >
+                  요약 공유
+                </ShareSummaryButton>
+              </span>
             }
           />
           <Table

@@ -45,3 +45,23 @@ describe('SettlementsPage 가족별 정산 요약', () => {
     expect(markup).toContain('정산 내역이 쌓이기 전입니다')
   })
 })
+
+describe('SettlementsPage 목록 도구막대/공유', () => {
+  it('정산이 있으면 검색·정렬 도구막대를 렌더한다', () => {
+    const markup = render([settlement({ id: 1 })])
+    expect(markup).toContain('대상자·메모로 검색')
+    expect(markup).toContain('정산액 높은순')
+    expect(markup).toContain('최근 정산순')
+  })
+
+  it('가족별 요약 카드에 요약 공유 버튼을 노출한다', () => {
+    const markup = render([settlement({ id: 1 })])
+    expect(markup).toContain('요약 공유')
+  })
+
+  it('정산이 없으면 도구막대/공유 버튼을 렌더하지 않는다', () => {
+    const markup = render([])
+    expect(markup).not.toContain('대상자·메모로 검색')
+    expect(markup).not.toContain('요약 공유')
+  })
+})

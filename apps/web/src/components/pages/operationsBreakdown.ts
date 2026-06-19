@@ -2,6 +2,8 @@
 // dashboardViewModel.ts와 동일하게 React에 의존하지 않는 순수 함수로 두어
 // 단위 테스트가 쉽고 SSR 렌더에도 안전하다.
 
+import { formatWon } from '../../utils'
+
 import type { Claim, ClaimStatus, CareSchedule, Settlement } from '../../types'
 
 // ── 정산: 대상자(가족)별 집계 ────────────────────────────────────────────────
@@ -134,4 +136,39 @@ export const buildCaregiverWorkload = (schedules: CareSchedule[]): CaregiverWork
   return [...byCaregiver.values()]
     .map((row) => ({ ...row, totalHours: Number(row.totalHours.toFixed(1)) }))
     .sort((a, b) => b.visitCount - a.visitCount || a.caregiver.localeCompare(b.caregiver))
+}
+
+// ── 공유: 사람이 읽을 요약 텍스트 ───────────────────────────────────────────
+// 운영자가 가족/관리자에게 한 줄로 전달할 수 있게 정산·청구 요약을 평문으로 만든다.
+// 공유 유틸(shareOrCopy)의 text/클립보드 폴백에 그대로 쓰인다(순수 함수, UI 비의존).
+
+/**
+ * 가족별 정산 요약을 평문으로 만든다.
+ * 예: "가족별 정산 요약 (2가구)\n- 김순자: 3건 · 90,000원\n- 이정호: 1건 · 45,000원\n합계 135,000원"
+ */
+export const buildSettlementShareText = (settlements: Settlement[]): string => {
+  const rows = buildSettlementBreakdown(settlements)
+  if (rows.length === 0) {
+    return '아직 정산 내역이 없습니다.'
+  }
+  const lines = rows.map(
+    (row) => `- ${row.recipient}: ${row.count}건 · ${formatWon(row.totalAmount)}`
+  )
+  const total = rows.reduce((sum, row) => sum + row.totalAmount, 0)
+  return [`가족별 정산 요약 (${rows.length}가구)`, ...lines, `합계 ${formatWon(total)}`].join('\n')
+}
+
+/**
+ * 청구 상태 파이프라인 요약을 평문으로 만든다.
+ * 예: "보험청구 현황 (전체 5건)\n- 요청: 2건 · 100,000원\n…\n승인률 40.0%"
+ */
+export const buildClaimShareText = (claims: Claim[]): string => {
+  if (claims.length === 0) {
+    return '아직 보험청구 내역이 없습니다.'
+  }
+  const rows = buildClaimStatusBreakdown(claims)
+  const lines = rows.map((row) => `- ${row.status}: ${row.count}건 · ${formatWon(row.totalAmount)}`)
+  const approved = claims.filter((claim) => claim.status === '승인').length
+  const approvalRate = Number(((approved / claims.length) * 100).toFixed(1))
+  return [`보험청구 현황 (전체 ${claims.length}건)`, ...lines, `승인률 ${approvalRate}%`].join('\n')
 }

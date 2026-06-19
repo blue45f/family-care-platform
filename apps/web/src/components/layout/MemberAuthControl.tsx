@@ -1,6 +1,11 @@
 import { useState } from 'react'
 
-import { AuthDialog, useAuth } from '../../lib/firebaseAuth'
+// AuthDialog/useAuth는 직접 모듈 경로로 가져온다(배럴 index 경유 금지). 배럴은 AuthProvider를
+// 재노출하고, AuthProvider는 firebase.ts(getAuth)를 모듈 로드 시점에 평가한다. 이 컨트롤은
+// Provider가 필요 없으므로 배럴을 거치면 헤더를 렌더하는 정적 테스트(node env)에서 getAuth가
+// apiKey 검증으로 throw 한다. 직접 import로 그 부수효과를 차단한다.
+import { AuthDialog } from '../../lib/firebaseAuth/AuthDialog'
+import { useAuth } from '../../lib/firebaseAuth/useAuth'
 import { cn } from '../../utils/cn'
 import { Button } from '../ui/Button'
 import { Icon } from '../ui/Icon'

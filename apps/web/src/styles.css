@@ -1002,6 +1002,53 @@ svg {
   text-align: right;
 }
 
+/* List toolbar: 운영 목록(돌봄 기록/청구/정산) 공용 검색·필터·정렬 도구막대.
+   커뮤니티 검색 도구막대(public-community-search/-filter)와 동일 토큰을 재사용한다. */
+.list-toolbar {
+  display: grid;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.list-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+.list-toolbar-search {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+.list-toolbar-sort {
+  flex: 0 0 auto;
+}
+.list-toolbar-sort .select {
+  min-width: 9.5rem;
+}
+.list-toolbar-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.list-toolbar-summary {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+}
+.list-toolbar-meta .card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* 요약 공유 버튼 래퍼(aria-live 안내 span 포함). */
+.share-summary {
+  display: inline-flex;
+  align-items: center;
+}
+
 /* Responsive: collapse table to stacked cards on small screens */
 @media (max-width: 47.99rem) {
   .table.table-stack thead {

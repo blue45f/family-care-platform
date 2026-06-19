@@ -19,6 +19,9 @@ import {
   Field,
   Icon,
   Input,
+  ListToolbar,
+  type ListToolbarFilterOption,
+  type ListToolbarSortOption,
   PageHeader,
   Select,
   Skeleton,
@@ -27,6 +30,8 @@ import {
   type TableColumn,
   Textarea,
 } from '../ui'
+
+import { compareStrings, filterAndSort } from './listFilters'
 
 import type { PlatformData } from '../../state/usePlatformData'
 import type { CareLog, CareLogType } from '../../types'
@@ -44,6 +49,21 @@ const TYPE_TONE: Record<CareLogType, BadgeTone> = {
   식사관리: 'success',
   기타: 'neutral',
 }
+
+// 기록 목록 필터/정렬. '전체'는 유형 필터 미적용을 뜻한다.
+type CareTypeFilter = CareLogType | '전체'
+type CareSort = 'latest' | 'oldest' | 'recipient'
+
+const CARE_TYPE_FILTERS: ReadonlyArray<ListToolbarFilterOption<CareTypeFilter>> = [
+  { value: '전체', label: '전체' },
+  ...careLogTypes.map((type) => ({ value: type, label: type })),
+]
+
+const CARE_SORTS: ReadonlyArray<ListToolbarSortOption<CareSort>> = [
+  { value: 'latest', label: '최근 기록순' },
+  { value: 'oldest', label: '오래된 기록순' },
+  { value: 'recipient', label: '대상자 이름순' },
+]
 
 export const CarePage = ({ data, onNavigate }: CarePageProps) => {
   const routeDef = routeDefs['/care']
@@ -65,10 +85,36 @@ export const CarePage = ({ data, onNavigate }: CarePageProps) => {
     mode: 'onChange',
   })
 
-  const sortedLogs = useMemo(
-    () => [...data.careLogs].sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id),
-    [data.careLogs]
+  // 목록 검색·유형 필터·정렬 상태(클라이언트 전용).
+  const [query, setQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState<CareTypeFilter>('전체')
+  const [sort, setSort] = useState<CareSort>('latest')
+
+  const isFiltering = query.trim() !== '' || typeFilter !== '전체'
+
+  const visibleLogs = useMemo(
+    () =>
+      filterAndSort(data.careLogs, {
+        search: { query, fields: (log) => [log.recipient, log.caregiver, log.note] },
+        predicate: typeFilter === '전체' ? undefined : (log) => log.type === typeFilter,
+        compare: (a, b) => {
+          if (sort === 'oldest') {
+            return compareStrings(a.date, b.date, 'asc') || a.id - b.id
+          }
+          if (sort === 'recipient') {
+            return compareStrings(a.recipient, b.recipient) || b.id - a.id
+          }
+          // latest: 날짜 내림차순 → 동률이면 최신 id 우선(기존 정렬과 동일).
+          return compareStrings(a.date, b.date, 'desc') || b.id - a.id
+        },
+      }),
+    [data.careLogs, query, typeFilter, sort]
   )
+
+  const clearFilters = () => {
+    setQuery('')
+    setTypeFilter('전체')
+  }
 
   // 활동 유형별 건수 요약(상단 지표). 차분한 라벨+값 카드만 사용한다.
   const typeCounts = useMemo(() => {
@@ -246,19 +292,55 @@ export const CarePage = ({ data, onNavigate }: CarePageProps) => {
                 <Skeleton key={i} height="2.75rem" radius="var(--radius-md)" />
               ))}
             </div>
-          ) : sortedLogs.length === 0 ? (
+          ) : data.careLogs.length === 0 ? (
             <EmptyState
               icon="care"
               title="아직 돌봄 기록이 없습니다"
               description="오른쪽 양식에서 첫 돌봄 활동을 기록하면 여기에 모여 보입니다."
             />
           ) : (
-            <Table
-              caption="돌봄 기록 목록"
-              columns={columns}
-              rows={sortedLogs}
-              rowKey={(log) => String(log.id)}
-            />
+            <>
+              <ListToolbar
+                searchLabel="돌봄 기록 검색"
+                searchPlaceholder="대상자·담당자·내용으로 검색"
+                searchValue={query}
+                onSearchChange={setQuery}
+                filterLabel="활동 유형 필터"
+                filterOptions={CARE_TYPE_FILTERS}
+                activeFilter={typeFilter}
+                onFilterChange={setTypeFilter}
+                sortLabel="돌봄 기록 정렬 기준"
+                sortOptions={CARE_SORTS}
+                sortValue={sort}
+                onSortChange={setSort}
+                resultSummary={
+                  isFiltering
+                    ? `전체 ${data.careLogs.length}건 중 ${visibleLogs.length}건`
+                    : undefined
+                }
+                onClearFilters={isFiltering ? clearFilters : undefined}
+              />
+              {visibleLogs.length === 0 ? (
+                <EmptyState
+                  icon="care"
+                  title="조건에 맞는 기록이 없습니다"
+                  description="검색어나 활동 유형 필터를 바꾸거나 필터를 초기화해 보세요."
+                  action={
+                    <Button variant="secondary" size="sm" onClick={clearFilters}>
+                      <Icon name="refresh" size={14} />
+                      필터 초기화
+                    </Button>
+                  }
+                />
+              ) : (
+                <Table
+                  caption="돌봄 기록 목록"
+                  columns={columns}
+                  rows={visibleLogs}
+                  rowKey={(log) => String(log.id)}
+                />
+              )}
+            </>
           )}
         </Card>
 

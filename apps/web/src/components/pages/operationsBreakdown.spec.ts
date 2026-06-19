@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 
 import {
   buildCaregiverWorkload,
+  buildClaimShareText,
   buildClaimStatusBreakdown,
   buildSettlementBreakdown,
+  buildSettlementShareText,
 } from './operationsBreakdown'
 
 import type { Claim, CareSchedule, Settlement } from '../../types'
@@ -159,5 +161,40 @@ describe('buildCaregiverWorkload', () => {
     ])
     expect(rows[0].totalHours).toBe(0)
     expect(rows[0].visitCount).toBe(1)
+  })
+})
+
+describe('buildSettlementShareText', () => {
+  it('가족별 합계와 총합을 평문 요약으로 만든다', () => {
+    const text = buildSettlementShareText([
+      settlement({ id: 1, recipient: '김순자', totalAmount: 30000 }),
+      settlement({ id: 2, recipient: '김순자', totalAmount: 60000 }),
+      settlement({ id: 3, recipient: '이정호', totalAmount: 45000 }),
+    ])
+    expect(text).toContain('가족별 정산 요약 (2가구)')
+    expect(text).toContain('- 김순자: 2건 · 90,000원')
+    expect(text).toContain('- 이정호: 1건 · 45,000원')
+    expect(text).toContain('합계 135,000원')
+  })
+
+  it('내역이 없으면 안내 문구를 반환한다', () => {
+    expect(buildSettlementShareText([])).toBe('아직 정산 내역이 없습니다.')
+  })
+})
+
+describe('buildClaimShareText', () => {
+  it('상태별 건수와 승인률을 평문 요약으로 만든다', () => {
+    const text = buildClaimShareText([
+      claim({ id: 1, status: '승인', expectedAmount: 100000 }),
+      claim({ id: 2, status: '요청', expectedAmount: 50000 }),
+    ])
+    expect(text).toContain('보험청구 현황 (전체 2건)')
+    expect(text).toContain('- 승인: 1건 · 100,000원')
+    expect(text).toContain('- 요청: 1건 · 50,000원')
+    expect(text).toContain('승인률 50%')
+  })
+
+  it('내역이 없으면 안내 문구를 반환한다', () => {
+    expect(buildClaimShareText([])).toBe('아직 보험청구 내역이 없습니다.')
   })
 })
