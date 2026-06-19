@@ -1278,6 +1278,35 @@ svg {
   text-align: left;
   cursor: pointer;
 }
+.public-brand .brand-mark {
+  transition:
+    transform var(--dur-mid) var(--ease-out),
+    box-shadow var(--dur-mid) var(--ease-out);
+}
+.public-brand:hover .brand-mark {
+  transform: rotate(-6deg) scale(1.06);
+  box-shadow: 0 4px 12px oklch(0.545 0.088 150 / 0.35);
+}
+.public-anchor-link {
+  position: relative;
+}
+.public-anchor-link::after {
+  content: '';
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: 0.45rem;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-mid) var(--ease-out);
+}
+.public-anchor-link:hover::after,
+.public-anchor-link:focus-visible::after {
+  transform: scaleX(1);
+}
 .public-brand span:last-child {
   display: flex;
   min-width: 0;
@@ -1528,6 +1557,245 @@ svg {
   gap: var(--space-3);
   color: var(--fg-default);
   font-size: var(--text-sm);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   공개 홈 글로우업 — 절제된 모션·깊이·강조.
+   디자인 정체성(따뜻한 샌드 + 세이지, 라이트 전용)을 깨지 않고, 모션과 구성으로만
+   "눈에 띄는" 첫 화면을 만든다. 금지 항목(그라데이션 텍스트·기본 글래스모피즘·
+   카운트업·히어로 메트릭 템플릿)은 도입하지 않는다.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* 1) 스크롤 리빌 — JS 무장 시에만 시작값을 숨김으로 전환(No-JS/SSR은 항상 표시). */
+.public-page[data-reveal-armed] [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 520ms var(--ease-out),
+    transform 560ms var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.public-page[data-reveal-armed] [data-reveal][data-reveal-shown] {
+  opacity: 1;
+  transform: none;
+}
+
+/* 2) 히어로 — 따뜻한 샌드 베이스 위 은은한 오로라 + 스태거 엔트런스. */
+.public-hero {
+  position: relative;
+  overflow: clip;
+}
+.public-hero-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: clip;
+}
+.public-hero-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  opacity: 0.5;
+}
+.public-hero-blob--sage {
+  top: -8%;
+  right: -6%;
+  width: clamp(18rem, 34vw, 30rem);
+  height: clamp(18rem, 34vw, 30rem);
+  background: radial-gradient(
+    circle at 50% 50%,
+    oklch(0.78 0.07 152 / 0.55),
+    oklch(0.78 0.07 152 / 0) 68%
+  );
+  animation: public-aurora-drift 22s ease-in-out infinite;
+}
+.public-hero-blob--clay {
+  bottom: -16%;
+  right: 18%;
+  width: clamp(14rem, 26vw, 24rem);
+  height: clamp(14rem, 26vw, 24rem);
+  background: radial-gradient(
+    circle at 50% 50%,
+    oklch(0.84 0.05 52 / 0.42),
+    oklch(0.84 0.05 52 / 0) 70%
+  );
+  animation: public-aurora-drift 26s ease-in-out -6s infinite reverse;
+}
+@keyframes public-aurora-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-3%, 4%, 0) scale(1.08);
+  }
+}
+.public-hero-copy {
+  position: relative;
+  z-index: 1;
+}
+.public-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.public-hero-eyebrow-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  box-shadow: 0 0 0 0 oklch(0.545 0.088 150 / 0.5);
+  animation: public-dot-pulse 2.6s var(--ease-out) infinite;
+}
+@keyframes public-dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 oklch(0.545 0.088 150 / 0.45);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 0.5rem oklch(0.545 0.088 150 / 0);
+  }
+}
+.public-hero-copy--enter > * {
+  animation: public-hero-rise 640ms var(--ease-out) both;
+}
+.public-hero-copy--enter > :nth-child(1) {
+  animation-delay: 40ms;
+}
+.public-hero-copy--enter > :nth-child(2) {
+  animation-delay: 110ms;
+}
+.public-hero-copy--enter > :nth-child(3) {
+  animation-delay: 180ms;
+}
+.public-hero-copy--enter > :nth-child(4) {
+  animation-delay: 250ms;
+}
+.public-hero-copy--enter > :nth-child(5) {
+  animation-delay: 320ms;
+}
+.public-hero-copy--enter > :nth-child(6) {
+  animation-delay: 390ms;
+}
+@keyframes public-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* 3) 카드 마이크로 인터랙션 — 호버 시 살짝 떠오르고 테두리에 세이지가 스민다. */
+.public-workflow-item,
+.public-metric-item,
+.public-pricing-item {
+  transition:
+    transform var(--dur-mid) var(--ease-out),
+    box-shadow var(--dur-mid) var(--ease-out),
+    border-color var(--dur-mid) var(--ease-out);
+}
+.public-workflow-item:hover,
+.public-metric-item:hover {
+  transform: translateY(-4px);
+  border-color: color-mix(in oklch, var(--accent) 32%, var(--border-subtle));
+  box-shadow: var(--shadow-md);
+}
+.public-pricing-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+.public-pricing-item--highlight:hover {
+  border-color: color-mix(in oklch, var(--accent) 55%, var(--border-subtle));
+}
+
+/* 워크플로 스텝 번호 → 세이지 칩으로 격상(시선 유도). */
+.public-step {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent-soft-fg);
+}
+.public-workflow-item .guide-step-icon {
+  transition: transform var(--dur-mid) var(--ease-out);
+}
+.public-workflow-item:hover .guide-step-icon {
+  transform: scale(1.06) rotate(-3deg);
+}
+
+/* 4) 제품 미리보기 카드 — 깊이를 더하고 호버 시 부드럽게 들어올린다. */
+.public-preview {
+  transition:
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-slow) var(--ease-out);
+}
+.public-preview:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+}
+.public-preview-table tbody tr {
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.public-preview-table tbody tr:hover {
+  background: color-mix(in oklch, var(--accent-soft) 30%, transparent);
+}
+
+/* 5) 섹션 아이브로우에 짧은 세이지 룰을 더해 위계를 강화. */
+.public-section-head .page-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.public-section-head .page-eyebrow::before {
+  content: '';
+  width: 1.5rem;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+/* 6) CTA 밴드 — 세이지 소프트 위 은은한 광채와 진입 모션. */
+.public-cta {
+  position: relative;
+  overflow: clip;
+  background: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--accent-soft) 92%, var(--bg-surface)),
+    color-mix(in oklch, var(--accent-soft) 60%, var(--bg-surface))
+  );
+}
+.public-cta::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 26rem;
+  height: 26rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.62 0.09 152 / 0.18), oklch(0.62 0.09 152 / 0) 70%);
+  pointer-events: none;
+}
+
+/* 7) 모션 비선호 — 글로우업 모션을 모두 정지(전역 리셋 보강). */
+@media (prefers-reduced-motion: reduce) {
+  .public-page[data-reveal-armed] [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .public-hero-blob,
+  .public-hero-eyebrow-dot,
+  .public-hero-copy--enter > * {
+    animation: none !important;
+  }
+  .public-workflow-item:hover,
+  .public-metric-item:hover,
+  .public-pricing-item:hover,
+  .public-preview:hover {
+    transform: none;
+  }
 }
 
 .public-overview-hero {
@@ -2078,7 +2346,7 @@ svg {
 .public-faq-question .public-faq-sign {
   flex: none;
   color: var(--fg-muted);
-  transition: transform var(--motion-fast);
+  transition: transform var(--dur-mid) var(--ease-out);
 }
 .public-faq-question .public-faq-sign.is-open {
   transform: rotate(180deg);
@@ -2091,8 +2359,8 @@ svg {
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   transition:
-    max-height var(--motion-fast),
-    padding var(--motion-fast);
+    max-height var(--dur-slow) var(--ease-out),
+    padding var(--dur-slow) var(--ease-out);
 }
 .public-faq-answer.is-open {
   max-height: 8.5rem;

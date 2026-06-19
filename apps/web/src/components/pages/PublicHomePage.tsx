@@ -1,8 +1,18 @@
-import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from 'react'
 
 import { cn } from '../../utils/cn'
 import { MemberAuthControl } from '../layout/MemberAuthControl'
 import { Button, Icon } from '../ui'
+
+import { useScrollReveal } from './useScrollReveal'
 
 import type { AppRoute, PublicNavigateState } from '../../routeConfig'
 
@@ -216,7 +226,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
   const [demoLead, setDemoLead] = useState<DemoLead>(readDemoLeadDraft)
   const [leadErrors, setLeadErrors] = useState<DemoLeadValidationError>({})
   const [leadSubmitted, setLeadSubmitted] = useState(false)
-  const pageRef = useRef<HTMLElement | null>(null)
+  const pageRef = useScrollReveal<HTMLElement>()
   const navRef = useRef<HTMLElement | null>(null)
 
   const leadCenterErrorId = `${leadFormId}-center-error`
@@ -281,7 +291,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
       observer.disconnect()
       page.style.removeProperty('--public-nav-height')
     }
-  }, [])
+  }, [pageRef])
 
   const resetLeadDraft = () => {
     setLeadSubmitted(false)
@@ -384,8 +394,15 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
       </header>
 
       <section className="public-hero">
-        <div className="public-hero-copy">
-          <p className="page-eyebrow">돌봄 센터 운영자를 위한 업무 플랫폼</p>
+        <div className="public-hero-aurora" aria-hidden="true">
+          <span className="public-hero-blob public-hero-blob--sage" />
+          <span className="public-hero-blob public-hero-blob--clay" />
+        </div>
+        <div className="public-hero-copy public-hero-copy--enter">
+          <p className="page-eyebrow public-hero-eyebrow">
+            <span className="public-hero-eyebrow-dot" aria-hidden="true" />
+            돌봄 센터 운영자를 위한 업무 플랫폼
+          </p>
           <h1 id="public-home-title">가족 돌봄 운영 플랫폼</h1>
           <p>방문 일정부터 보험청구까지, 센터 담당자가 오늘 해야 할 일을 놓치지 않게 정리합니다.</p>
           <div className="public-hero-actions flex-col items-stretch sm:flex-row sm:items-center">
@@ -435,8 +452,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <h2 id="public-workflow-title">하루 업무가 같은 순서로 정리됩니다</h2>
         </div>
         <div className="public-workflow-list">
-          {publicWorkflow.map((item) => (
-            <article className="public-workflow-item" key={item.title}>
+          {publicWorkflow.map((item, index) => (
+            <article
+              className="public-workflow-item"
+              key={item.title}
+              data-reveal
+              style={{ '--reveal-delay': `${index * 80}ms` } as CSSProperties}
+            >
               <span className="public-step">{item.step}</span>
               <span className="guide-step-icon" aria-hidden="true">
                 <Icon name={item.icon} size={22} />
@@ -457,7 +479,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <h2 id="public-preview-title">로그인하면 이런 운영 화면을 사용합니다</h2>
           <p>데모 계정으로 실제 일정, 기록, 정산, 청구 흐름을 눌러볼 수 있습니다.</p>
         </div>
-        <div className="public-preview">
+        <div className="public-preview" data-reveal>
           <div className="public-preview-bar">
             <span>오늘 방문</span>
             <strong>3건</strong>
@@ -501,8 +523,12 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <h2 id="public-feature-title">스프레드시트와 기억에 흩어진 일을 한곳으로 모읍니다</h2>
         </div>
         <ul className="public-check-list">
-          {publicHighlights.map((item) => (
-            <li key={item}>
+          {publicHighlights.map((item, index) => (
+            <li
+              key={item}
+              data-reveal
+              style={{ '--reveal-delay': `${index * 60}ms` } as CSSProperties}
+            >
               <Icon name="check" size={16} />
               <span>{item}</span>
             </li>
@@ -521,8 +547,13 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           <p>실제 도입 전에도 아래 지표로 운영 리스크를 줄이는 기준을 맞춥니다.</p>
         </div>
         <div className="public-metric-list">
-          {publicMetricCards.map((metric) => (
-            <article className="public-metric-item" key={metric.label}>
+          {publicMetricCards.map((metric, index) => (
+            <article
+              className="public-metric-item"
+              key={metric.label}
+              data-reveal
+              style={{ '--reveal-delay': `${index * 80}ms` } as CSSProperties}
+            >
               <strong>{metric.value}</strong>
               <span>{metric.label}</span>
               <p>{metric.desc}</p>
@@ -545,13 +576,15 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           </p>
         </div>
         <div className="public-pricing-list">
-          {publicPricingTiers.map((plan) => (
+          {publicPricingTiers.map((plan, index) => (
             <article
               className={cn(
                 'public-pricing-item',
                 plan.highlight && 'public-pricing-item--highlight relative'
               )}
               key={plan.name}
+              data-reveal
+              style={{ '--reveal-delay': `${index * 80}ms` } as CSSProperties}
             >
               {plan.highlight ? (
                 <span className="absolute -top-3 right-5 inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-fg-on-accent shadow-sm">
