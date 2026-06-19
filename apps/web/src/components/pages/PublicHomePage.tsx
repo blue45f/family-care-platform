@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState, type FormEvent } from 'react'
 
 import { cn } from '../../utils/cn'
+import { MemberAuthControl } from '../layout/MemberAuthControl'
 import { Button, Icon } from '../ui'
 
 import type { AppRoute, PublicNavigateState } from '../../routeConfig'
@@ -368,7 +369,7 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             className="public-text-link"
             onClick={() => onNavigate('/login', { source: 'hero', fromLanding: true })}
           >
-            로그인
+            담당자 로그인
           </button>
           <Button
             variant="secondary"
@@ -377,6 +378,8 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
           >
             회원가입
           </Button>
+          {/* 통합 회원 로그인(Firebase): 운영 콘솔 로그인과 별개의 추가 옵션(이메일/게스트). */}
+          <MemberAuthControl />
         </nav>
       </header>
 

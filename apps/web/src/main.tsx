@@ -12,6 +12,10 @@ import { DeskSearchPalette } from './components/desk/DeskSearchPalette'
 import { FeedbackWidget } from './components/feedback/FeedbackWidget'
 import { validateWebEnv } from './infrastructure/env'
 import { lazyRetry } from './lazyRetry'
+// 통합 회원 로그인(Firebase Auth) — 기존 운영 콘솔 로그인(./auth/AuthProvider)과 별개로,
+// 이메일/비번 + 게스트 옵션을 헤더에서 제공한다. env(VITE_FIREBASE_*) 미설정이면 무해하게
+// degrade 한다(빌드/런타임 크래시 없음). 이름 충돌을 피해 별칭(MemberAuthProvider)으로 가져온다.
+import { AuthProvider as MemberAuthProvider } from './lib/firebaseAuth'
 
 import './styles/tailwind.css'
 import './styles.css'
@@ -30,30 +34,32 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route
-                path="/design"
-                element={
-                  <Suspense fallback={<RouteFallback />}>
-                    <DesignSystemPage />
-                  </Suspense>
-                }
-              />
-              <Route path="*" element={<App />} />
-            </Routes>
-            {/* SurveyDesk 피드백 런처(1차 기능): endpoint(env)가 설정된 경우에만 마운트한다.
+        <MemberAuthProvider>
+          <AuthProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route
+                  path="/design"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <DesignSystemPage />
+                    </Suspense>
+                  }
+                />
+                <Route path="*" element={<App />} />
+              </Routes>
+              {/* SurveyDesk 피드백 런처(1차 기능): endpoint(env)가 설정된 경우에만 마운트한다.
                 미설정(기본값)이면 렌더하지 않아 앱에 전혀 영향을 주지 않는다. */}
-            {import.meta.env.VITE_SURVEYDESK_URL && (
-              <FeedbackWidget appId="familycare" endpoint={import.meta.env.VITE_SURVEYDESK_URL} />
-            )}
-            {/* SearchDesk(네이티브 ⌘K 팔레트): VITE_SEARCHDESK_URL 설정 시에만 단축키를
+              {import.meta.env.VITE_SURVEYDESK_URL && (
+                <FeedbackWidget appId="familycare" endpoint={import.meta.env.VITE_SURVEYDESK_URL} />
+              )}
+              {/* SearchDesk(네이티브 ⌘K 팔레트): VITE_SEARCHDESK_URL 설정 시에만 단축키를
                 등록하고, 결과를 이 앱의 디자인 토큰으로 렌더한다. 미설정이면 무영향.
                 Changelog·Notify 는 각각 가이드/대시보드에 네이티브 카드로 인라인했다. */}
-            <DeskSearchPalette />
-          </BrowserRouter>
-        </AuthProvider>
+              <DeskSearchPalette />
+            </BrowserRouter>
+          </AuthProvider>
+        </MemberAuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>

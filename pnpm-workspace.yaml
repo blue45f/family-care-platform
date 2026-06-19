@@ -5,6 +5,7 @@ packages:
 # pnpm 11 build-script approvals (CI on pnpm 11.4.0 fails with
 # ERR_PNPM_IGNORED_BUILDS otherwise). Mirrors the sibling repos' convention.
 onlyBuiltDependencies:
+  - '@firebase/util'
   - '@nestjs/core'
   - '@sentry/cli'
   - '@swc/core'
@@ -16,8 +17,11 @@ allowBuilds:
   '@sentry/cli': true
   '@swc/core': true
   esbuild: true
-  protobufjs: true
   unrs-resolver: true
+  # firebase(통합 회원 로그인) 의존성. 이메일/익명 인증엔 빌드 스크립트가 불필요
+  # (선택적 native/proto 최적화)하므로 빌드하지 않음 — 설치 통과 + 런타임 정상.
+  '@firebase/util': false
+  protobufjs: false
 
 minimumReleaseAgeExclude:
   - '@heejun/eslint-config@4.0.0'
