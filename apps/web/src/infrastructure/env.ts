@@ -7,6 +7,9 @@ import { z } from 'zod'
 const envSchema = z.object({
   // API 베이스 URL(미설정 시 코드에서 dev/prod 기본값으로 폴백하므로 optional).
   VITE_API_URL: z.string().url('유효한 URL이어야 합니다').optional(),
+  // desk-platform 문의 게시판 베이스 URL(미설정 시 prod 기본값으로 폴백하므로 optional).
+  // 백엔드는 LIVE 상태라 추가 설정 없이 기본값으로 동작한다. 로컬 개발 시에만 :6090 등으로 오버라이드.
+  VITE_DESK_PLATFORM_URL: z.string().url('유효한 URL이어야 합니다').optional(),
   // SurveyDesk 피드백 런처 엔드포인트(미설정 시 런처를 마운트하지 않으므로 optional).
   VITE_SURVEYDESK_URL: z.string().url('유효한 URL이어야 합니다').optional(),
   // DeskCloud 네이티브 연동(@heejun/deskcloud pk_ SDK) — 각 URL 이 설정될 때만 해당

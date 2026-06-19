@@ -46,7 +46,7 @@ describe('PublicHomePage', () => {
     expect(nav).toContain('회원가입')
   })
 
-  it('푸터가 약관·개인정보(내부 페이지)와 지원 채널(외부)·페이지 링크 묶음을 제공한다', () => {
+  it('푸터가 약관·개인정보·문의(모두 내부 페이지)와 페이지 링크 묶음을 제공한다', () => {
     const markup = renderToStaticMarkup(
       createElement(PublicHomePage, { onNavigate: () => undefined })
     )
@@ -56,12 +56,13 @@ describe('PublicHomePage', () => {
 
     expect(footer).toContain('이용약관')
     expect(footer).toContain('개인정보 처리방침')
-    expect(footer).toContain('지원 채널')
+    // 문의는 내부 문의 게시판(/inquiry) 라우트 버튼으로 통합한다.
+    expect(footer).toContain('문의')
     // 약관·개인정보는 내부 라우트 버튼으로 이동한다(외부 termsdesk 문서 링크 아님).
     expect(footer).not.toContain('terms-of-service')
     expect(footer).not.toContain('privacy-policy')
-    // 지원 보드는 TermsDesk 중앙 채널을 외부 링크로 유지한다.
-    expect(footer).toContain('https://termsdesk.vercel.app/support/family-care-platform')
+    // 외부 연락 채널(TermsDesk 지원 링크)은 더 이상 노출하지 않는다(내부 게시판으로 통합).
+    expect(footer).not.toContain('termsdesk.vercel.app/support')
     expect(footer).toContain('서비스 소개')
     expect(footer).toContain('시작 가이드')
     expect(footer).toContain('튜토리얼')

@@ -25,6 +25,7 @@ export type AppRoute =
   | '/community'
   | '/messages'
   | '/support'
+  | '/inquiry'
   | '/members'
   | '/terms'
   | '/privacy'
@@ -209,6 +210,17 @@ export const routeDefs: Record<AppRoute, RouteDef> = {
     inNav: true,
     placeholder: false,
   },
+  '/inquiry': {
+    path: '/inquiry',
+    title: '문의',
+    eyebrow: '커뮤니티',
+    description:
+      '제휴·버그·의견·이용 문의를 남기면 공개 게시판에 표시되고 운영자가 확인 후 상태를 업데이트합니다.',
+    icon: 'inbox',
+    section: 'community',
+    inNav: true,
+    placeholder: false,
+  },
   '/members': {
     path: '/members',
     title: '회원 관리',
@@ -297,11 +309,12 @@ export const managementRoutes = [
   '/members',
 ] as const satisfies readonly AppRoute[]
 
-/** 커뮤니티(게시판·쪽지·상담) 소통 화면. */
+/** 커뮤니티(게시판·쪽지·상담·문의) 소통 화면. */
 export const communityRoutes = [
   '/community',
   '/messages',
   '/support',
+  '/inquiry',
 ] as const satisfies readonly AppRoute[]
 
 export const publicLandingRoutes = [

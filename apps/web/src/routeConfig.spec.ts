@@ -99,8 +99,8 @@ describe('상용 서비스 정보 구조', () => {
     }
   })
 
-  it('커뮤니티(게시판·쪽지·상담)는 별도 내비게이션 그룹으로 노출된다', () => {
-    expect(communityRoutes).toEqual(['/community', '/messages', '/support'])
+  it('커뮤니티(게시판·쪽지·상담·문의)는 별도 내비게이션 그룹으로 노출된다', () => {
+    expect(communityRoutes).toEqual(['/community', '/messages', '/support', '/inquiry'])
 
     for (const path of communityRoutes) {
       expect(routeDefs[path]).toMatchObject({

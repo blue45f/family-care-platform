@@ -9,9 +9,6 @@ type PublicHomePageProps = {
   onNavigate: (path: AppRoute, state?: PublicNavigateState) => void
 }
 
-const TERMSDESK_BASE = 'https://termsdesk.vercel.app'
-const SUPPORT_URL = `${TERMSDESK_BASE}/support/family-care-platform`
-
 const publicWorkflow = [
   {
     step: '1',
@@ -111,13 +108,12 @@ const publicFooterPages = [
   { label: '요금제', path: '/plans' },
 ] as const satisfies readonly { label: string; path: AppRoute }[]
 
-/** 약관·개인정보는 내부 페이지(TermsDesk 게시본 렌더), 지원 보드만 외부 링크. */
+/** 약관·개인정보·문의는 모두 내부 페이지로 이동한다(외부 연락 수단은 내부 문의 게시판으로 통합). */
 const publicFooterPolicyRoutes = [
   { label: '이용약관', path: '/terms' },
   { label: '개인정보 처리방침', path: '/privacy' },
+  { label: '문의', path: '/inquiry' },
 ] as const satisfies readonly { label: string; path: AppRoute }[]
-
-const publicFooterSupportLink = { label: '지원 채널', href: SUPPORT_URL } as const
 
 type DemoLead = {
   centerName: string
@@ -679,31 +675,14 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             </div>
           </form>
         )}
-        <div className="public-hero-actions" aria-label="TermsDesk 공식 지원 채널">
-          <a
-            className="btn btn-secondary"
-            href={`${SUPPORT_URL}?category=site-inquiry`}
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="public-hero-actions" aria-label="문의 게시판 바로가기">
+          <Button
+            variant="secondary"
+            onClick={() => onNavigate('/inquiry', { source: 'lead_form', fromLanding: true })}
           >
-            사이트 문의
-          </a>
-          <a
-            className="btn btn-secondary"
-            href={`${SUPPORT_URL}?category=partnership`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            제휴 문의
-          </a>
-          <a
-            className="btn btn-secondary"
-            href={`${SUPPORT_URL}?category=bug`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            버그 제보
-          </a>
+            <Icon name="inbox" size={16} />
+            문의 게시판 열기
+          </Button>
         </div>
       </section>
 
@@ -824,16 +803,6 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
                   </button>
                 </li>
               ))}
-              <li>
-                <a
-                  className="public-footer-link"
-                  href={publicFooterSupportLink.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {publicFooterSupportLink.label}
-                </a>
-              </li>
               <li>
                 {/* 디자인 시스템 가이드 — 본문 내비가 아닌 푸터에만 노출하는 보조 링크. */}
                 <a className="public-footer-link" href="/design">

@@ -74,6 +74,9 @@ const SettlementsPage = lazyRetry(() =>
 const SupportPage = lazyRetry(() =>
   import('./components/pages/SupportPage').then((m) => ({ default: m.SupportPage }))
 )
+const InquiryPage = lazyRetry(() =>
+  import('./components/pages/InquiryPage').then((m) => ({ default: m.InquiryPage }))
+)
 
 type AuthAppRoute = AuthRoute
 type PublicAppRoute = PublicLandingRoute
@@ -180,6 +183,10 @@ export const protectedRouteEntries: ProtectedRouteEntry[] = [
   {
     path: '/support',
     render: ({ navigate }) => <SupportPage onNavigate={navigate} />,
+  },
+  {
+    path: '/inquiry',
+    render: ({ navigate }) => <InquiryPage onNavigate={navigate} />,
   },
   {
     path: '/analytics',

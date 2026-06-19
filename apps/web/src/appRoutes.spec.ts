@@ -57,6 +57,7 @@ describe('appRoutes', () => {
     // 쪽지/상담/회원 관리는 개인·관리 데이터라 미인증 시 로그인 안내로 보낸다.
     expect(getUnauthenticatedRouteIntent('/messages')).toBe('protected')
     expect(getUnauthenticatedRouteIntent('/support')).toBe('protected')
+    expect(getUnauthenticatedRouteIntent('/inquiry')).toBe('protected')
     expect(getUnauthenticatedRouteIntent('/members')).toBe('protected')
     expect(getUnauthenticatedRouteIntent('/account')).toBe('protected')
   })
