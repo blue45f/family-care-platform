@@ -35,7 +35,10 @@ export const Sidebar = ({
         <Icon name="heart" size={20} />
       </span>
       <span>
-        <span className="brand-name">{SITE_NAME}</span>
+        <span className="brand-title-row">
+          <span className="brand-name">{SITE_NAME}</span>
+          <span className="beta-badge">BETA</span>
+        </span>
         <span className="brand-sub">CARE OPERATIONS</span>
       </span>
     </div>

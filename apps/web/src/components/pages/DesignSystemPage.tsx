@@ -238,7 +238,9 @@ export const DesignSystemPage = ({ onBack }: { onBack?: () => void }) => {
             <Icon name="heart" size={18} />
           </span>
           <span>
-            <strong>가족 돌봄 운영 플랫폼</strong>
+            <strong>
+              가족 돌봄 운영 플랫폼 <span className="beta-badge">BETA</span>
+            </strong>
             <small>DESIGN SYSTEM</small>
           </span>
         </button>

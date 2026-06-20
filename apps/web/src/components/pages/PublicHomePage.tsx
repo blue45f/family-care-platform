@@ -360,7 +360,9 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
             <Icon name="heart" size={18} />
           </span>
           <span>
-            <strong>가족 돌봄 운영 플랫폼</strong>
+            <strong>
+              가족 돌봄 운영 플랫폼 <span className="beta-badge">BETA</span>
+            </strong>
             <small>CARE OPERATIONS</small>
           </span>
         </button>
@@ -840,9 +842,8 @@ export const PublicHomePage = ({ onNavigate }: PublicHomePageProps) => {
                 </li>
               ))}
               <li>
-                {/* 디자인 시스템 가이드 — 본문 내비가 아닌 푸터에만 노출하는 보조 링크. */}
-                <a className="public-footer-link" href="/design">
-                  디자인 시스템
+                <a className="public-footer-link" href="/sitemap">
+                  사이트맵
                 </a>
               </li>
             </ul>

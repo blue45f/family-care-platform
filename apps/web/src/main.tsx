@@ -29,6 +29,9 @@ validateWebEnv()
 const DesignSystemPage = lazyRetry(() =>
   import('./components/pages/DesignSystemPage').then((m) => ({ default: m.DesignSystemPage }))
 )
+const SitemapPage = lazyRetry(() =>
+  import('./components/pages/SitemapPage').then((m) => ({ default: m.SitemapPage }))
+)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -43,6 +46,14 @@ createRoot(document.getElementById('root')!).render(
                   element={
                     <Suspense fallback={<RouteFallback />}>
                       <DesignSystemPage />
+                    </Suspense>
+                  }
+                />
+                <Route
+                  path="/sitemap"
+                  element={
+                    <Suspense fallback={<RouteFallback />}>
+                      <SitemapPage />
                     </Suspense>
                   }
                 />
