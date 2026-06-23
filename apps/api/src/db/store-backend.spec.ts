@@ -24,29 +24,25 @@ describe('StoreBackend', () => {
     vi.restoreAllMocks()
   })
 
-  it('DATABASE_URL 미설정: enabled=false, write/read no-op, flush 무해', async () => {
+  it('DATABASE_URL 미설정: enabled=false, hydrate 호출 시 에러를 던진다', async () => {
     vi.doMock('./client', () => ({ db: null, dbEnabled: false }))
     const { storeBackend } = await import('./store-backend')
 
     expect(storeBackend.enabled).toBe(false)
-    storeBackend.write('x.json', { items: [1] })
-    expect(storeBackend.read('x.json')).toBeUndefined()
-    await expect(storeBackend.flush()).resolves.toBeUndefined()
+    await expect(storeBackend.hydrate()).rejects.toThrow(
+      '[store-backend] DATABASE_URL is not set. Database is required in non-test mode.'
+    )
   })
 
-  it('hydrate 실패 시 파일 백엔드로 폴백한다(enabled=false, throw 안 함)', async () => {
+  it('hydrate 실패 시 에러를 던진다 (더 이상 파일 백엔드로 폴백하지 않음)', async () => {
     const from = vi.fn(() => Promise.reject(new Error('unreachable')))
     const select = vi.fn(() => ({ from }))
     vi.doMock('./client', () => ({ db: { select }, dbEnabled: true }))
     const { storeBackend } = await import('./store-backend')
 
     expect(storeBackend.enabled).toBe(true)
-    await expect(storeBackend.hydrate()).resolves.toBeUndefined()
+    await expect(storeBackend.hydrate()).rejects.toThrow('unreachable')
     expect(storeBackend.enabled).toBe(false)
-
-    // 폴백 후 write는 no-op(파일 백엔드가 담당).
-    storeBackend.write('x.json', { items: [1] })
-    expect(storeBackend.read('x.json')).toBeUndefined()
   })
 
   it('같은 컬렉션 upsert를 호출 순서대로 직렬화한다(이전이 끝나야 다음 시작)', async () => {

@@ -14,7 +14,7 @@ const envSchema = z.object({
   // CORS — 둘 중 하나(목록/단일)만 있어도 됨. 형식 강제는 하지 않는다.
   CORS_ALLOWED_ORIGINS: z.string().optional(),
   CORS_ALLOWED_ORIGIN: z.string().optional(),
-  // DB — 없으면 파일 백엔드로 폴백(정상 동작)이므로 optional.
+  // DB — 로컬 파일 스토어 대신 필수 사용
   DATABASE_URL: z.string().optional(),
   // 인증 시크릿 — 운영에서는 필수(별도 경고). 형식만 점검.
   JWT_SECRET: z.string().optional(),
@@ -72,6 +72,13 @@ export function validateEnv(
         '[env] ⚠️ 운영 환경인데 CORS 허용 Origin이 비어 있습니다(CORS_ALLOWED_ORIGINS 설정 권장).'
       )
     }
+  }
+
+  const isTest = env.NODE_ENV === 'test' || env.VITEST !== undefined
+  if (!isTest && !env.DATABASE_URL?.trim()) {
+    warn(
+      '[env] 🚨 DATABASE_URL이 비어 있습니다. 로컬 JSON 파일 스토어 대신 DB를 사용하므로 DATABASE_URL 설정은 필수입니다.'
+    )
   }
 }
 

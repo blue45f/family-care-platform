@@ -1,6 +1,3 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
-
 import { storeBackend } from '../db/store-backend'
 
 // proto-live(backend/src/projects/projects.store.ts)의 "atomic JSON file store" 패턴을
@@ -31,23 +28,12 @@ function isTestEnv(): boolean {
 }
 
 /**
- * JSON 스토어가 실제로 사용하는 데이터 디렉터리 경로를 계산한다.
- * FCP_DATA_DIR로 덮어쓸 수 있고, 기본값은 api 실행 위치 기준 data/ 디렉터리다.
- * 모든 컬렉션이 이 한 곳을 백킹 디렉터리로 공유하므로, 헬스 체크(readiness)도
- * 같은 경로의 쓰기 가능 여부를 검사하도록 외부에 노출한다.
- */
-export function resolveDataDir(): string {
-  return process.env.FCP_DATA_DIR?.trim() || resolve(process.cwd(), 'data')
-}
-
-/**
  * 단일 JSON 파일을 백킹 스토어로 사용하는 컬렉션 저장소.
  *
  * @param fileName 데이터 디렉터리 하위 파일명 (예: 'care-logs.json')
  * @param seed     파일이 없을 때 사용할 초기 상태를 만드는 팩토리(매 호출 새 인스턴스 반환)
  */
 export class JsonCollectionStore<T> {
-  private readonly filePath: string
   private readonly testMode: boolean
   // 컬렉션이 자동 증가 id(seq)를 쓰는지 seed 모양으로 한 번 판별한다. 파일에 seq가
   // 누락돼도 이 플래그로 "seq 컬렉션인지"를 잃지 않고 maxId+1로 복원할 수 있다.
@@ -55,60 +41,38 @@ export class JsonCollectionStore<T> {
 
   constructor(
     private readonly fileName: string,
-    private readonly seed: () => StoredCollection<T>,
-    dataDir: string = resolveDataDir()
+    private readonly seed: () => StoredCollection<T>
   ) {
-    this.filePath = join(dataDir, fileName)
     this.testMode = isTestEnv()
     this.usesSeq = seed().seq !== undefined
   }
 
-  /** 시작 시 1회 호출. 파일이 있으면 로드, 없으면 seed로 초기화한다. */
+  /** 시작 시 1회 호출. DB가 활성화되어 있으면 캐시에서 로드한다. */
   load(): StoredCollection<T> {
     if (this.testMode) {
       return this.normalize(this.seed())
     }
 
-    // Neon 백엔드(DATABASE_URL 설정 시): 시작 시 하이드레이트된 캐시에서 동기 로드.
     if (storeBackend.enabled) {
       const fromDb = storeBackend.read(this.fileName) as StoredCollection<T> | undefined
       return this.normalize(fromDb ?? this.seed())
     }
 
-    if (!existsSync(this.filePath)) {
-      return this.normalize(this.seed())
-    }
-
-    const contents = readFileSync(this.filePath, 'utf8')
-    if (!contents.trim()) {
-      return this.normalize(this.seed())
-    }
-
-    try {
-      const parsed = JSON.parse(contents) as SerializedCollection
-      return this.deserialize(parsed)
-    } catch {
-      // 손상된 파일은 seed로 폴백한다(개발 편의 + 깨진 상태로 부팅 방지).
-      return this.normalize(this.seed())
-    }
+    throw new Error(`Database store backend is not enabled for collection: ${this.fileName}`)
   }
 
-  /** 현재 상태를 원자적으로 파일에 기록한다. 테스트 환경에서는 no-op. */
+  /** 현재 상태를 DB에 저장한다. */
   save(state: StoredCollection<T>): void {
     if (this.testMode) {
       return
     }
 
-    // Neon 백엔드: 캐시 갱신 + write-behind upsert(동기 계약 유지).
     if (storeBackend.enabled) {
       storeBackend.write(this.fileName, this.normalize(state))
       return
     }
 
-    mkdirSync(dirname(this.filePath), { recursive: true })
-    const temporaryPath = `${this.filePath}.${process.pid}.${Date.now()}.tmp`
-    writeFileSync(temporaryPath, `${JSON.stringify(this.normalize(state), null, 2)}\n`, 'utf8')
-    renameSync(temporaryPath, this.filePath)
+    throw new Error(`Database store backend is not enabled for collection: ${this.fileName}`)
   }
 
   private deserialize(parsed: SerializedCollection): StoredCollection<T> {

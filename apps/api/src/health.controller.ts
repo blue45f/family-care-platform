@@ -1,9 +1,7 @@
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-
 import { Controller, Get, HttpCode, HttpStatus, Res } from '@nestjs/common'
+import { sql } from 'drizzle-orm'
 
-import { resolveDataDir } from './common/json-store'
+import { db, dbEnabled } from './db/client'
 
 import type { Response } from 'express'
 
@@ -25,35 +23,36 @@ export class HealthController {
   }
 
   /**
-   * Readiness: 트래픽을 받을 준비가 됐는지 확인한다. 이 API의 유일한 영속성은
-   * JSON 파일 스토어이므로, DB의 `SELECT 1`에 해당하는 검사로 데이터 디렉터리에
-   * 실제로 쓰기가 가능한지(write + unlink 프로브)를 검증한다.
+   * Readiness: 트래픽을 받을 준비가 됐는지 확인한다.
+   * DB에 `SELECT 1` 쿼리를 보내 실제 데이터베이스 연결이 정상인지 검증한다.
    * 라우트: GET /api/health/ready → 200 {status:'ready'} | 503 {status:'not-ready'}
    */
   @Get('ready')
   @HttpCode(HttpStatus.OK)
-  readiness(@Res({ passthrough: true }) res: Response) {
-    const dataDir = resolveDataDir()
-    const probePath = join(dataDir, `.readiness-probe.${process.pid}.${Date.now()}.tmp`)
+  async readiness(@Res({ passthrough: true }) res: Response) {
+    if (!dbEnabled || !db) {
+      res.status(HttpStatus.SERVICE_UNAVAILABLE)
+      return {
+        status: 'not-ready',
+        reason: 'database is not enabled or pool is null',
+        timestamp: new Date().toISOString(),
+      }
+    }
 
     try {
-      // 스토어가 첫 save() 전까지 디렉터리를 만들지 않으므로 여기서 보장한다.
-      mkdirSync(dataDir, { recursive: true })
-      writeFileSync(probePath, 'ok', 'utf8')
-      rmSync(probePath, { force: true })
+      await db.execute(sql`SELECT 1`)
     } catch (error) {
       res.status(HttpStatus.SERVICE_UNAVAILABLE)
       return {
         status: 'not-ready',
-        dataDir,
-        reason: error instanceof Error ? error.message : 'data directory is not writable',
+        reason: error instanceof Error ? error.message : 'database query failed',
         timestamp: new Date().toISOString(),
       }
     }
 
     return {
       status: 'ready',
-      dataDir,
+      database: 'connected',
       timestamp: new Date().toISOString(),
     }
   }

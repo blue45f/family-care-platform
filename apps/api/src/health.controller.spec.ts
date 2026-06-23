@@ -1,10 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-
-import { HealthController } from './health.controller'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 type CapturedResponse = {
   statusCode: number
@@ -23,51 +17,72 @@ function createResponse(): CapturedResponse {
 }
 
 describe('HealthController', () => {
-  const originalDataDir = process.env.FCP_DATA_DIR
-  let tempRoot: string
-
   beforeEach(() => {
-    tempRoot = mkdtempSync(join(tmpdir(), 'fcp-health-'))
+    vi.resetModules()
   })
 
   afterEach(() => {
-    if (originalDataDir === undefined) {
-      delete process.env.FCP_DATA_DIR
-    } else {
-      process.env.FCP_DATA_DIR = originalDataDir
-    }
-    rmSync(tempRoot, { recursive: true, force: true })
+    vi.doUnmock('./db/client')
+    vi.restoreAllMocks()
   })
 
-  it("healthCheck는 liveness 상태 'ok'를 반환한다", () => {
+  it("healthCheck는 liveness 상태 'ok'를 반환한다", async () => {
+    const { HealthController } = await import('./health.controller')
     const controller = new HealthController()
     expect(controller.healthCheck().status).toBe('ok')
   })
 
-  it("readiness는 데이터 디렉터리가 쓰기 가능하면 200 'ready'를 반환한다", () => {
-    process.env.FCP_DATA_DIR = join(tempRoot, 'data')
-    const controller = new HealthController()
+  it("readiness는 데이터베이스 쿼리가 성공하면 200 'ready'를 반환한다", async () => {
+    const execute = vi.fn(() => Promise.resolve())
+    vi.doMock('./db/client', () => ({
+      db: { execute },
+      dbEnabled: true,
+    }))
+
+    const { HealthController: TargetController } = await import('./health.controller')
+    const controller = new TargetController()
     const res = createResponse()
 
-    const body = controller.readiness(res as never)
+    const body = await controller.readiness(res as never)
 
     expect(res.statusCode).toBe(200)
     expect(body.status).toBe('ready')
+    expect(body.database).toBe('connected')
+    expect(execute).toHaveBeenCalled()
   })
 
-  it("readiness는 데이터 디렉터리에 쓸 수 없으면 503 'not-ready'를 반환한다", () => {
-    // 파일을 디렉터리 경로로 지정하면 mkdir/write가 실패한다(ENOTDIR).
-    const blocker = join(tempRoot, 'blocker')
-    rmSync(blocker, { force: true })
-    writeFileSync(blocker, 'not a dir', 'utf8')
-    process.env.FCP_DATA_DIR = join(blocker, 'data')
+  it("readiness는 데이터베이스가 비활성화 상태면 503 'not-ready'를 반환한다", async () => {
+    vi.doMock('./db/client', () => ({
+      db: null,
+      dbEnabled: false,
+    }))
 
-    const controller = new HealthController()
+    const { HealthController: TargetController } = await import('./health.controller')
+    const controller = new TargetController()
     const res = createResponse()
 
-    const body = controller.readiness(res as never)
+    const body = await controller.readiness(res as never)
 
     expect(res.statusCode).toBe(503)
     expect(body.status).toBe('not-ready')
+    expect(body.reason).toContain('database is not enabled')
+  })
+
+  it("readiness는 데이터베이스 쿼리가 실패하면 503 'not-ready'를 반환한다", async () => {
+    const execute = vi.fn(() => Promise.reject(new Error('connection timeout')))
+    vi.doMock('./db/client', () => ({
+      db: { execute },
+      dbEnabled: true,
+    }))
+
+    const { HealthController: TargetController } = await import('./health.controller')
+    const controller = new TargetController()
+    const res = createResponse()
+
+    const body = await controller.readiness(res as never)
+
+    expect(res.statusCode).toBe(503)
+    expect(body.status).toBe('not-ready')
+    expect(body.reason).toBe('connection timeout')
   })
 })

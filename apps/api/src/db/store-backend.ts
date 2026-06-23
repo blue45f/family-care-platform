@@ -25,7 +25,12 @@ class StoreBackend {
   }
 
   async hydrate(): Promise<void> {
-    if (!dbEnabled || !db || this.hydrated) return
+    if (this.hydrated) return
+    if (!dbEnabled || !db) {
+      throw new Error(
+        '[store-backend] DATABASE_URL is not set. Database is required in non-test mode.'
+      )
+    }
     try {
       const rows = await db.select().from(collections)
       for (const row of rows) {
@@ -33,14 +38,9 @@ class StoreBackend {
       }
       this.hydrated = true
     } catch (error) {
-      // DB는 설정됐지만 도달 불가(Neon autosuspend 콜드스타트/네트워크/테이블 미생성).
-      // 부팅을 죽이는 대신 파일 백엔드로 폴백한다(enabled가 false가 됨). db:push 누락이
-      // 흔한 원인이라 메시지로 가시화한다.
       this.failed = true
-      console.error(
-        '[store-backend] hydrate failed — falling back to file store (run `pnpm db:push`?):',
-        error
-      )
+      console.error('[store-backend] hydrate failed:', error)
+      throw error
     }
   }
 
